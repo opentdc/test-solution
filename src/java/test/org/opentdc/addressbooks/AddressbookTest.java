@@ -35,10 +35,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opentdc.addressbooks.AddressbookData;
+import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.service.exception.DuplicateException;
 import org.opentdc.service.exception.NotFoundException;
 
@@ -46,7 +45,7 @@ import test.org.opentdc.AbstractTestClient;
 
 public class AddressbookTest extends AbstractTestClient {
 	
-	private static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/addressbook/";
+	private static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/addressbooks/";
 
 	@BeforeClass
 	public static void initializeTests(
@@ -54,15 +53,15 @@ public class AddressbookTest extends AbstractTestClient {
 		initializeTests(APP_URI);
 	}
 	
-	private List<AddressbookData> list(
+	private List<AddressbookModel> list(
 	) throws Exception {
 		System.out.println("listing all addressbooks");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		return (List<AddressbookData>)webclient.replacePath("/").getCollection(AddressbookData.class);
+		return (List<AddressbookModel>)webclient.replacePath("/").getCollection(AddressbookModel.class);
 	}
 
-	private AddressbookData create(
-		AddressbookData p
+	private AddressbookModel create(
+		AddressbookModel p
 	) throws DuplicateException {
 		System.out.println("creating an addressbook");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
@@ -70,11 +69,11 @@ public class AddressbookTest extends AbstractTestClient {
 		if(resp.getStatus() == Status.CONFLICT.getStatusCode()) {
 			throw new DuplicateException();
 		} else {
-			return resp.readEntity(AddressbookData.class);
+			return resp.readEntity(AddressbookModel.class);
 		}
 	}
 
-	private AddressbookData read(
+	private AddressbookModel read(
 		String id
 	) throws NotFoundException {
 		System.out.println("reading an addressbook");
@@ -83,17 +82,17 @@ public class AddressbookTest extends AbstractTestClient {
 		if(resp.getStatus() == Status.NOT_FOUND.getStatusCode()) {
 			throw new NotFoundException();
 		} else {
-			return resp.readEntity(AddressbookData.class);
+			return resp.readEntity(AddressbookModel.class);
 		}
 	}
 
-	private AddressbookData update(
-		AddressbookData p
+	private AddressbookModel update(
+		AddressbookModel p
 	) {
 		System.out.println("updating an addressbook");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response resp = webclient.replacePath("/").put(p);
-		return resp.readEntity(AddressbookData.class);
+		Response resp = webclient.replacePath("/").path(p.getId()).put(p);
+		return resp.readEntity(AddressbookModel.class);
 	}
 
 	private void delete(
@@ -123,21 +122,21 @@ public class AddressbookTest extends AbstractTestClient {
 		
 		deleteAll();
 		
-		AddressbookData p0 = new AddressbookData();
+		AddressbookModel p0 = new AddressbookModel();
 		// TODO: set some attributes manually
 		assertNull("initially, there should be no ID", p0.getId());
 		assertEquals("there should be no data to start with", 0, count());
-		AddressbookData p1 = create(p0);
+		AddressbookModel p1 = create(p0);
 		assertNotNull("a unique ID should be set", p1.getId());
 		// TODO: all other attributes should be the same.
 
-		AddressbookData p2 = create(new AddressbookData());
+		AddressbookModel p2 = create(new AddressbookModel());
 		assertNotNull("a unique ID should be set", p2.getId());
 		assertNotSame("IDs should be different", p1.getId(), p2.getId());
 		// TODO: check on the default attribute values of _p2
 		// TODO: try to set invalid data attributes
 
-		AddressbookData p3 = create(new AddressbookData());
+		AddressbookModel p3 = create(new AddressbookModel());
 		assertNotNull("a unique ID should be set", p3.getId());
 		assertNotSame("IDs should be different", p2.getId(), p3.getId());
 		assertNotSame("IDs should be different", p1.getId(), p3.getId());
@@ -149,9 +148,9 @@ public class AddressbookTest extends AbstractTestClient {
 			System.out.println("DuplicateException was raised correctly when trying to create a duplicate");
 			// test for exception message
 		}
-		List<AddressbookData> addressbooks = list();
+		List<AddressbookModel> addressbooks = list();
 		System.out.println("list() = <" + addressbooks + ">");
-		AddressbookData p11 = read(p1.getId());
+		AddressbookModel p11 = read(p1.getId());
 		assertEquals("IDs should be equal when read twice", p1.getId(), p11.getId());
 		// TODO: same for all attributes
 		try {

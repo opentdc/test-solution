@@ -12,7 +12,7 @@
 	<path id="project.class.path">
 		<fileset dir="${cxf.lib}" includes="**/*.jar" />
 		<fileset dir="../${java.build.platform}/services-generic/lib/" includes="*.jar" />
-		<fileset dir="../${java.build.platform}/addressbook-service/lib/" includes="*.jar" />
+		<fileset dir="../${java.build.platform}/addressbooks-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/rates-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/users-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/workrecords-service/lib/" includes="*.jar" />

@@ -134,20 +134,23 @@ public class ProjectTest extends AbstractTestClient {
 		String compId, 
 		String projId
 	) throws NotFoundException {
-		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).get();
-		status = _r.getStatus();
+		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).get();
+		status = resp.getStatus();
 		if (status == Status.NOT_FOUND.getStatusCode()) {
 			throw new NotFoundException();
 		} else {
-			return _r.readEntity(ProjectModel.class);
+			return resp.readEntity(ProjectModel.class);
 		}
 	}
 
-	public static ProjectModel updateProject(String compId, ProjectModel p) {
-		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).put(p);
-		status = _r.getStatus();
+	public static ProjectModel updateProject(
+		String compId, 
+		ProjectModel p
+	) {
+		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(p.getId()).put(p);
+		status = resp.getStatus();
 		if (status == Status.OK.getStatusCode()) {
-			return _r.readEntity(ProjectModel.class);
+			return resp.readEntity(ProjectModel.class);
 		}
 		else {
 			return null;
@@ -155,8 +158,8 @@ public class ProjectTest extends AbstractTestClient {
 	}
 
 	public static int deleteProject(String compId, String projId) {
-		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).delete();
-		status = _r.getStatus();
+		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).delete();
+		status = resp.getStatus();
 		return status;
 	}
 
@@ -178,8 +181,8 @@ public class ProjectTest extends AbstractTestClient {
 		String compId, 
 		String projId
 	) {
-		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_RESOURCE).get();
-		status = _r.getStatus();
+		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_RESOURCE).get();
+		status = resp.getStatus();
 		if (status == Status.OK.getStatusCode()) {
 			return new ArrayList<ResourceModel>(webclient.getCollection(ResourceModel.class));
 		}

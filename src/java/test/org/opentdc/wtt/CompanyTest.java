@@ -101,7 +101,7 @@ public class CompanyTest extends AbstractTestClient {
 	) throws NotFoundException {
 		System.out.println("updating a company");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response resp = webclient.replacePath("/").put(c);
+		Response resp = webclient.replacePath("/").path(c.getId()).put(c);
 		status = resp.getStatus();
 		if(status == Status.NOT_FOUND.getStatusCode()) {
 			throw new NotFoundException();

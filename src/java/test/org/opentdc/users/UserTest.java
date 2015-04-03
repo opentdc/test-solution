@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.opentdc.service.exception.DuplicateException;
 import org.opentdc.service.exception.NotFoundException;
 import org.opentdc.service.exception.ValidationException;
-import org.opentdc.users.UserData;
+import org.opentdc.users.UserModel;
 
 import test.org.opentdc.AbstractTestClient;
 
@@ -57,16 +57,16 @@ public class UserTest extends AbstractTestClient {
 		initializeTests(APP_URI);
 	}
 
-	private List<UserData> list(
+	private List<UserModel> list(
 	) {
 		System.out.println("listing all users");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		List<UserData> _collection = (List<UserData>)webclient.replacePath("/").getCollection(UserData.class);
+		List<UserModel> _collection = (List<UserModel>)webclient.replacePath("/").getCollection(UserModel.class);
 		return _collection;
 	}
 
-	private UserData create(
-		UserData p
+	private UserModel create(
+		UserModel p
 	) throws DuplicateException {
 		System.out.println("creating a user");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
@@ -74,11 +74,11 @@ public class UserTest extends AbstractTestClient {
 		if(resp.getStatus() == Status.CONFLICT.getStatusCode()) {
 			throw new DuplicateException();
 		} else {
-			return resp.readEntity(UserData.class);
+			return resp.readEntity(UserModel.class);
 		}
 	}
 
-	private UserData read(
+	private UserModel read(
 		String id
 	) throws NotFoundException {
 		System.out.println("reading a user");
@@ -87,17 +87,17 @@ public class UserTest extends AbstractTestClient {
 		if(resp.getStatus() == Status.NOT_FOUND.getStatusCode()) {
 			throw new NotFoundException();
 		} else {
-			return resp.readEntity(UserData.class);
+			return resp.readEntity(UserModel.class);
 		}
 	}
 
-	private UserData update(
-		UserData p
+	private UserModel update(
+		UserModel p
 	) {
 		System.out.println("updating a user");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response resp = webclient.replacePath("/").put(p);
-		return resp.readEntity(UserData.class);
+		Response resp = webclient.replacePath("/").path(p.getId()).put(p);
+		return resp.readEntity(UserModel.class);
 	}
 
 	private void delete(
@@ -128,22 +128,22 @@ public class UserTest extends AbstractTestClient {
 		deleteAll();
 		assertEquals("there should be no user data left", 0, count());
 		
-		UserData _p0 = new UserData();
+		UserModel _p0 = new UserModel();
 		// TODO: set some attributes manually
 		assertNull("initially, there should be no ID", _p0.getId());
 		assertEquals("there should be no data to start with",
 				0, count());
-		UserData _p1 = create(_p0);
+		UserModel _p1 = create(_p0);
 		assertNotNull("a unique ID should be set", _p1.getId());
 		// TODO: all other attributes should be the same.
 
-		UserData _p2 = create(new UserData());
+		UserModel _p2 = create(new UserModel());
 		assertNotNull("a unique ID should be set", _p2.getId());
 		assertNotSame("IDs should be different", _p1.getId(), _p2.getId());
 		// TODO: check on the default attribute values of _p2
 		// TODO: try to set invalid data attributes
 
-		UserData _p3 = create(new UserData());
+		UserModel _p3 = create(new UserModel());
 		assertNotNull("a unique ID should be set", _p3.getId());
 		assertNotSame("IDs should be different", _p2.getId(), _p3.getId());
 		assertNotSame("IDs should be different", _p1.getId(), _p3.getId());
@@ -155,9 +155,9 @@ public class UserTest extends AbstractTestClient {
 			System.out.println("DuplicateException was raised correctly when trying to create a duplicate");
 			// test for exception message
 		}
-		List<UserData> _l = list();
+		List<UserModel> _l = list();
 		System.out.println("list() = <" + _l + ">");
-		UserData _p11 = read(_p1.getId());
+		UserModel _p11 = read(_p1.getId());
 		assertEquals("IDs should be equal when read twice", _p1.getId(),
 				_p11.getId());
 		// TODO: same for all attributes

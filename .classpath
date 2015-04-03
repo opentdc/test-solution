@@ -9,7 +9,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ addressbook-service (jre-1.7)"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ addressbooks-service (jre-1.7)"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ services-generic (jre-1.7)"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ users-service (jre-1.7)"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ wtt-service (jre-1.7)"/>

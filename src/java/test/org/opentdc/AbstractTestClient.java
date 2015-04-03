@@ -31,7 +31,7 @@ import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.opentdc.addressbooks.AddressbookService;
+import org.opentdc.addressbooks.AddressbooksService;
 
 public abstract class AbstractTestClient {
 
@@ -43,7 +43,7 @@ public abstract class AbstractTestClient {
 	) {
 		System.out.println("initializing");
 		JAXRSClientFactoryBean _sf = new JAXRSClientFactoryBean();
-		_sf.setResourceClass(AddressbookService.class);
+		_sf.setResourceClass(AddressbooksService.class);
 		_sf.setAddress(uri);
 		BindingFactoryManager _manager = _sf.getBus().getExtension(BindingFactoryManager.class);
 		JAXRSBindingFactory _factory = new JAXRSBindingFactory();
