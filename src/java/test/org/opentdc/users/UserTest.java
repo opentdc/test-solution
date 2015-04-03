@@ -49,12 +49,12 @@ import test.org.opentdc.AbstractTestClient;
 
 public class UserTest extends AbstractTestClient {
 	
-	private static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/users/";
+	private static final String API = "api/users/";
 
 	@BeforeClass
 	public static void initializeTests() {
 		System.out.println("initializing");
-		initializeTests(APP_URI);
+		initializeTests(API);
 	}
 
 	private List<UserModel> list(

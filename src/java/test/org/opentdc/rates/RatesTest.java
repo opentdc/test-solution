@@ -35,12 +35,12 @@ import test.org.opentdc.AbstractTestClient;
 
 public class RatesTest extends AbstractTestClient {
 
-	private static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/rate/";
+	private static final String API = "api/rate/";
 
 	@BeforeClass
 	public static void initializeTests(
 	) {
-		initializeTests(APP_URI);
+		initializeTests(API);
 	}
 	
 	private List<RatesModel> list(

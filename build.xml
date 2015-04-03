@@ -60,9 +60,7 @@
 		>
 			<classpath refid="junit.class.path" />
 			<formatter type="xml" />
-			<sysproperty key="build.java.platform" value="${java.build.platform}" />
-			<sysproperty key="build.target.platform" value="${java.build.platform}" />
-			<sysproperty key="junit.test.tmp" value="${tmp.dir}" />
+			<sysproperty key="service.url" value="${service.url}" />
 			<batchtest todir="build/${java.build.platform}/log/junit/xml">
 				<fileset dir="${basedir}/src/java">
 					<include name="**/*Test.java" />

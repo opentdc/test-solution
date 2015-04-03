@@ -35,12 +35,12 @@ import test.org.opentdc.AbstractTestClient;
 
 public class WorkRecordsTest extends AbstractTestClient {
 
-	private static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/workrecord/";
+	private static final String API = "api/workrecord/";
 
 	@BeforeClass
 	public static void initializeTests(
 	) {
-		initializeTests(APP_URI);
+		initializeTests(API);
 	}
 	
 	private List<WorkRecordModel> list(

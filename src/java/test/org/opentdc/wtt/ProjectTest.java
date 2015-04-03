@@ -45,7 +45,7 @@ import test.org.opentdc.AbstractTestClient;
 
 public class ProjectTest extends AbstractTestClient {
 	
-	public static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/company/";	
+	public static final String API = "api/company/";	
 	
 	private static final String MY_XRI = "MyXri";
 	private static final String MY_TITLE = "MyTitle";
@@ -62,7 +62,7 @@ public class ProjectTest extends AbstractTestClient {
 	public static void initializeTests(
 	) {
 		System.out.println("initializing");
-		initializeTests(APP_URI);
+		initializeTests(API);
 		company = CompanyTest.createCompany(new CompanyModel());
 	}
 	

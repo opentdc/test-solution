@@ -39,12 +39,23 @@ public abstract class AbstractTestClient {
 	protected static int status;
 	
 	public static void initializeTests(
-		String uri
+		String api
 	) {
+		String serviceUrl = "http://localhost:8080/opentdc-services-test/";
+		if(
+			System.getProperty("service.url") != null && 
+			System.getProperty("service.url").startsWith("http://")
+		) {
+			serviceUrl = System.getProperty("service.url");
+		}
+		if(!serviceUrl.endsWith("/")) {
+			serviceUrl = serviceUrl + "/";
+		}
+		String apiUrl = serviceUrl + api;
 		System.out.println("initializing");
 		JAXRSClientFactoryBean _sf = new JAXRSClientFactoryBean();
 		_sf.setResourceClass(AddressbooksService.class);
-		_sf.setAddress(uri);
+		_sf.setAddress(apiUrl);
 		BindingFactoryManager _manager = _sf.getBus().getExtension(BindingFactoryManager.class);
 		JAXRSBindingFactory _factory = new JAXRSBindingFactory();
 		_factory.setBus(_sf.getBus());

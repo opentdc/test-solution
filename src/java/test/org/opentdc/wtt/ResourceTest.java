@@ -41,7 +41,7 @@ import test.org.opentdc.AbstractTestClient;
 
 public class ResourceTest extends AbstractTestClient {
 	
-	public static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/company/";	
+	public static final String API = "api/company/";	
 	
 	private static CompanyModel company = null;
 	private static final int LIMIT = 10;
@@ -50,7 +50,7 @@ public class ResourceTest extends AbstractTestClient {
 	public static void initializeTests(
 	) {
 		System.out.println("initializing");
-		initializeTests(APP_URI);
+		initializeTests(API);
 		company = CompanyTest.createCompany(new CompanyModel());
 	}
 	
