@@ -13,5 +13,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ services-generic (jre-1.7)"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ users-service (jre-1.7)"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ wtt-service (jre-1.7)"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ rates-service (jre-1.7)"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/opentdc 1 ~ workrecords-service (jre-1.7)"/>
 	<classpathentry kind="output" path="build/jre-1.7/eclipse"/>
 </classpath>

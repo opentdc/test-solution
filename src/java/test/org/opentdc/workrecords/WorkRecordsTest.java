@@ -23,15 +23,38 @@
  */
 package test.org.opentdc.workrecords;
 
-import static org.junit.Assert.fail;
+import java.util.List;
 
+import javax.ws.rs.core.MediaType;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opentdc.workrecords.WorkRecordModel;
 
-public class WorkRecordsTest {
+import test.org.opentdc.AbstractTestClient;
+
+public class WorkRecordsTest extends AbstractTestClient {
+
+	private static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/workrecord/";
+
+	@BeforeClass
+	public static void initializeTests(
+	) {
+		initializeTests(APP_URI);
+	}
+	
+	private List<WorkRecordModel> list(
+	) {
+		System.out.println("listing all resources");
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		return (List<WorkRecordModel>)webclient.replacePath("/").getCollection(WorkRecordModel.class);
+	}
 
 	@Test
-	public void test() {
-		fail("Not yet implemented");
+	public void test(
+	) {
+		List<WorkRecordModel> rates = list();
+		System.out.println("list() = <" + rates + ">");
 	}
 
 }

@@ -23,15 +23,38 @@
  */
 package test.org.opentdc.rates;
 
-import static org.junit.Assert.fail;
+import java.util.List;
 
+import javax.ws.rs.core.MediaType;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opentdc.rates.RatesModel;
 
-public class RatesTest {
+import test.org.opentdc.AbstractTestClient;
+
+public class RatesTest extends AbstractTestClient {
+
+	private static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/rate/";
+
+	@BeforeClass
+	public static void initializeTests(
+	) {
+		initializeTests(APP_URI);
+	}
+	
+	private List<RatesModel> list(
+	) {
+		System.out.println("listing all rates");
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		return (List<RatesModel>)webclient.replacePath("/").getCollection(RatesModel.class);
+	}
 
 	@Test
-	public void test() {
-		fail("Not yet implemented");
+	public void test(
+	) {
+		List<RatesModel> rates = list();
+		System.out.println("list() = <" + rates + ">");
 	}
 
 }

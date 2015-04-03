@@ -21,58 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package test.org.opentdc.wtt;
+package test.org.opentdc;
 
 import javax.ws.rs.core.MediaType;
+
 import org.apache.cxf.binding.BindingFactoryManager;
 import org.apache.cxf.jaxrs.JAXRSBindingFactory;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
-import org.junit.runner.RunWith;
-import org.junit.runner.notification.Failure;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-import org.opentdc.wtt.WttService;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.opentdc.addressbooks.AddressbookService;
 
-@RunWith(Suite.class)
-@SuiteClasses({ CompanyTest.class, ProjectTest.class, ResourceTest.class })
-public class WttTest {
+public abstract class AbstractTestClient {
 
-	public static WebClient initWebClient(String uri) {
+	protected static WebClient webclient = null;
+	protected static int status;
+	
+	public static void initializeTests(
+		String uri
+	) {
+		System.out.println("initializing");
 		JAXRSClientFactoryBean _sf = new JAXRSClientFactoryBean();
-		_sf.setResourceClass(WttService.class);
+		_sf.setResourceClass(AddressbookService.class);
 		_sf.setAddress(uri);
-		BindingFactoryManager _manager = _sf.getBus().getExtension(
-				BindingFactoryManager.class);
+		BindingFactoryManager _manager = _sf.getBus().getExtension(BindingFactoryManager.class);
 		JAXRSBindingFactory _factory = new JAXRSBindingFactory();
 		_factory.setBus(_sf.getBus());
-		_manager.registerBindingFactory(JAXRSBindingFactory.JAXRS_BINDING_ID,
-				_factory);
-		WebClient _wc = _sf.createWebClient();
-		_wc.type(MediaType.APPLICATION_JSON).accept(
-				MediaType.APPLICATION_JSON);
-		return _wc;
+		_manager.registerBindingFactory(JAXRSBindingFactory.JAXRS_BINDING_ID, _factory);
+		// AddressbookService _service = _sf.create(AddressbookService.class);
+		webclient = _sf.createWebClient();
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);		
 	}
 
-	/********************************** main *********************************/
-	/**
-	 * Main method to run the JUnit tests outside Eclipse via standard Java code
-	 * e.g. with ant.
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		System.out.println("Testing Company...");
-		printResult(JUnitCore.runClasses(CompanyTest.class));
-		System.out.println("Testing Project...");
-		printResult(JUnitCore.runClasses(ProjectTest.class));
-		System.out.println("Tests completed.");
+	public static int getStatus(
+	) {
+		return status;
 	}
 	
-	private static void printResult(Result result) {
-		for (Failure _failure : result.getFailures()) {
-			System.out.println(_failure.toString());
-		}
+	@After
+	public void reset(
+	) {
+		System.out.println("resetting the web client");
+		webclient.reset();
 	}
+
+	@AfterClass
+	public static void cleanup(
+	) {
+		System.out.println("cleaning up");
+		webclient.close();
+	}
+	
 }

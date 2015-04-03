@@ -7,18 +7,26 @@
 	<property name="junit.home" location="${env.JUNIT_HOME}" />
 	<property name="src.dir" value="src/java" />
 	<property name="build.dir" value="build/${java.build.platform}/bin" />
+	<property name="tmp.dir" value="build/${java.build.platform}/temp" />
 	
 	<path id="project.class.path">
-		<fileset dir="${cxf.lib}" includes="*.jar" />
-		<fileset dir="${build.dir}" includes="*.class" />
+		<fileset dir="${cxf.lib}" includes="**/*.jar" />
 		<fileset dir="../${java.build.platform}/services-generic/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/addressbook-service/lib/" includes="*.jar" />
+		<fileset dir="../${java.build.platform}/rates-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/users-service/lib/" includes="*.jar" />
+		<fileset dir="../${java.build.platform}/workrecords-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/wtt-service/lib/" includes="*.jar" />
 		<fileset dir="../opt/google/${java.build.platform}/gson/lib/" includes="*.jar" />
 		<fileset dir="../opt/junit/${java.build.platform}/junit/lib/" includes="*.jar" />
 	</path>
 
+	<path id="junit.class.path">
+		<path refid="project.class.path" />
+		<fileset dir="../opt/netty/${java.build.platform}/netty/lib/" includes="*.jar" />
+		<pathelement location="${build.dir}" />
+	</path>
+	
 	<target name="javac" description="Compile java source">
 		<mkdir dir="${build.dir}"/>
 		<javac includeantruntime="false" srcdir="${src.dir}" includes="**" encoding="utf-8"
@@ -37,6 +45,36 @@
 	
 	<target name="clean" description="Cleans this project">
 		<delete dir="${build.dir}" failonerror="false" />
+	</target>
+
+	<target name="test" depends="deliverables">
+		<mkdir dir="${tmp.dir}" />
+		<mkdir dir="build/${java.build.platform}/log/junit/xml" />
+		<mkdir dir="build/${java.build.platform}/log/junit/html" />
+		<junit
+			printsummary="yes" 
+			fork="yes" 
+			haltonfailure="no" 
+			haltonerror="no"
+			tempdir="${tmp.dir}"
+		>
+			<classpath refid="junit.class.path" />
+			<formatter type="xml" />
+			<sysproperty key="build.java.platform" value="${java.build.platform}" />
+			<sysproperty key="build.target.platform" value="${java.build.platform}" />
+			<sysproperty key="junit.test.tmp" value="${tmp.dir}" />
+			<batchtest todir="build/${java.build.platform}/log/junit/xml">
+				<fileset dir="${basedir}/src/java">
+					<include name="**/*Test.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<junitreport todir="build/${java.build.platform}/log/junit/xml">
+			<fileset dir="build/${java.build.platform}/log/junit/xml">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="build/${java.build.platform}/log/junit/html"/>
+		</junitreport>		
 	</target>
 	
 </project>

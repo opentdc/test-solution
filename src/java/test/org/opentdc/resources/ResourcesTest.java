@@ -23,15 +23,38 @@
  */
 package test.org.opentdc.resources;
 
-import static org.junit.Assert.fail;
+import java.util.List;
 
+import javax.ws.rs.core.MediaType;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opentdc.wtt.ResourceModel;
 
-public class ResourcesTest {
+import test.org.opentdc.AbstractTestClient;
+
+public class ResourcesTest extends AbstractTestClient {
+
+	private static final String APP_URI = "http://localhost:8080/opentdc-services-test/api/resource/";
+
+	@BeforeClass
+	public static void initializeTests(
+	) {
+		initializeTests(APP_URI);
+	}
+	
+	private List<ResourceModel> list(
+	) {
+		System.out.println("listing all resources");
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		return (List<ResourceModel>)webclient.replacePath("/").getCollection(ResourceModel.class);
+	}
 
 	@Test
-	public void test() {
-		fail("Not yet implemented");
+	public void test(
+	) {
+		List<ResourceModel> rates = list();
+		System.out.println("list() = <" + rates + ">");
 	}
 
 }
