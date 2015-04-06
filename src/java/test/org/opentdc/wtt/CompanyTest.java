@@ -40,7 +40,6 @@ import org.junit.Test;
 import org.opentdc.service.exception.DuplicateException;
 import org.opentdc.service.exception.NotFoundException;
 import org.opentdc.wtt.CompanyModel;
-import org.opentdc.wtt.ProjectModel;
 
 import test.org.opentdc.AbstractTestClient;
 
@@ -51,7 +50,6 @@ public class CompanyTest extends AbstractTestClient {
 	private static final String MY_XRI = "MyXri";
 	private static final String MY_TITLE = "MyTitle";
 	private static final String MY_DESC = "MyDescription";
-	private static final int LIMIT = 10;
 	
 	@BeforeClass
 	public static void initializeTests(
@@ -130,10 +128,7 @@ public class CompanyTest extends AbstractTestClient {
 	@Test
 	public void testNewCompany() {
 		// System.out.println("*** testNew:");
-		CompanyModel _c = new CompanyModel();
-		
-		assertNotNull("ID should be set:", _c.getId());
-		assertEquals("default xri should be set:", CompanyModel.DEF_XRI, _c.getXri());
+		CompanyModel _c = new CompanyModel();		
 		assertEquals("default title should be set:", CompanyModel.DEF_TITLE, _c.getTitle());
 		assertEquals("default description should be set:", CompanyModel.DEF_DESC, _c.getDescription());
 		assertNotNull("project list should not be null:", _c.getProjects());
@@ -144,52 +139,11 @@ public class CompanyTest extends AbstractTestClient {
 	public void testCompanyAttributeChange() {		
 		// System.out.println("*** testCompanyAttributeChange:");
 		CompanyModel _c = new CompanyModel();
-		_c.setXri(MY_XRI);
 		_c.setTitle(MY_TITLE);
 		_c.setDescription(MY_DESC);
-		assertEquals("xri should have changed:", MY_XRI, _c.getXri());
 		assertEquals("title should have changed:", MY_TITLE, _c.getTitle());
 		assertEquals("description should have changed:", MY_DESC, _c.getDescription());
 		// TODO: try to set invalid data attributes
-	}
-	
-	@Test
-	public void testCompanyProjectAttribute() {
-		// System.out.println("*** testCompanyProjectAttribute:");
-		CompanyModel _c = new CompanyModel();
-		assertNotNull("project list should not be null:", _c.getProjects());
-		assertEquals("there should be zero projects (1):", 0, _c.getProjects().size());
-		
-		ArrayList<String> _ids = new ArrayList<String>();
-		ProjectModel _p = null;
-		for (int i = 0; i < LIMIT; i++) {
-			_p = new ProjectModel("title" + i, "description" + i);
-			_ids.add(_p.getId());
-			_c.addProject(_p);
-		}
-		assertEquals("there should be " + LIMIT + " projects:", LIMIT, _c.getProjects().size());
-		for (int i = 0; i < LIMIT; i++) {
-			assertEquals("removeProject() should return with true:", true, _c.removeProject(_ids.get(i)));
-		}		
-		assertEquals("there should be zero projects (2):", 0, _c.getProjects().size());
-		
-		ArrayList<ProjectModel> _projects = new ArrayList<ProjectModel>();
-		_ids = new ArrayList<String>();
-		for (int i = 0; i < LIMIT; i++) {
-			_p = new ProjectModel("title" + i, "description" + i);
-			_ids.add(_p.getId());
-			_projects.add(_p);
-		}
-		_c.setProjects(_projects);
-		assertEquals("there should be " + LIMIT + " projects (3):", LIMIT, _c.getProjects().size());
-		ArrayList<ProjectModel> _projects2 = _c.getProjects();
-		assertEquals("there should be " + LIMIT + " projects (4):", LIMIT, _projects2.size());
-		
-		for (int i = 0; i < LIMIT; i++) {
-			assertEquals("removeProject() should return with true:", true, _c.removeProject(_ids.get(i)));
-		}
-		assertEquals("there should be zero projects (5):", 0, _c.getProjects().size());
-		assertNotNull("project list should not be null:", _c.getProjects());
 	}
 	
 	@Test
@@ -200,29 +154,21 @@ public class CompanyTest extends AbstractTestClient {
 		
 		int _existingCompanies = countCompanies();
 		
-		assertNotNull("ID should be set:", _c1.getId());
-		assertNotNull("ID should be set:", _c2.getId());
-		assertNotSame("IDs should be different:", _c1.getId(), _c2.getId());
 		assertEquals("there should be no company to start with:", 0, countCompanies() - _existingCompanies);
 		
 		CompanyModel _c3 = createCompany(_c1);
 		CompanyModel _c4 = createCompany(_c2);
 		
-		assertNotNull("ID should be set:", _c1.getId());
-		assertNotNull("ID should be set:", _c2.getId());
 		assertNotNull("ID should be set:", _c3.getId());
 		assertNotNull("ID should be set:", _c4.getId());
-		assertNotSame("IDs should be different:", _c1.getId(), _c2.getId());
-		assertEquals("IDs should be equal:", 		_c1.getId(), _c3.getId());
 		assertNotSame("IDs should be different:", _c3.getId(), _c4.getId());
-		assertEquals("IDs should be equal:", 		_c4.getId(), _c2.getId());
 		assertEquals("there should be two companies:", 2, countCompanies() - _existingCompanies);
 				
-		deleteCompany(_c1.getId());
-		deleteCompany(_c2.getId());
+		deleteCompany(_c3.getId());
+		deleteCompany(_c4.getId());
 		assertEquals("there should be no company left:", 0, countCompanies() - _existingCompanies);
 	}
-			
+
 	@Test
 	public void testCompanyList(
 	) {
@@ -295,8 +241,8 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("createCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
 		assertEquals("there should be one additional company:", 1, countCompanies() - _existingCompanies);
 		assertNotNull("ID should be set:", _c1.getId());
-		assertEquals("ID should be unchanged:", _c1.getId(), _c0.getId());
-		assertEquals("default xri should be set:", CompanyModel.DEF_XRI, _c1.getXri());
+		assertNotNull("ID should be set:", _c1.getId());
+		assertNotNull("xri should be set:", _c1.getXri());
 		assertEquals("default title should be set:", CompanyModel.DEF_TITLE, _c1.getTitle());
 		assertEquals("default description should be set:", CompanyModel.DEF_DESC, _c1.getDescription());
 		assertNotNull("project list should not be null:", _c1.getProjects());
@@ -308,27 +254,22 @@ public class CompanyTest extends AbstractTestClient {
 	@Test
 	public void testCompanyDoubleCreate(
 	) {
-		// System.out.println("*** testCompanyDoubleCreate:");
-		
+		// System.out.println("*** testCompanyDoubleCreate:");		
 		CompanyModel _c1 = new CompanyModel();
 		int _existingCompanies = countCompanies();
 		CompanyModel _c2 = createCompany(_c1);
 		assertEquals("createCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
 		assertEquals("there should be one additional company:", 1, countCompanies() - _existingCompanies);
-		assertNotNull("ID should be set:", _c2.getId());
-		assertEquals("ID should be unchanged:", _c1.getId(), _c2.getId());		
-		
+		assertNotNull("ID should be set:", _c2.getId());		
 		try {
 			@SuppressWarnings("unused")
-			CompanyModel _c3 = createCompany(_c1);
+			CompanyModel _c3 = createCompany(_c2);
 			fail("creating a double object should result in status CONFLICT(409)");
 		} catch(DuplicateException e) {}
-		deleteCompany(_c1.getId());
-		assertEquals("deleteCompany() should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), getStatus());
+		deleteCompany(_c2.getId());
 		assertEquals("there should be no additional company left:", 0, countCompanies() - _existingCompanies);
-		
 	}
-	
+
 	@Test
 	public void testCompanyMultiRead(
 	) {
@@ -336,16 +277,11 @@ public class CompanyTest extends AbstractTestClient {
 		CompanyModel _c1 = new CompanyModel();
 		int _existingCompanies = countCompanies();
 		CompanyModel _c2 = createCompany(_c1);
-		CompanyModel _c3 = readCompany(_c1.getId());
+		CompanyModel _c3 = readCompany(_c2.getId());
 		assertEquals("Reading should return with status OK:", Status.OK.getStatusCode(), getStatus());
-		assertEquals("ID should be unchanged after read:", _c1.getId(), _c3.getId());
+		assertEquals("ID should be unchanged after read:", _c2.getId(), _c3.getId());		
+		CompanyModel _c4 = readCompany(_c2.getId());
 		
-		CompanyModel _c4 = readCompany(_c1.getId());
-		assertEquals("Reading (2) should return with status OK:", Status.OK.getStatusCode(), getStatus());
-		assertEquals("ID should be unchanged after read (2):", _c1.getId(), _c4.getId());
-		assertEquals("xri should be unchanged after read (2):", _c1.getXri(), _c4.getXri());
-		assertEquals("title should be unchanged after read (2):", _c1.getTitle(), _c4.getTitle());
-		assertEquals("description should be unchanged after read (2):", _c1.getDescription(), _c4.getDescription());
 		// but: the two objects are not equal !
 		assertEquals("ID should be the same:", _c3.getId(), _c4.getId());
 		assertEquals("xri should be the same:", _c3.getXri(), _c4.getXri());
@@ -357,8 +293,7 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("title should be the same:", _c3.getTitle(), _c2.getTitle());
 		assertEquals("description should be the same:", _c3.getDescription(), _c2.getDescription());
 		
-		deleteCompany(_c1.getId());
-		assertEquals("deleteCompany() should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), getStatus());
+		deleteCompany(_c2.getId());
 		assertEquals("there should be no additional company left:", 0, countCompanies() - _existingCompanies);
 	}
 	
@@ -368,47 +303,41 @@ public class CompanyTest extends AbstractTestClient {
 		// System.out.println("*** testCompanyUpdate:");
 		int _existingCompanies = countCompanies();
 		CompanyModel _c1 = new CompanyModel();
-		createCompany(_c1);
+		CompanyModel _c2 = createCompany(_c1);
 		
 		// change the attributes
-		_c1.setXri(MY_XRI);
-		_c1.setTitle(MY_TITLE);
-		_c1.setDescription(MY_DESC);
-		CompanyModel _c2 = updateCompany(_c1);
+		_c2.setTitle(MY_TITLE);
+		_c2.setDescription(MY_DESC);
+		CompanyModel _c3 = updateCompany(_c2);
 		assertEquals("updateCompany() should return with status OK (1):", Status.OK.getStatusCode(), getStatus());
 		assertEquals("there should be one additional company (1):", 1, countCompanies() - _existingCompanies);
-		assertNotNull("ID should be set (1):", _c2.getId());
-		assertEquals("ID should be unchanged (1):", _c1.getId(), _c2.getId());	
-		assertEquals("xri should have changed (1):", MY_XRI, _c2.getXri());
-		assertEquals("title should have changed (1):", MY_TITLE, _c2.getTitle());
-		assertEquals("description should have changed (1):", MY_DESC, _c2.getDescription());
+		assertNotNull("ID should be set (1):", _c3.getId());
+		assertEquals("ID should be unchanged (1):", _c2.getId(), _c3.getId());	
+		assertEquals("title should have changed (1):", MY_TITLE, _c3.getTitle());
+		assertEquals("description should have changed (1):", MY_DESC, _c3.getDescription());
 
 		// reset the attributes
-		_c1.setXri(CompanyModel.DEF_XRI);
-		_c1.setTitle(CompanyModel.DEF_TITLE);
-		_c1.setDescription(CompanyModel.DEF_DESC);
-		CompanyModel _c3 = updateCompany(_c1);
+		_c2.setTitle(CompanyModel.DEF_TITLE);
+		_c2.setDescription(CompanyModel.DEF_DESC);
+		CompanyModel _c4 = updateCompany(_c2);
 		assertEquals("updateCompany() should return with status OK (2):", Status.OK.getStatusCode(), getStatus());
 		assertEquals("there should be one additional company (2):", 1, countCompanies() - _existingCompanies);
-		assertNotNull("ID should be set (2):", _c3.getId());
-		assertEquals("ID should be unchanged (2):", _c1.getId(), _c3.getId());	
-		assertEquals("xri should have changed (2):", CompanyModel.DEF_XRI, _c3.getXri());
-		assertEquals("title should have changed (2):", CompanyModel.DEF_TITLE, _c3.getTitle());
-		assertEquals("description should have changed (2):", CompanyModel.DEF_DESC, _c3.getDescription());
+		assertNotNull("ID should be set (2):", _c4.getId());
+		assertEquals("ID should be unchanged (2):", _c2.getId(), _c4.getId());	
+		assertEquals("title should have changed (2):", CompanyModel.DEF_TITLE, _c4.getTitle());
+		assertEquals("description should have changed (2):", CompanyModel.DEF_DESC, _c4.getDescription());
 
-		deleteCompany(_c3.getId());
+		deleteCompany(_c2.getId());
 	}
 	
 	@Test
 	public void testCompanyDelete(
 	) {
 		// System.out.println("*** testCompanyDelete:");
-		CompanyModel _c = new CompanyModel();	
+		CompanyModel _c0 = new CompanyModel();	
 		int _existingCompanies = countCompanies();
-		createCompany(_c);
-		deleteCompany(_c.getId());
-		
-		assertEquals("deleteCompany() should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), getStatus());
+		CompanyModel _c1 = createCompany(_c0);
+		deleteCompany(_c1.getId());		
 		assertEquals("there should be no additional company left:", 0, countCompanies() - _existingCompanies);
 	}
 	
@@ -416,25 +345,24 @@ public class CompanyTest extends AbstractTestClient {
 	public void testCompanyDoubleDelete(
 	) {
 		// System.out.println("*** testCompanyDoubleDelete:");
-		CompanyModel _c = new CompanyModel();
+		CompanyModel _c0 = new CompanyModel();
 		int _existingCompanies = countCompanies();
-		createCompany(_c);
-		readCompany(_c.getId());
+		CompanyModel _c1 = createCompany(_c0);
+		readCompany(_c1.getId());
 		assertEquals("readCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
-		deleteCompany(_c.getId());
-		assertEquals("deleteCompany() should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), getStatus());
+		deleteCompany(_c1.getId());
 		assertEquals("there should be no additional company left:", 0, countCompanies() - _existingCompanies);
 		try {
-			readCompany(_c.getId());		
+			readCompany(_c1.getId());		
 			fail("read() of a deleted object should return with status NOT_FOUND");
 		} catch(NotFoundException e) {}
 		try {
-			deleteCompany(_c.getId());
+			deleteCompany(_c1.getId());
 			fail("2nd deleteCompany() should return with status NOT_FOUND");
 		} catch(NotFoundException e) {}
 		assertEquals("there should be no additional company left:", 0, countCompanies() - _existingCompanies);
 		try {
-			readCompany(_c.getId());
+			readCompany(_c1.getId());
 			fail("readCompany() on deleted object should still return with status NOT_FOUND");
 		} catch(NotFoundException e) {}
 	}

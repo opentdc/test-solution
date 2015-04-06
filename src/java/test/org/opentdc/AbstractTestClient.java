@@ -37,8 +37,8 @@ public abstract class AbstractTestClient {
 
 	protected static WebClient webclient = null;
 	protected static int status;
-	
-	public static void initializeTests(
+
+	public static WebClient createWebClient(
 		String api
 	) {
 		String serviceUrl = "http://localhost:8080/opentdc-services-test/";
@@ -61,8 +61,15 @@ public abstract class AbstractTestClient {
 		_factory.setBus(_sf.getBus());
 		_manager.registerBindingFactory(JAXRSBindingFactory.JAXRS_BINDING_ID, _factory);
 		// AddressbookService _service = _sf.create(AddressbookService.class);
-		webclient = _sf.createWebClient();
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);		
+		WebClient webclient = _sf.createWebClient();
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		return webclient;
+	}
+	
+	public static void initializeTests(
+		String api
+	) {
+		webclient = createWebClient(api);
 	}
 
 	public static int getStatus(
