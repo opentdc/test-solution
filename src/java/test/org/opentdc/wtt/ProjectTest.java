@@ -39,7 +39,7 @@ import org.opentdc.service.exception.DuplicateException;
 import org.opentdc.service.exception.NotFoundException;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
-import org.opentdc.wtt.ResourceModel;
+import org.opentdc.wtt.ResourceRefModel;
 
 import test.org.opentdc.AbstractTestClient;
 
@@ -47,9 +47,10 @@ public class ProjectTest extends AbstractTestClient {
 	
 	public static final String API = "api/company/";	
 	
-	private static final String MY_XRI = "MyXri";
 	private static final String MY_TITLE = "MyTitle";
 	private static final String MY_DESC = "MyDescription";
+	private static final String MY_TITLE2 = "MyTitle2";
+	private static final String MY_DESC2 = "MyDescription2";
 	
 	public static final String PATH_EL_PROJECT = "project";
 	public static final String PATH_EL_RESOURCE = "resource";
@@ -177,17 +178,17 @@ public class ProjectTest extends AbstractTestClient {
 	
 	/***************************** resource **********************************/
 	// GET "/{cid}/project/{pid}/resource"
-	public static ArrayList<ResourceModel> listResources(
+	public static ArrayList<ResourceRefModel> listResources(
 		String compId, 
 		String projId
 	) {
 		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_RESOURCE).get();
 		status = resp.getStatus();
 		if (status == Status.OK.getStatusCode()) {
-			return new ArrayList<ResourceModel>(webclient.getCollection(ResourceModel.class));
+			return new ArrayList<ResourceRefModel>(webclient.getCollection(ResourceRefModel.class));
 		}
 		else {
-			return new ArrayList<ResourceModel>();
+			return new ArrayList<ResourceRefModel>();
 		}
 	}
 	
@@ -231,21 +232,7 @@ public class ProjectTest extends AbstractTestClient {
 		return new Integer(_countStr).intValue();
 	}
 	
-	/********************************** project tests *********************************/
-	@Test
-	public void testProjectNew() {
-		// System.out.println("*** testProjectNew:");
-		ProjectModel _p = new ProjectModel();
-		
-		Assert.assertEquals("default xri should be set:", CompanyModel.DEF_XRI, _p.getXri());
-		Assert.assertEquals("default title should be set:", CompanyModel.DEF_TITLE, _p.getTitle());
-		Assert.assertEquals("default description should be set:", CompanyModel.DEF_DESC, _p.getDescription());
-		Assert.assertNotNull("project list should not be null:", _p.getProjects());
-		Assert.assertEquals("zero projects should be listed:", 0, _p.getProjects().size());
-		Assert.assertNotNull("resource list should not be null:", _p.getResources());
-		Assert.assertEquals("zero resources should be listed:", 0, _p.getResources().size());
-	}
-	
+	/********************************** project tests *********************************/	
 	@Test
 	public void testProjectAttributeChange() {		
 		// System.out.println("*** testProjectAttributeChange:");
@@ -306,12 +293,7 @@ public class ProjectTest extends AbstractTestClient {
 
 		Assert.assertEquals("createProject() should return with status OK:", Status.OK.getStatusCode(), getStatus());
 		Assert.assertEquals("there should be one project:", 1, countProjects(getCompanyId()));
-		Assert.assertNotNull("ID should be set:", _p2.getId());
-		Assert.assertEquals("default title should be set:", CompanyModel.DEF_TITLE, _p2.getTitle());
-		Assert.assertEquals("default description should be set:", CompanyModel.DEF_DESC, _p2.getDescription());
-		Assert.assertNotNull("project list should not be null:", _p2.getProjects());
-		Assert.assertEquals("there should be zero subprojects:", 0, _p2.getProjects().size());
-		
+		Assert.assertNotNull("ID should be set:", _p2.getId());		
 		deleteProject(getCompanyId(), _p2.getId());
 	}
 	
@@ -342,11 +324,6 @@ public class ProjectTest extends AbstractTestClient {
 		Assert.assertEquals("there should be one parent project:", 1, countProjects(getCompanyId()));
 		Assert.assertEquals("there should be one subproject:", 1, countSubprojects(getCompanyId(), _parentProject.getId()));
 		Assert.assertNotNull("ID should be set:", _subProject.getId());
-		Assert.assertNotNull("xri should be set:", _subProject.getXri());
-		Assert.assertEquals("default title should be set:", CompanyModel.DEF_TITLE, _subProject.getTitle());
-		Assert.assertEquals("default description should be set:", CompanyModel.DEF_DESC, _subProject.getDescription());
-		Assert.assertNotNull("project list should not be null:", _subProject.getProjects());
-		Assert.assertEquals("zero projects should be listed:", 0, _subProject.getProjects().size());
 		
 		deleteProject(getCompanyId(), _subProject.getId());
 		deleteProject(getCompanyId(), _parentProject.getId());
@@ -460,12 +437,10 @@ public class ProjectTest extends AbstractTestClient {
 		ProjectModel _p4 = readProject(getCompanyId(), _p2.getId());
 		// but: the two objects are not equal !
 		Assert.assertEquals("ID should be the same:", _p3.getId(), _p4.getId());
-		Assert.assertEquals("xri should be the same:", _p3.getXri(), _p4.getXri());
 		Assert.assertEquals("title should be the same:", _p3.getTitle(), _p4.getTitle());
 		Assert.assertEquals("description should be the same:", _p3.getDescription(), _p4.getDescription());
 		
 		Assert.assertEquals("ID should be the same:", _p3.getId(), _p2.getId());
-		Assert.assertEquals("xri should be the same:", _p3.getXri(), _p2.getXri());
 		Assert.assertEquals("title should be the same:", _p3.getTitle(), _p2.getTitle());
 		Assert.assertEquals("description should be the same:", _p3.getDescription(), _p2.getDescription());
 		
@@ -490,15 +465,15 @@ public class ProjectTest extends AbstractTestClient {
 		Assert.assertEquals("description should have changed:", MY_DESC, _p2.getDescription());
 
 		// reset the attributes
-		_p1.setTitle(CompanyModel.DEF_TITLE);
-		_p1.setDescription(CompanyModel.DEF_DESC);
+		_p1.setTitle(MY_TITLE2);
+		_p1.setDescription(MY_DESC2);
 		ProjectModel _p3 = updateProject(getCompanyId(), _p1);
 		Assert.assertEquals("updateCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
 		Assert.assertEquals("there should be one additional company:", 1, countProjects(getCompanyId()));
 		Assert.assertNotNull("ID should be set:", _p3.getId());
 		Assert.assertEquals("ID should be unchanged:", _p1.getId(), _p3.getId());	
-		Assert.assertEquals("title should have changed:", CompanyModel.DEF_TITLE, _p3.getTitle());
-		Assert.assertEquals("description should have changed:", CompanyModel.DEF_DESC, _p3.getDescription());
+		Assert.assertEquals("title should have changed:", MY_TITLE2, _p3.getTitle());
+		Assert.assertEquals("description should have changed:", MY_DESC2, _p3.getDescription());
 
 		deleteProject(getCompanyId(), _p3.getId());
 	}

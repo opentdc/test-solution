@@ -35,7 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
-import org.opentdc.wtt.ResourceModel;
+import org.opentdc.wtt.ResourceRefModel;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.resources.ResourcesTest;
@@ -78,7 +78,7 @@ public class ResourceTest extends AbstractTestClient {
 			assertEquals("addResource() should return with status OK:", Status.OK.getStatusCode(), ProjectTest.getStatus());
 		}
 		assertEquals("there should be " + LIMIT + " resources:", LIMIT, ProjectTest.countResources(getCompanyId(), _p2.getId()));
-		ArrayList<ResourceModel> _remoteList = ProjectTest.listResources(getCompanyId(), _p2.getId());
+		ArrayList<ResourceRefModel> _remoteList = ProjectTest.listResources(getCompanyId(), _p2.getId());
 		assertEquals("listResources() should return with status OK:", Status.OK.getStatusCode(), ProjectTest.getStatus());
 		assertEquals("there should be still " + LIMIT + " resources:", LIMIT, ProjectTest.countResources(getCompanyId(), _p2.getId()));
 		assertEquals("there should be " + LIMIT + " resources locally:", LIMIT, _localList.size());
