@@ -47,9 +47,10 @@ public class CompanyTest extends AbstractTestClient {
 	
 	public static final String API = "api/company/";	
 	
-	private static final String MY_XRI = "MyXri";
 	private static final String MY_TITLE = "MyTitle";
 	private static final String MY_DESC = "MyDescription";
+	private static final String MY_TITLE2 = "MyTitle2";
+	private static final String MY_DESC2 = "MyDescription2";
 	
 	@BeforeClass
 	public static void initializeTests(
@@ -124,17 +125,7 @@ public class CompanyTest extends AbstractTestClient {
 		return webclient.replacePath("count").get(Integer.class);
 	}
 	
-	/********************************** company tests *********************************/
-	@Test
-	public void testNewCompany() {
-		// System.out.println("*** testNew:");
-		CompanyModel _c = new CompanyModel();		
-		assertEquals("default title should be set:", CompanyModel.DEF_TITLE, _c.getTitle());
-		assertEquals("default description should be set:", CompanyModel.DEF_DESC, _c.getDescription());
-		assertNotNull("project list should not be null:", _c.getProjects());
-		assertEquals("zero projects should be listed:", 0, _c.getProjects().size());
-	}
-	
+	/********************************** company tests *********************************/	
 	@Test
 	public void testCompanyAttributeChange() {		
 		// System.out.println("*** testCompanyAttributeChange:");
@@ -240,14 +231,7 @@ public class CompanyTest extends AbstractTestClient {
 
 		assertEquals("createCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
 		assertEquals("there should be one additional company:", 1, countCompanies() - _existingCompanies);
-		assertNotNull("ID should be set:", _c1.getId());
-		assertNotNull("ID should be set:", _c1.getId());
-		assertNotNull("xri should be set:", _c1.getXri());
-		assertEquals("default title should be set:", CompanyModel.DEF_TITLE, _c1.getTitle());
-		assertEquals("default description should be set:", CompanyModel.DEF_DESC, _c1.getDescription());
-		assertNotNull("project list should not be null:", _c1.getProjects());
-		assertEquals("zero projects should be listed:", 0, _c1.getProjects().size());
-		
+		assertNotNull("ID should be set:", _c1.getId());		
 		deleteCompany(_c0.getId());
 	}
 	
@@ -284,12 +268,10 @@ public class CompanyTest extends AbstractTestClient {
 		
 		// but: the two objects are not equal !
 		assertEquals("ID should be the same:", _c3.getId(), _c4.getId());
-		assertEquals("xri should be the same:", _c3.getXri(), _c4.getXri());
 		assertEquals("title should be the same:", _c3.getTitle(), _c4.getTitle());
 		assertEquals("description should be the same:", _c3.getDescription(), _c4.getDescription());
 		
 		assertEquals("ID should be the same:", _c3.getId(), _c2.getId());
-		assertEquals("xri should be the same:", _c3.getXri(), _c2.getXri());
 		assertEquals("title should be the same:", _c3.getTitle(), _c2.getTitle());
 		assertEquals("description should be the same:", _c3.getDescription(), _c2.getDescription());
 		
@@ -317,15 +299,15 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("description should have changed (1):", MY_DESC, _c3.getDescription());
 
 		// reset the attributes
-		_c2.setTitle(CompanyModel.DEF_TITLE);
-		_c2.setDescription(CompanyModel.DEF_DESC);
+		_c2.setTitle(MY_TITLE2);
+		_c2.setDescription(MY_DESC2);
 		CompanyModel _c4 = updateCompany(_c2);
 		assertEquals("updateCompany() should return with status OK (2):", Status.OK.getStatusCode(), getStatus());
 		assertEquals("there should be one additional company (2):", 1, countCompanies() - _existingCompanies);
 		assertNotNull("ID should be set (2):", _c4.getId());
 		assertEquals("ID should be unchanged (2):", _c2.getId(), _c4.getId());	
-		assertEquals("title should have changed (2):", CompanyModel.DEF_TITLE, _c4.getTitle());
-		assertEquals("description should have changed (2):", CompanyModel.DEF_DESC, _c4.getDescription());
+		assertEquals("title should have changed (2):", MY_TITLE2, _c4.getTitle());
+		assertEquals("description should have changed (2):", MY_DESC2, _c4.getDescription());
 
 		deleteCompany(_c2.getId());
 	}
