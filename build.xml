@@ -8,7 +8,7 @@
 	<property name="src.dir" value="src/java" />
 	<property name="build.dir" value="build/${java.build.platform}/bin" />
 	<property name="tmp.dir" value="build/${java.build.platform}/temp" />
-	<property name="junit.test.case" value="*Test.java" />
+	<property name="junit.test.case" value="*Test" />
 	
 	<path id="project.class.path">
 		<fileset dir="${cxf.lib}" includes="**/*.jar" />
@@ -65,7 +65,7 @@
 			<sysproperty key="service.url" value="${service.url}" />
 			<batchtest todir="build/${java.build.platform}/log/junit/xml">
 				<fileset dir="${basedir}/src/java">
-					<include name="**/${junit.test.case}" />
+					<include name="**/${junit.test.case}.java" />
 				</fileset>
 			</batchtest>
 		</junit>
