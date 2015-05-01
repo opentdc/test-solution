@@ -173,13 +173,13 @@ public class ProjectTest extends AbstractTestClient {
 		status = _r.getStatus();
 		if (status == Status.CONFLICT.getStatusCode()) {
 			throw new DuplicateException();
-		} else if (status == Status.CONFLICT.getStatusCode()) {
+		} else if (status == Status.NOT_FOUND.getStatusCode()) {
 			throw new NotFoundException();
 		} else {
 			return _r.readEntity(ProjectModel.class);
 		}
 	}
-	
+
 	// GET "api/company/{cid}/project/{pid}/project/{spid}"
 	public static ProjectModel readSubproject(
 		String compId, 
@@ -384,6 +384,7 @@ public class ProjectTest extends AbstractTestClient {
 	
 	@Test
 	public void testProjectRead() throws Exception {
+		int _existingProjects = countProjects(getCompanyId());
 		// System.out.println("*** testProjectRead:");
 		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();
 		for (int i = 0; i < LIMIT; i++) {
@@ -407,7 +408,7 @@ public class ProjectTest extends AbstractTestClient {
 		for (ProjectModel _p : _localList) {
 			deleteProject(getCompanyId(), _p.getId());
 		}
-		Assert.assertEquals("there should be zero projects:", 0, countProjects(getCompanyId()));
+		Assert.assertEquals("there should be " + _existingProjects + " projects:", _existingProjects, countProjects(getCompanyId()));
 		// TODO: "reading a company with ID = null should fail" -> ValidationException
 	}
 	
@@ -497,6 +498,7 @@ public class ProjectTest extends AbstractTestClient {
 	@Test
 	public void testProjectReadMulti() {
 		// System.out.println("*** testProjectReadMulti:");
+		int _existingProjects = countProjects(getCompanyId());
 		ProjectModel _p1 = new ProjectModel();
 		ProjectModel _p2 = createProject(getCompanyId(), _p1);
 		ProjectModel _p3 = readProject(getCompanyId(), _p2.getId());
@@ -514,20 +516,21 @@ public class ProjectTest extends AbstractTestClient {
 		Assert.assertEquals("description should be the same:", _p3.getDescription(), _p2.getDescription());
 		
 		deleteProject(getCompanyId(), _p2.getId());
-		Assert.assertEquals("there should be zero projects:", 0, countProjects(getCompanyId()));
+		Assert.assertEquals("there should be " + _existingProjects + " projects:", _existingProjects, countProjects(getCompanyId()));
 	}
 	
 	@Test
 	public void testProjectUpdate() {
 		// System.out.println("*** testProjectUpdate:");
+		int _existingProjects = countProjects(getCompanyId());
 		ProjectModel _p1 = createProject(getCompanyId(), new ProjectModel());
 		
 		// change the attributes
 		_p1.setTitle(MY_TITLE);
 		_p1.setDescription(MY_DESC);
 		ProjectModel _p2 = updateProject(getCompanyId(), _p1.getId(), _p1);
-		Assert.assertEquals("updateCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
-		Assert.assertEquals("there should be one additional company:", 1, countProjects(getCompanyId()));
+		Assert.assertEquals("updateProject() should return with status OK:", Status.OK.getStatusCode(), getStatus());
+		Assert.assertEquals("there should be one additional project:", _existingProjects + 1, countProjects(getCompanyId()));
 		Assert.assertNotNull("ID should be set:", _p2.getId());
 		Assert.assertEquals("ID should be unchanged:", _p1.getId(), _p2.getId());	
 		Assert.assertEquals("title should have changed:", MY_TITLE, _p2.getTitle());
@@ -537,35 +540,38 @@ public class ProjectTest extends AbstractTestClient {
 		_p1.setTitle(MY_TITLE2);
 		_p1.setDescription(MY_DESC2);
 		ProjectModel _p3 = updateProject(getCompanyId(), _p1.getId(), _p1);
-		Assert.assertEquals("updateCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
-		Assert.assertEquals("there should be one additional company:", 1, countProjects(getCompanyId()));
+		Assert.assertEquals("updateProject() should return with status OK:", Status.OK.getStatusCode(), getStatus());
+		Assert.assertEquals("there should be one additional project:", _existingProjects + 1, countProjects(getCompanyId()));
 		Assert.assertNotNull("ID should be set:", _p3.getId());
 		Assert.assertEquals("ID should be unchanged:", _p1.getId(), _p3.getId());	
 		Assert.assertEquals("title should have changed:", MY_TITLE2, _p3.getTitle());
 		Assert.assertEquals("description should have changed:", MY_DESC2, _p3.getDescription());
 
 		deleteProject(getCompanyId(), _p3.getId());
+		Assert.assertEquals("there should be no additional project:", _existingProjects, countProjects(getCompanyId()));
 	}
 
 	@Test
 	public void testProjectDelete() {
 		// System.out.println("*** testProjectDelete:");
+		int _existingProjects = countProjects(getCompanyId());
 		ProjectModel _p0 = new ProjectModel();
 		ProjectModel _p1 = createProject(getCompanyId(), _p0);
 		deleteProject(getCompanyId(), _p1.getId());
-		Assert.assertEquals("there should be no additional company left:", 0, countProjects(getCompanyId()));
+		Assert.assertEquals("there should be no additional project:", _existingProjects, countProjects(getCompanyId()));
 	}
 	
 	@Test
 	public void testProjectDeleteDouble() {
 		// System.out.println("*** testProjectDeleteDouble:");
+		int _existingProjects = countProjects(getCompanyId());
 		ProjectModel _p0 = new ProjectModel();
 		ProjectModel _p1 = createProject(getCompanyId(), _p0);
 		readProject(getCompanyId(), _p1.getId());
 		Assert.assertEquals("readProject() should return with status OK:", Status.OK.getStatusCode(), getStatus());		
 		
 		deleteProject(getCompanyId(), _p1.getId());
-		Assert.assertEquals("there should be zero projects:", 0, countProjects(getCompanyId()));
+		Assert.assertEquals("there should be no additional project:", _existingProjects, countProjects(getCompanyId()));
 		
 		try {
 			readProject(getCompanyId(), _p1.getId());	
@@ -574,7 +580,7 @@ public class ProjectTest extends AbstractTestClient {
 		
 		deleteProject(getCompanyId(), _p1.getId());
 		Assert.assertEquals("2nd deleteProject() should return with status NOT_FOUND:", Status.NOT_FOUND.getStatusCode(), getStatus());
-		Assert.assertEquals("there should be zero projects:", 0, countProjects(getCompanyId()));
+		Assert.assertEquals("there should be no additional project:", _existingProjects, countProjects(getCompanyId()));
 
 		try {
 			readProject(getCompanyId(), _p1.getId());
