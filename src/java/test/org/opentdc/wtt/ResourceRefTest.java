@@ -40,7 +40,7 @@ import org.opentdc.wtt.ResourceRefModel;
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.resources.ResourcesTest;
 
-public class ResourceTest extends AbstractTestClient {
+public class ResourceRefTest extends AbstractTestClient {
 	
 	public static final String API = "api/company/";	
 	

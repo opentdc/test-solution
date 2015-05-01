@@ -57,7 +57,6 @@ public class ProjectTest extends AbstractTestClient {
 	
 	private static CompanyModel company = null;
 	private static final int LIMIT = 3;
-	private int counter = 0;
 
 	@BeforeClass
 	public static void initializeTests(
@@ -67,6 +66,8 @@ public class ProjectTest extends AbstractTestClient {
 		company = CompanyTest.createCompany(new CompanyModel());
 	}
 	
+	/***************************** projects **********************************/
+	// GET "api/company/{cid}/project"
 	public static List<ProjectModel> listProjects(
 		String compId
 	) {
@@ -80,15 +81,78 @@ public class ProjectTest extends AbstractTestClient {
 			return new ArrayList<ProjectModel>();
 		}
 	}
-	
-	public static List<ProjectModel> listProjectsHierarchically(String compId, boolean asTree) {
-		Response _r = null; 
-		if (asTree == true) {
-			_r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path("astree").get();
+		
+	// POST p "api/company/{cid}/project"
+	public static ProjectModel createProject(
+		String compId, 
+		ProjectModel p
+	) throws DuplicateException, NotFoundException {
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).post(p);
+		status = _r.getStatus();
+		if(status == Status.CONFLICT.getStatusCode()) {
+			throw new DuplicateException();
+		} else if(status == Status.NOT_FOUND.getStatusCode()) {
+			throw new NotFoundException();
+		} else {
+			return _r.readEntity(ProjectModel.class);
+		}
+	}
+
+	// GET "api/company/{cid}/project/{pid}"
+	public static ProjectModel readProject(
+		String compId, 
+		String projId
+	) throws NotFoundException {
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).get();
+		status = _r.getStatus();
+		if (status == Status.NOT_FOUND.getStatusCode()) {
+			throw new NotFoundException();
+		} else {
+			return _r.readEntity(ProjectModel.class);
+		}
+	}
+
+	// PUT p "api/company/{cid}/project/{pid}"
+	public static ProjectModel updateProject(
+		String compId, 
+		String projId,
+		ProjectModel p
+	) {
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(p.getId()).put(p);
+		status = _r.getStatus();
+		if (status == Status.OK.getStatusCode()) {
+			return _r.readEntity(ProjectModel.class);
 		}
 		else {
-			_r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path("flat").get();				
+			return null;
 		}
+	}
+
+	// DELETE "api/company/{cid}/project/{pid}"
+	public static int deleteProject(
+			String compId, 
+			String projId) {
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).delete();
+		status = _r.getStatus();
+		return status;
+	}
+
+	// GET "api/company/{cid}/project/count"
+	public static int countProjects(
+		String compId
+	) {
+		return webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path("count").get(Integer.class);
+	}	
+	
+	/***************************** subprojects **********************************/
+	// GET "api/company/{cid}/project/{pid}/project"
+	public static List<ProjectModel> listSubprojects(
+			String compId,
+			String projId
+	) {
+		// System.out.println("> listSubprojects()");
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_PROJECT).get();
 		status = _r.getStatus();
 		if (status == Status.OK.getStatusCode()) {
 			return new ArrayList<ProjectModel>(webclient.getCollection(ProjectModel.class));
@@ -97,93 +161,82 @@ public class ProjectTest extends AbstractTestClient {
 			return new ArrayList<ProjectModel>();
 		}
 	}
-	
-	public static ProjectModel createProject(
-		String compId, 
-		ProjectModel p
-	) throws DuplicateException, NotFoundException {
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).post(p);
-		status = resp.getStatus();
-		if(status == Status.CONFLICT.getStatusCode()) {
-			throw new DuplicateException();
-		} else if(status == Status.NOT_FOUND.getStatusCode()) {
-			throw new NotFoundException();
-		} else {
-			return resp.readEntity(ProjectModel.class);
-		}
-	}
 
+	// POST p "api/company/{cid}/project/{pid}/project"
 	public static ProjectModel createSubproject(
 		String compId, 
 		String projId, 
 		ProjectModel p
 	) throws DuplicateException, NotFoundException {
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).post(p);
-		status = resp.getStatus();
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_PROJECT).post(p);
+		status = _r.getStatus();
 		if (status == Status.CONFLICT.getStatusCode()) {
 			throw new DuplicateException();
 		} else if (status == Status.CONFLICT.getStatusCode()) {
 			throw new NotFoundException();
 		} else {
-			return resp.readEntity(ProjectModel.class);
+			return _r.readEntity(ProjectModel.class);
 		}
 	}
-
-	public static ProjectModel readProject(
+	
+	// GET "api/company/{cid}/project/{pid}/project/{spid}"
+	public static ProjectModel readSubproject(
 		String compId, 
-		String projId
+		String projId,
+		String subprojId
 	) throws NotFoundException {
-		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).get();
-		status = resp.getStatus();
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_PROJECT).path(subprojId).get();
+		status = _r.getStatus();
 		if (status == Status.NOT_FOUND.getStatusCode()) {
 			throw new NotFoundException();
 		} else {
-			return resp.readEntity(ProjectModel.class);
+			return _r.readEntity(ProjectModel.class);
 		}
 	}
 
-	public static ProjectModel updateProject(
+	// PUT p "api/company/{cid}/project/{pid}/project/{spid}"
+	public static ProjectModel updateSubproject(
 		String compId, 
+		String projId,
+		String subprojId,
 		ProjectModel p
 	) {
-		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(p.getId()).put(p);
-		status = resp.getStatus();
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_PROJECT).path(subprojId).put(p);
+		status = _r.getStatus();
 		if (status == Status.OK.getStatusCode()) {
-			return resp.readEntity(ProjectModel.class);
+			return _r.readEntity(ProjectModel.class);
 		}
 		else {
 			return null;
 		}
 	}
 
-	public static int deleteProject(String compId, String projId) {
-		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).delete();
-		status = resp.getStatus();
+	// DELETE "api/company/{cid}/project/{pid}/project/{spid}"
+	public static int deleteSubproject(
+			String compId, 
+			String projId,
+			String subprojId) {
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_PROJECT).path(subprojId).delete();
+		status = _r.getStatus();
 		return status;
 	}
 
-	public static int countProjects(
-		String compId
-	) {
-		return webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path("count").get(Integer.class);
-	}	
-	
-	public static int countSubprojects(String compId, String projId) {
-		ProjectModel _p = readProject(compId, projId);
-		return _p.getProjects().size();
-		// System.out.println("> countCompanies()");
+	// GET "api/company/{cid}/project/{pid}/project/count"
+	public static int countSubprojects(
+		String compId, 
+		String projId) {
+		return webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_PROJECT).path("count").get(Integer.class);
 	}
 	
 	/***************************** resource **********************************/
-	// GET "/{cid}/project/{pid}/resource"
+	// GET "api/company/{cid}/project/{pid}/resource"
 	public static ArrayList<ResourceRefModel> listResources(
 		String compId, 
 		String projId
 	) {
-		Response resp = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_RESOURCE).get();
-		status = resp.getStatus();
+		Response _r = webclient.replacePath("/").path(compId).path(PATH_EL_PROJECT).path(projId).path(PATH_EL_RESOURCE).get();
+		status = _r.getStatus();
 		if (status == Status.OK.getStatusCode()) {
 			return new ArrayList<ResourceRefModel>(webclient.getCollection(ResourceRefModel.class));
 		}
@@ -192,7 +245,7 @@ public class ProjectTest extends AbstractTestClient {
 		}
 	}
 	
-	// POST "/{cid}/project/{pid}/resource"
+	// POST "api/company/{cid}/project/{pid}/resource"
 	public static String addResource(
 		String compId, 
 		String projId, 
@@ -208,7 +261,7 @@ public class ProjectTest extends AbstractTestClient {
 		}
 	}
 
-	// DELETE "/{cid}/project/{pid}/resource/{rid}"
+	// DELETE "api/company/{cid}/project/{pid}/resource/{rid}"
 	public static void deleteResource(
 		String compId, 
 		String projId, 
@@ -218,7 +271,7 @@ public class ProjectTest extends AbstractTestClient {
 		status = _r.getStatus();
 	}
 	
-	// GET "/{cid}/project/{pid}/resource/count"
+	// GET "api/company/{cid}/project/{pid}/resource/count"
 	public static int countResources(
 		String compId, 
 		String projId
@@ -307,7 +360,7 @@ public class ProjectTest extends AbstractTestClient {
 		Assert.assertEquals("there should be one project:", 1, countProjects(getCompanyId()));
 		Assert.assertNotNull("ID should be set:", _p2.getId());
 		try {
-			ProjectModel _p3 = createProject(getCompanyId(), _p2);
+			createProject(getCompanyId(), _p2);
 			fail("creating a double project should result in status CONFLICT(409):");
 		} catch(DuplicateException e) {}
 		deleteProject(getCompanyId(), _p2.getId());
@@ -359,8 +412,59 @@ public class ProjectTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testProjectReadSubproject() throws Exception {
-		// System.out.println("*** testProjectReadSubproject:");
+	public void testSubprojectBroad() throws Exception {
+		// System.out.println("*** testSubprojectBroad:");
+		ProjectModel _topLevelProject = createProject(getCompanyId(), new ProjectModel());
+		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();
+	//	_localList.add(_topLevelProject);
+		
+		for (int i = 0; i < LIMIT; i++) {
+			_localList.add(createSubproject(getCompanyId(), _topLevelProject.getId(), new ProjectModel(MY_TITLE, MY_DESC))); 
+			Assert.assertEquals("createSubproject() should return with status OK:", Status.OK.getStatusCode(), getStatus());
+		}
+		
+		// test project list on company (only one top level project)
+		List<ProjectModel> _list = listProjects(getCompanyId());
+		Assert.assertEquals("there should be one top-level project (count):", 1, countProjects(getCompanyId()));
+		Assert.assertEquals("there should be one top-level project (returned from list()):", 1, _list.size());
+		
+		// test project list on top level project
+		_list = listSubprojects(getCompanyId(), _topLevelProject.getId());
+		Assert.assertEquals("there should be " + LIMIT + " subprojects (count):",  LIMIT, countSubprojects(getCompanyId(), _topLevelProject.getId()));
+		Assert.assertEquals("there should be " + LIMIT + " subprojects (returned from list()):",  LIMIT, _list.size());
+		
+		// reading and updating the subprojects
+		ProjectModel _ptemp = null;
+		ProjectModel _pupdated = null;
+		String _id = null;
+		for (ProjectModel _p : _list) {
+			_ptemp = readSubproject(getCompanyId(), _topLevelProject.getId(), _p.getId());
+			Assert.assertEquals("readSubproject() should return with status OK:", Status.OK.getStatusCode(), getStatus());
+			_id = _ptemp.getId();
+			Assert.assertNotNull("ID should be set:", _id);
+			Assert.assertEquals("title should be unchanged:", MY_TITLE, _ptemp.getTitle());
+			Assert.assertEquals("description should be unchanged:", MY_DESC, _ptemp.getDescription());
+			_pupdated = updateSubproject(getCompanyId(), _topLevelProject.getId(), _p.getId(), new ProjectModel(MY_TITLE2, MY_DESC2));
+			Assert.assertEquals("updateSubproject() should return with status OK:", Status.OK.getStatusCode(), getStatus());
+			Assert.assertNotNull("ID should be set:", _pupdated.getId());
+			Assert.assertEquals("id should be the same:", _id, _pupdated.getId());
+			Assert.assertEquals("title should have changed:", MY_TITLE2, _pupdated.getTitle());
+			Assert.assertEquals("description should have changed:", MY_DESC2, _pupdated.getDescription());
+			Assert.assertEquals("title should be unchanged:", MY_TITLE, _ptemp.getTitle());
+			Assert.assertEquals("description should be unchanged:", MY_DESC, _ptemp.getDescription());
+		}
+		Assert.assertEquals("there should be " + LIMIT + " subprojects (count):",  LIMIT, countSubprojects(getCompanyId(), _topLevelProject.getId()));
+		Assert.assertEquals("there should be " + LIMIT + " subprojects (returned from list()):",  LIMIT, _list.size());
+					
+		for (ProjectModel _p : _localList) {
+			deleteProject(getCompanyId(), _p.getId());
+		}
+		Assert.assertEquals("there should be zero projects:", 0, countProjects(getCompanyId()));
+	}
+	
+	@Test
+	public void testSubprojectDeep() throws Exception {
+		// System.out.println("*** testSubprojectDeep:");
 		ProjectModel _topLevelProject = createProject(getCompanyId(), new ProjectModel());
 		ProjectModel _parentProject = _topLevelProject;
 		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();
@@ -382,47 +486,12 @@ public class ProjectTest extends AbstractTestClient {
 			Assert.assertEquals("Read should return with status OK (list):", Status.OK.getStatusCode(), getStatus());
 			Assert.assertEquals("ID should be unchanged after read (list):", _p.getId(), _tmp.getId());
 		}
-		
-		// test list/flat
-		List<ProjectModel> _listFlat = listProjectsHierarchically(getCompanyId(), false);
-		Assert.assertEquals("there should be " + (LIMIT + 1) + " projects (flat):", (LIMIT + 1), _listFlat.size());
-		Assert.assertEquals("there should be one top-level project (count):", 1, countProjects(getCompanyId()));
-
-		counter = 0;
-		for (ProjectModel _p : _listFlat) {
-			_tmp = readProject(getCompanyId(), _p.getId());
-			counter++;
-			Assert.assertEquals("Read should return with status OK (flat):", Status.OK.getStatusCode(), getStatus());
-			Assert.assertEquals("ID should be unchanged after read (flat):", _p.getId(), _tmp.getId());						
-		}
-		Assert.assertEquals("There should be " + (LIMIT + 1) + " reads (flat):", (LIMIT + 1), counter);						
-		
-		// test list/astree
-		List<ProjectModel> _listAstree = listProjectsHierarchically(getCompanyId(), true);
-		Assert.assertEquals("there should be " + 1 + " top-level project (count):", 1, countProjects(getCompanyId()));
-		Assert.assertEquals("there should be " + 1 + " top-level project (astree):", 1, _listAstree.size());
-
-		// read all 10 subprojects
-		counter = 0;
-		for (ProjectModel _p : _listAstree) {
-			testReadSubprojects(_p);
-		}
-		Assert.assertEquals("There should be " + (LIMIT + 1) + " reads (flat):", (LIMIT + 1), counter);						
-			
+					
 		for (ProjectModel _p : _localList) {
 			deleteProject(getCompanyId(), _p.getId());
 		}
 		Assert.assertEquals("there should be zero projects:", 0, countProjects(getCompanyId()));
-	}
-	
-	private void testReadSubprojects(ProjectModel p) {
-		ProjectModel _tmp = readProject(getCompanyId(), p.getId());
-		Assert.assertEquals("Read should return with status OK (testReadSubprojects):", Status.OK.getStatusCode(), getStatus());
-		Assert.assertEquals("ID should be unchanged after read (testReadSubprojects):", p.getId(), _tmp.getId());						
-		counter ++;
-		for (ProjectModel _p : p.getProjects()) {
-			testReadSubprojects(_p);
-		}
+		
 	}
 	
 	@Test
@@ -456,7 +525,7 @@ public class ProjectTest extends AbstractTestClient {
 		// change the attributes
 		_p1.setTitle(MY_TITLE);
 		_p1.setDescription(MY_DESC);
-		ProjectModel _p2 = updateProject(getCompanyId(), _p1);
+		ProjectModel _p2 = updateProject(getCompanyId(), _p1.getId(), _p1);
 		Assert.assertEquals("updateCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
 		Assert.assertEquals("there should be one additional company:", 1, countProjects(getCompanyId()));
 		Assert.assertNotNull("ID should be set:", _p2.getId());
@@ -467,7 +536,7 @@ public class ProjectTest extends AbstractTestClient {
 		// reset the attributes
 		_p1.setTitle(MY_TITLE2);
 		_p1.setDescription(MY_DESC2);
-		ProjectModel _p3 = updateProject(getCompanyId(), _p1);
+		ProjectModel _p3 = updateProject(getCompanyId(), _p1.getId(), _p1);
 		Assert.assertEquals("updateCompany() should return with status OK:", Status.OK.getStatusCode(), getStatus());
 		Assert.assertEquals("there should be one additional company:", 1, countProjects(getCompanyId()));
 		Assert.assertNotNull("ID should be set:", _p3.getId());
