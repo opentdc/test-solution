@@ -37,6 +37,7 @@ public abstract class AbstractTestClient {
 
 	protected static WebClient webclient = null;
 	protected static int status;
+	protected static String apiUrl = "";
 
 	public static WebClient createWebClient(
 		String api
@@ -51,8 +52,8 @@ public abstract class AbstractTestClient {
 		if(!serviceUrl.endsWith("/")) {
 			serviceUrl = serviceUrl + "/";
 		}
-		String apiUrl = serviceUrl + api;
-		System.out.println("initializing");
+		apiUrl = serviceUrl + api;
+		System.out.println("initializing " + apiUrl);
 		JAXRSClientFactoryBean _sf = new JAXRSClientFactoryBean();
 		_sf.setResourceClass(AddressbooksService.class);
 		_sf.setAddress(apiUrl);
@@ -80,14 +81,14 @@ public abstract class AbstractTestClient {
 	@After
 	public void reset(
 	) {
-		System.out.println("resetting the web client");
+		System.out.println("resetting the web client " + apiUrl);
 		webclient.reset();
 	}
 
 	@AfterClass
 	public static void cleanup(
 	) {
-		System.out.println("cleaning up");
+		System.out.println("cleaning up " + apiUrl);
 		webclient.close();
 	}
 	
