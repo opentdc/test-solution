@@ -23,192 +23,509 @@
  */
 package test.org.opentdc.users;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
-import org.opentdc.service.exception.DuplicateException;
-import org.opentdc.service.exception.NotFoundException;
-import org.opentdc.service.exception.ValidationException;
 import org.opentdc.users.UserModel;
+import org.opentdc.users.UsersService;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class UserTest extends AbstractTestClient {
+public class UserTest extends AbstractTestClient<UsersService> {
 	
 	private static final String API = "api/users/";
 
-	@BeforeClass
-	public static void initializeTests() {
-		System.out.println("initializing");
-		initializeTests(API);
+	@Before
+	public void initializeTests() {
+		initializeTests(API, UsersService.class);
 	}
-
-	private List<UserModel> list(
-	) {
-		System.out.println("listing all users");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		List<UserModel> _collection = (List<UserModel>)webclient.replacePath("/").getCollection(UserModel.class);
-		return _collection;
+	
+	/********************************** users tests *********************************/	
+	@Test
+	public void testUserModelEmptyConstructor() {
+		// new() -> _c
+		UserModel _c = new UserModel();
+		assertNull("id should not be set by empty constructor", _c.getId());
+		assertNull("loginId should not be set by empty constructor", _c.getLoginId());
+		assertNull("contactId should not be set by empty constructor", _c.getContactId());
+		assertNull("hashedPassword should not be set by empty constructor", _c.getHashedPassword());
+		assertNull("salt should not be set by empty constructor", _c.getSalt());
 	}
-
-	private UserModel create(
-		UserModel p
-	) throws DuplicateException {
-		System.out.println("creating a user");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response resp = webclient.replacePath("/").post(p);
-		if(resp.getStatus() == Status.CONFLICT.getStatusCode()) {
-			throw new DuplicateException();
-		} else {
-			return resp.readEntity(UserModel.class);
-		}
+	
+	@Test
+	public void testUserModelConstructor() {		
+		// new("LID", "CID", "MY_PWD", "MY_SALT") -> _c
+		UserModel _c = new UserModel("LID", "CID", "MY_PWD", "MY_SALT");
+		assertNull("id should not be set by constructor", _c.getId());
+		assertEquals("loginId should be set by constructor", "LID", _c.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID", _c.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD", _c.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT", _c.getSalt());
 	}
-
-	private UserModel read(
-		String id
-	) throws NotFoundException {
-		System.out.println("reading a user");
-		webclient.accept(MediaType.APPLICATION_JSON);
-		Response resp = webclient.replacePath(id).get();
-		if(resp.getStatus() == Status.NOT_FOUND.getStatusCode()) {
-			throw new NotFoundException();
-		} else {
-			return resp.readEntity(UserModel.class);
-		}
-	}
-
-	private UserModel update(
-		UserModel p
-	) {
-		System.out.println("updating a user");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response resp = webclient.replacePath("/").path(p.getId()).put(p);
-		return resp.readEntity(UserModel.class);
-	}
-
-	private void delete(
-		String id
-	) {
-		System.out.println("deleting a user");
-		Response resp = webclient.replacePath(id).delete();
-		if(resp.getStatus() == Status.NOT_FOUND.getStatusCode()) {
-			throw new NotFoundException();
-		}
-	}
-
-	private void deleteAll(
-	) {
-		System.out.println("deleting all users");
-		webclient.replacePath("/").delete();
-	}
-
-	private int count(
-	) {
-		return webclient.replacePath("count").get(Integer.class);
+	
+	@Test
+	public void testUserIdAttributeChange() {
+		// new() -> _c -> _c.setId()
+		UserModel _c = new UserModel();
+		assertNull("id should not be set by constructor", _c.getId());
+		_c.setId("MY_ID");
+		assertEquals("id should have changed:", "MY_ID", _c.getId());
 	}
 
 	@Test
-	public void crudTests(
-	) throws Exception {
+	public void testLoginIdAttributeChange() {
+		// new() -> _c -> _c.setLoginId()
+		UserModel _c = new UserModel();
+		assertNull("loginId should not be set by empty constructor", _c.getLoginId());
+		_c.setLoginId("LID");
+		assertEquals("loginId should have changed:", "LID", _c.getLoginId());
+	}
 
-		deleteAll();
-		assertEquals("there should be no user data left", 0, count());
+	@Test
+	public void testContactIdAttributeChange() {
+		// new() -> _c -> _c.setContactId()
+		UserModel _c = new UserModel();
+		assertNull("contactId should not be set by empty constructor", _c.getContactId());
+		_c.setContactId("CID");
+		assertEquals("contactId should have changed:", "CID", _c.getContactId());
+	}
+	
+	@Test
+	public void testHashedPasswordAttributeChange() {
+		// new() -> _c -> _c.setHashedPassword()
+		UserModel _c = new UserModel();
+		assertNull("hashedPassword should not be set by empty constructor", _c.getHashedPassword());
+		_c.setHashedPassword("MY_PWD");
+		assertEquals("hashedPassword should have changed:", "MY_PWD", _c.getHashedPassword());
+	}
+	
+	@Test
+	public void testSaltAttributeChange() {
+		// new() -> _c -> _c.setSalt()
+		UserModel _c = new UserModel();
+		assertNull("salt should not be set by empty constructor", _c.getSalt());
+		_c.setSalt("MY_SALT");
+		assertEquals("salt should have changed:", "MY_SALT", _c.getSalt());
+	}
 		
-		UserModel _p0 = new UserModel();
-		// TODO: set some attributes manually
-		assertNull("initially, there should be no ID", _p0.getId());
-		assertEquals("there should be no data to start with",
-				0, count());
-		UserModel _p1 = create(_p0);
-		assertNotNull("a unique ID should be set", _p1.getId());
-		// TODO: all other attributes should be the same.
+	@Test
+	public void testUserCreateReadDeleteWithEmptyConstructor() {
+		// new() -> _c1
+		UserModel _c1 = new UserModel();
+		assertNull("id should not be set by empty constructor", _c1.getId());
+		assertNull("loginId should not be set by empty constructor", _c1.getLoginId());
+		assertNull("contactId should not be set by empty constructor", _c1.getContactId());
+		assertNull("hashedPassword should not be set by empty constructor", _c1.getHashedPassword());
+		assertNull("salt should not be set by empty constructor", _c1.getSalt());
 
-		UserModel _p2 = create(new UserModel());
-		assertNotNull("a unique ID should be set", _p2.getId());
-		assertNotSame("IDs should be different", _p1.getId(), _p2.getId());
-		// TODO: check on the default attribute values of _p2
-		// TODO: try to set invalid data attributes
+		// create(_c1) -> _c2
+		Response _response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c2 = _response.readEntity(UserModel.class);
+		assertNull("create() should not change the id of the local object", _c1.getId());
+		assertNull("create() should not change the loginId of the local object", _c1.getLoginId());
+		assertNull("create() should not change the contactId of the local object", _c1.getContactId());
+		assertNull("create() should not change hashedPassword of the local object", _c1.getHashedPassword());
+		assertNull("create() should not change the salt of the local object", _c1.getSalt());
 
-		UserModel _p3 = create(new UserModel());
-		assertNotNull("a unique ID should be set", _p3.getId());
-		assertNotSame("IDs should be different", _p2.getId(), _p3.getId());
-		assertNotSame("IDs should be different", _p1.getId(), _p3.getId());
-		assertEquals("there should be 3 users", 3, count());
-		try {
-			create(_p1);
-			assertTrue("creating a duplicate should raise an exception", true);
-		} catch (DuplicateException _ex) {
-			System.out.println("DuplicateException was raised correctly when trying to create a duplicate");
-			// test for exception message
+		assertNotNull("create() should set a valid id on the remote object returned", _c2.getId());
+		assertNull("loginId of returned object should still be null after remote create", _c2.getLoginId());
+		assertNull("contactId of returned object should still be null after remote create", _c2.getContactId());
+		assertNull("hashedPassword of returned object should still be null after remote create", _c2.getHashedPassword());
+		assertNull("salt of returned object should still be null after remote create", _c2.getSalt());
+
+		// read(_c2) -> _c3
+		_response = webclient.replacePath(_c2.getId()).get();
+		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c3 = _response.readEntity(UserModel.class);
+		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
+		assertEquals("loginId of returned object should be unchanged after remote create", _c2.getLoginId(), _c3.getLoginId());
+		assertEquals("contactId of returned object should be unchanged after remote create", _c2.getContactId(), _c3.getContactId());
+		assertEquals("hashedPassword of returned object should be unchanged after remote create", _c2.getHashedPassword(), _c3.getHashedPassword());
+		assertEquals("salt of returned object should be unchanged after remote create", _c2.getSalt(), _c3.getSalt());
+		// delete(_c3)
+		_response = webclient.replacePath(_c3.getId()).delete();
+		assertEquals("delete(" + _c3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testUserCreateReadDelete() {
+		// new("MY_TITLE", "MY_DESC") -> _c1
+		UserModel _c1 = new UserModel("LID", "CID", "MY_PWD", "MY_SALT");
+		assertNull("id should not be set by constructor", _c1.getId());
+		assertEquals("loginId should be set by constructor", "LID", _c1.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID", _c1.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD", _c1.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT", _c1.getSalt());
+		
+		// create(_c1) -> _c2
+		Response _response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c2 = _response.readEntity(UserModel.class);
+		assertNull("id should be unchanged", _c1.getId());
+		assertEquals("loginId should be unchanged", "LID", _c1.getLoginId());
+		assertEquals("contactId should be unchanged", "CID", _c1.getContactId());
+		assertEquals("hashedPassword should be unchangede", "MY_PWD", _c1.getHashedPassword());
+		assertEquals("salt should be unchanged", "MY_SALT", _c1.getSalt());
+		
+		assertNotNull("id of returned object should be set", _c2.getId());
+		assertEquals("loginId should be unchanged", "LID", _c2.getLoginId());
+		assertEquals("contactId should be unchanged", "CID", _c2.getContactId());
+		assertEquals("hashedPassword should be unchangede", "MY_PWD", _c2.getHashedPassword());
+		assertEquals("salt should be unchanged", "MY_SALT", _c2.getSalt());
+				
+		// read(_c2)  -> _c3
+		_response = webclient.replacePath(_c2.getId()).get();
+		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c3 = _response.readEntity(UserModel.class);
+		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
+		assertEquals("loginId should be unchanged", _c2.getLoginId(), _c3.getLoginId());
+		assertEquals("contactId should be unchanged", _c2.getContactId(), _c3.getContactId());
+		assertEquals("hashedPassword should be unchangede", _c2.getHashedPassword(), _c3.getHashedPassword());
+		assertEquals("salt should be unchanged", _c2.getSalt(), _c3.getSalt());
+		// delete(_c3)
+		_response = webclient.replacePath(_c3.getId()).delete();
+		assertEquals("delete(" + _c3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testCreateUserWithClientSideId() {
+		// new() -> _c1 -> _c1.setId()
+		UserModel _c1 = new UserModel();
+		_c1.setId("LOCAL_ID");
+		assertEquals("id should have changed", "LOCAL_ID", _c1.getId());
+		// create(_c1) -> BAD_REQUEST
+		Response _response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testCreateUserWithDuplicateId() {
+		// create(new()) -> _c2
+		Response _response = webclient.replacePath("/").post(new UserModel());
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c2 = _response.readEntity(UserModel.class);
+
+		// new() -> _c3 -> _c3.setId(_c2.getId())
+		UserModel _c3 = new UserModel();
+		_c3.setId(_c2.getId());		// wrongly create a 2nd UserModel object with the same ID
+		
+		// create(_c3) -> CONFLICT
+		_response = webclient.replacePath("/").post(_c3);
+		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testUserList(
+	) {		
+		ArrayList<UserModel> _localList = new ArrayList<UserModel>();
+		Response _response = null;
+		webclient.replacePath("/");
+		for (int i = 0; i < LIMIT; i++) {
+			// create(new()) -> _localList
+			_response = webclient.post(new UserModel());
+			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			_localList.add(_response.readEntity(UserModel.class));
 		}
-		List<UserModel> _l = list();
-		System.out.println("list() = <" + _l + ">");
-		UserModel _p11 = read(_p1.getId());
-		assertEquals("IDs should be equal when read twice", _p1.getId(),
-				_p11.getId());
-		// TODO: same for all attributes
+		
+		// list(/) -> _remoteList
+		_response = webclient.replacePath("/").get();
+		List<UserModel> _remoteList = new ArrayList<UserModel>(webclient.getCollection(UserModel.class));
+		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
-		try {
-			read(null);
-			assertTrue("reading a user with ID = null should fail", true);
-		} catch (ValidationException ex) {
-			System.out.println("ValidationException was raised correctly for invalid ID");
+		ArrayList<String> _remoteListIds = new ArrayList<String>();
+		for (UserModel _c : _remoteList) {
+			_remoteListIds.add(_c.getId());
 		}
-		try {
-			read("12366");
-			assertTrue("reading a non-existing user should fail", true);
-		} catch (NotFoundException ex) {
-			System.out.println("NotFoundException was raised correctly");
+		
+		for (UserModel _c : _localList) {
+			assertTrue("user <" + _c.getId() + "> should be listed", _remoteListIds.contains(_c.getId()));
 		}
-		assertEquals("there should be still 3 users", 3, count());
-
-		String _id = _p2.getId();
-		delete(_id);
-
-		assertEquals("there should be only 2 users", 2, count());
-
-		try {
-			delete(_id);
-			assertTrue("deleting a deleted user should fail", true);
-		} catch (NotFoundException ex) {
-			System.out.println("NotFoundException was raised correctly");
+		for (UserModel _c : _localList) {
+			_response = webclient.replacePath(_c.getId()).get();
+			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			_response.readEntity(UserModel.class);
 		}
-		assertEquals("there should be still 2 users", 2, count());
-		try {
-			read(_id);
-			assertTrue("reading a deleted user should fail",
-					true);
-		} catch (NotFoundException ex) {
-			System.out.println("NotFoundException was raised correctly");
+		for (UserModel _c : _localList) {
+			_response = webclient.replacePath(_c.getId()).delete();
+			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		}
+	}
+	
+	@Test
+	public void testUserCreate() {
+		// new("LID1", "CID1", "MY_PWD1", "MY_SALT1") -> _c1
+		UserModel _c1 = new UserModel("LID1", "CID1", "MY_PWD1", "MY_SALT1");
+		
+		// new("LID2", "CID2", "MY_PWD2", "MY_SALT2") -> _c2
+		UserModel _c2 = new UserModel("LID2", "CID2", "MY_PWD2", "MY_SALT2");
+		
+		// create(_c1)  -> _c3
+		Response _response = webclient.post(_c1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c3 = _response.readEntity(UserModel.class);
+
+		// create(_c2) -> _c4
+		_response = webclient.post(_c2);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c4 = _response.readEntity(UserModel.class);
+		assertThat(_c4.getId(), not(equalTo(_c3.getId())));
+		
+		// validate _c3
+		assertNotNull("ID should be set", _c3.getId());
+		assertEquals("loginId should be set by constructor", "LID1", _c3.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID1", _c3.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD1", _c3.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT1", _c3.getSalt());
+				
+		// validate _c4
+		assertNotNull("ID should be set", _c4.getId());
+		assertEquals("loginId should be set by constructor", "LID2", _c4.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID2", _c4.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD2", _c4.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT2", _c4.getSalt());
+		
+		// delete(_c1) -> METHOD_NOT_ALLOWED   (_c1.getId() = null)
+		_response = webclient.replacePath(_c1.getId()).delete();
+		assertEquals("delete() should return with status METHOD_NOT_ALLOWED", Status.METHOD_NOT_ALLOWED.getStatusCode(), _response.getStatus());
+
+		// delete(_c2) -> METHOD_NOT_ALLOWED   (_c2.getId() = null)
+		_response = webclient.replacePath(_c2.getId()).delete();
+		assertEquals("delete() should return with status METHOD_NOT_ALLOWED", Status.METHOD_NOT_ALLOWED.getStatusCode(), _response.getStatus());
+
+		// delete(_c3) -> NO_CONTENT
+		_response = webclient.replacePath(_c3.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+
+		// delete(_c4) -> NO_CONTENT
+		_response = webclient.replacePath(_c4.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testUserDoubleCreate(
+	) {
+		// create(new()) -> _c
+		Response _response = webclient.replacePath("/").post(new UserModel());
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c = _response.readEntity(UserModel.class);
+		assertNotNull("ID should be set:", _c.getId());		
+		
+		// create(_c) -> CONFLICT
+		_response = webclient.replacePath("/").post(_c);
+		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
+
+		// delete(_c) -> NO_CONTENT
+		_response = webclient.replacePath(_c.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+
+	@Test
+	public void testUserRead(
+	) {
+		ArrayList<UserModel> _localList = new ArrayList<UserModel>();
+		Response _response = null;
+		webclient.replacePath("/");
+		for (int i = 0; i < LIMIT; i++) {
+			_response = webclient.post(new UserModel());
+			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			_localList.add(_response.readEntity(UserModel.class));
+		}
+	
+		// test read on each local element
+		for (UserModel _c : _localList) {
+			_response = webclient.replacePath(_c.getId()).get();
+			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			_response.readEntity(UserModel.class);
 		}
 
-		_p1.setLoginID("TestLoginID");
-		_p1.setHashedPassword("TestHashedPassword");
-		_p1.setSalt("TestSalt");
-		_p1 = update(_p1);
-		assertEquals("from should be TestLoginID", "TestLoginID", _p1.getLoginID());
-		assertEquals("to should be TestHashedPassword", "TestHashedPassword", _p1.getHashedPassword());
-		assertEquals("comment should be TestSalt", "TestSalt", _p1.getSalt());
+		// test read on each listed element
+		_response = webclient.replacePath("/").get();
+		List<UserModel> _remoteList = new ArrayList<UserModel>(webclient.getCollection(UserModel.class));
+		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
-		_p2 = read(_p1.getId());
-		assertEquals("from should be TestLoginID", "TestLoginID", _p1.getLoginID());
-		assertEquals("to should be TestHashedPassword", "TestHashedPassword", _p1.getHashedPassword());
-		assertEquals("comment should be TestSalt", "TestSalt", _p1.getSalt());
-		assertEquals("IDs should be the same", _p1.getId(), _p2.getId());
+		UserModel _tmpObj = null;
+		for (UserModel _c : _remoteList) {
+			_response = webclient.replacePath(_c.getId()).get();
+			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			_tmpObj = _response.readEntity(UserModel.class);
+			assertEquals("ID should be unchanged when reading a user", _c.getId(), _tmpObj.getId());						
+		}
+
+		// TODO: "reading a user with ID = null should fail" -> ValidationException
+		// TODO: "reading a non-existing user should fail"
+
+		for (UserModel _c : _localList) {
+			_response = webclient.replacePath(_c.getId()).delete();
+			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		}
+	}	
+
+	@Test
+	public void testUserMultiRead(
+	) {
+		// new() -> _c1
+		UserModel _c1 = new UserModel();
+		
+		// create(_c1) -> _c2
+		Response _response = webclient.replacePath("/").post(_c1);
+		UserModel _c2 = _response.readEntity(UserModel.class);
+
+		// read(_c2) -> _c3
+		_response = webclient.replacePath(_c2.getId()).get();
+		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c3 = _response.readEntity(UserModel.class);
+		assertEquals("ID should be unchanged after read", _c2.getId(), _c3.getId());		
+
+		// read(_c2) -> _c4
+		_response = webclient.replacePath(_c2.getId()).get();
+		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c4 = _response.readEntity(UserModel.class);
+		
+		// but: the two objects are not equal !
+		assertEquals("ID should be the same", _c3.getId(), _c4.getId());
+		assertEquals("loginId should be unchanged", _c3.getLoginId(), _c4.getLoginId());
+		assertEquals("contactId should be unchanged", _c3.getContactId(), _c4.getContactId());
+		assertEquals("hashedPassword should be unchangede", _c3.getHashedPassword(), _c4.getHashedPassword());
+		assertEquals("salt should be unchanged", _c3.getSalt(), _c4.getSalt());
+
+		assertEquals("ID should be the same", _c2.getId(), _c3.getId());
+		assertEquals("loginId should be unchanged", _c2.getLoginId(), _c3.getLoginId());
+		assertEquals("contactId should be unchanged", _c2.getContactId(), _c3.getContactId());
+		assertEquals("hashedPassword should be unchangede", _c2.getHashedPassword(), _c3.getHashedPassword());
+		assertEquals("salt should be unchanged", _c2.getSalt(), _c3.getSalt());
+		
+		// delete(_c2)
+		_response = webclient.replacePath(_c2.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testUserUpdate(
+	) {
+		// new() -> _c1
+		UserModel _c1 = new UserModel();
+		
+		// create(_c1) -> _c2
+		Response _response = webclient.replacePath("/").post(_c1);
+		UserModel _c2 = _response.readEntity(UserModel.class);
+		
+		// change the attributes
+		// update(_c2) -> _c3
+		_c2.setLoginId("LID1");
+		_c2.setContactId("CID1");
+		_c2.setHashedPassword("MY_PWD1");
+		_c2.setSalt("MY_SALT1");
+		
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
+		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c3 = _response.readEntity(UserModel.class);
+
+		assertNotNull("ID should be set", _c3.getId());
+		assertEquals("ID should be unchanged", _c2.getId(), _c3.getId());
+		assertEquals("loginId should be set by constructor", "LID1", _c3.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID1", _c3.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD1", _c3.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT1", _c3.getSalt());
+		
+		// reset the attributes
+		// update(_c2) -> _c4
+		_c2.setLoginId("LID2");
+		_c2.setContactId("CID2");
+		_c2.setHashedPassword("MY_PWD2");
+		_c2.setSalt("MY_SALT2");		
+		
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
+		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _c4 = _response.readEntity(UserModel.class);
+
+		assertNotNull("ID should be set", _c4.getId());
+		assertEquals("ID should be unchanged", _c2.getId(), _c4.getId());	
+		assertEquals("loginId should be set by constructor", "LID2", _c4.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID2", _c4.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD2", _c4.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT2", _c4.getSalt());
+		
+		_response = webclient.replacePath(_c2.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testUserDelete(
+	) {
+		// new() -> _c0
+		UserModel _c0 = new UserModel();
+		// create(_c0) -> _c1
+		Response _response = webclient.replacePath("/").post(_c0);
+		UserModel _c1 = _response.readEntity(UserModel.class);
+		
+		// read(_c0) -> _tmpObj
+		_response = webclient.replacePath(_c0.getId()).get();
+		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _tmpObj = _response.readEntity(UserModel.class);
+		assertEquals("ID should be unchanged when reading a user (remote):", _c0.getId(), _tmpObj.getId());						
+
+		// read(_c1) -> _tmpObj
+		_response = webclient.replacePath(_c1.getId()).get();
+		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		_tmpObj = _response.readEntity(UserModel.class);
+		assertEquals("ID should be unchanged when reading a user (remote):", _c1.getId(), _tmpObj.getId());						
+		
+		// delete(_c1) -> OK
+		_response = webclient.replacePath(_c1.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	
+		// read the deleted object twice
+		// read(_c1) -> NOT_FOUND
+		_response = webclient.replacePath(_c1.getId()).get();
+		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+		
+		// read(_c1) -> NOT_FOUND
+		_response = webclient.replacePath(_c1.getId()).get();
+		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testUserDoubleDelete(
+	) {
+		// new() -> _c0
+		UserModel _c0 = new UserModel();
+		
+		// create(_c0) -> _c1
+		Response _response = webclient.replacePath("/").post(_c0);
+		UserModel _c1 = _response.readEntity(UserModel.class);
+
+		// read(_c1) -> OK
+		_response = webclient.replacePath(_c1.getId()).get();
+		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		
+		// delete(_c1) -> OK
+		_response = webclient.replacePath(_c1.getId()).delete();		
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		
+		// read(_c1) -> NOT_FOUND
+		_response = webclient.replacePath(_c1.getId()).get();
+		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+		
+		// delete _c1 -> NOT_FOUND
+		_response = webclient.replacePath(_c1.getId()).delete();		
+		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+		
+		// read _c1 -> NOT_FOUND
+		_response = webclient.replacePath(_c1.getId()).get();
+		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 
 }

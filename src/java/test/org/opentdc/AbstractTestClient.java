@@ -30,66 +30,53 @@ import org.apache.cxf.jaxrs.JAXRSBindingFactory;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
-import org.junit.AfterClass;
-import org.opentdc.addressbooks.AddressbooksService;
 
-public abstract class AbstractTestClient {
+public abstract class AbstractTestClient<T> {
+	private static final String DEFAULT_URL = "http://localhost:8080/opentdc-services-test/";
+	protected static int LIMIT = 10;
 
-	protected static WebClient webclient = null;
-	protected static int status;
-	protected static String apiUrl = "";
+	protected WebClient webclient = null;
+	protected int status;
+	protected String apiUrl = "";
 
-	public static WebClient createWebClient(
-		String api
-	) {
-		String serviceUrl = "http://localhost:8080/opentdc-services-test/";
-		if(
-			System.getProperty("service.url") != null && 
-			System.getProperty("service.url").startsWith("http://")
-		) {
-			serviceUrl = System.getProperty("service.url");
+	protected String createUrl(
+		String api) {
+		String _serviceUrl = DEFAULT_URL;
+		if(System.getProperty("service.url") != null && 
+			System.getProperty("service.url").startsWith("http://")) {
+			_serviceUrl = System.getProperty("service.url");
 		}
-		if(!serviceUrl.endsWith("/")) {
-			serviceUrl = serviceUrl + "/";
+		if (!_serviceUrl.endsWith("/")) {
+			_serviceUrl = _serviceUrl + "/";
 		}
-		apiUrl = serviceUrl + api;
-		System.out.println("initializing " + apiUrl);
+		return _serviceUrl + api;
+	}
+	
+	public WebClient createWebClient(
+		Class<T> serviceClass) {
 		JAXRSClientFactoryBean _sf = new JAXRSClientFactoryBean();
-		_sf.setResourceClass(AddressbooksService.class);
+		_sf.setResourceClass(serviceClass);
 		_sf.setAddress(apiUrl);
 		BindingFactoryManager _manager = _sf.getBus().getExtension(BindingFactoryManager.class);
 		JAXRSBindingFactory _factory = new JAXRSBindingFactory();
 		_factory.setBus(_sf.getBus());
 		_manager.registerBindingFactory(JAXRSBindingFactory.JAXRS_BINDING_ID, _factory);
-		// AddressbookService _service = _sf.create(AddressbookService.class);
 		WebClient webclient = _sf.createWebClient();
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 		return webclient;
 	}
 	
-	public static void initializeTests(
-		String api
+	protected void initializeTests(
+		String api,
+		Class<T> serviceClass
 	) {
-		webclient = createWebClient(api);
-	}
-
-	public static int getStatus(
-	) {
-		return status;
+		apiUrl = createUrl(api);
+		webclient = createWebClient(serviceClass);
 	}
 	
 	@After
-	public void reset(
-	) {
-		System.out.println("resetting the web client " + apiUrl);
-		webclient.reset();
-	}
-
-	@AfterClass
-	public static void cleanup(
-	) {
-		System.out.println("cleaning up " + apiUrl);
+	public void reset() {
+		// webclient.reset();
 		webclient.close();
 	}
-	
 }

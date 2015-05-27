@@ -7,6 +7,7 @@
 	<property name="junit.home" location="${env.JUNIT_HOME}" />
 	<property name="src.dir" value="src/java" />
 	<property name="build.dir" value="build/${java.build.platform}/bin" />
+	<property name="log.dir" value="build/${java.build.platform}/log" />
 	<property name="tmp.dir" value="build/${java.build.platform}/temp" />
 	<property name="junit.test.case" value="*Test" />
 	
@@ -39,14 +40,15 @@
 		</javac>
 	</target>
 
-  <target name="deliverables" depends="javac" description="Create deliverables">
-    <jar destfile="../${java.build.platform}/test-solution/lib/opentdc-test-solution.jar">
-    	<zipfileset dir="${build.dir}" /> 
-  	</jar>
-  </target>
+	<target name="deliverables" depends="javac" description="Create deliverables">
+		<jar destfile="../${java.build.platform}/test-solution/lib/opentdc-test-solution.jar">
+			<zipfileset dir="${build.dir}" /> 
+		</jar>
+	</target>
 	
 	<target name="clean" description="Cleans this project">
 		<delete dir="${build.dir}" failonerror="false" />
+		<delete dir="${log.dir}" failonerror="false" />
 	</target>
 
 	<target name="test" depends="deliverables">
