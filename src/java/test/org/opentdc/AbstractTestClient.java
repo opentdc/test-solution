@@ -66,7 +66,7 @@ public abstract class AbstractTestClient<T> {
 		return webclient;
 	}
 	
-	protected void initializeTests(
+	protected void initializeTest(
 		String api,
 		Class<T> serviceClass
 	) {

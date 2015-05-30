@@ -49,7 +49,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	@Before
 	public void initializeTests(
 	) {
-		initializeTests(API, WorkRecordsService.class);
+		initializeTest(API, WorkRecordsService.class);
 	}
 	
 	/********************************** workrecord tests *********************************/	

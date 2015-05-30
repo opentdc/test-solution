@@ -46,9 +46,9 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	private static final String API = "api/company/";	
 	
 	@Before
-	public void initializeTests(
+	public void initializeTest(
 	) {
-		initializeTests(API, WttService.class);
+		initializeTest(API, WttService.class);
 	}
 	
 	/********************************** company tests *********************************/	

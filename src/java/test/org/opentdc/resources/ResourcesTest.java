@@ -48,7 +48,7 @@ public class ResourcesTest extends AbstractTestClient<ResourcesService> {
 	@Before
 	public void initializeTests(
 	) {
-		initializeTests(API, ResourcesService.class);
+		initializeTest(API, ResourcesService.class);
 	}
 	
 	/********************************** resource tests *********************************/	

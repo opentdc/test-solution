@@ -33,6 +33,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
@@ -51,12 +52,18 @@ public class ResourceRefTest extends AbstractTestClient<WttService> {
 	public static final String PATH_EL_PROJECT = "project";
 
 	@Before
-	public void initializeTests() {
-		initializeTests(API, WttService.class);
+	public void initializeTest() {
+		initializeTest(API, WttService.class);
 		Response _response = webclient.replacePath("/").post(new CompanyModel());
 		company = _response.readEntity(CompanyModel.class);
 		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
 		parentProject = _response.readEntity(ProjectModel.class);
+	}
+	
+	@After
+	public void cleanupTest() {
+		webclient.replacePath(company.getId()).delete();
+		webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).delete();
 	}
 
 	/********************************** resourceRef tests *********************************/
@@ -129,7 +136,7 @@ public class ResourceRefTest extends AbstractTestClient<WttService> {
 		assertNull("lastname should not be set by empty constructor", _c1.getLastName());
 		// create(_c1) -> _c2
 		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_RESOURCE).post(_c1);
-		assertEquals("create() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
@@ -187,7 +194,7 @@ public class ResourceRefTest extends AbstractTestClient<WttService> {
 		assertNull("lastname should not change after remote create", _c2.getLastName());
 		
 		// delete(_c2)
-		 _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_RESOURCE).path(_c2.getId()).delete();
+		 _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).path(PATH_EL_RESOURCE).path(_c2.getId()).delete();
 		assertEquals("delete(" + _c2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());		
 		// delete(_p2)
 		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).delete();
@@ -272,14 +279,6 @@ public class ResourceRefTest extends AbstractTestClient<WttService> {
 		assertEquals("resourceId should be set correctly", "MY_RESID2", _c4.getResourceId());
 		assertEquals("firstname should be set correctly", "MY_FNAME2", _c4.getFirstName());
 		assertEquals("lastname should be set correctly", "MY_LNAME2", _c4.getLastName());
-
-		// delete(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_RESOURCE).path(_c1.getId()).delete();
-		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-
-		// delete(_c2) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_RESOURCE).path(_c2.getId()).delete();
-		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 
 		// delete(_c3) -> NO_CONTENT
 		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_RESOURCE).path(_c3.getId()).delete();

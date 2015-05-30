@@ -47,9 +47,9 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 	private static final String API = "api/rate/";
 
 	@Before
-	public void initializeTests(
+	public void initializeTest(
 	) {
-		initializeTests(API, RatesService.class);
+		initializeTest(API, RatesService.class);
 	}
 	
 	/********************************** rates tests *********************************/	
@@ -419,7 +419,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		// new() -> _c1
 		RatesModel _c1 = new RatesModel();
 		
-		// create(_c1) -> _c2
+		// create(_c1) -> _c2		
 		Response _response = webclient.replacePath("/").post(_c1);
 		RatesModel _c2 = _response.readEntity(RatesModel.class);
 		

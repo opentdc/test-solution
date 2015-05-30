@@ -46,9 +46,9 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 	private static final String API = "api/addressbooks/";
 
 	@Before
-	public void initializeTests(
+	public void initializeTest(
 	) {
-		initializeTests(API, AddressbooksService.class);
+		initializeTest(API, AddressbooksService.class);
 	}
 		
 	/********************************** addressbook tests *********************************/	

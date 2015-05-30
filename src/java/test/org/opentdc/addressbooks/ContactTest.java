@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
@@ -26,11 +27,16 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		private static AddressbookModel adb = null;
 
 		@Before
-		public void initializeTests(
+		public void initializeTest(
 		) {
-			initializeTests(API, AddressbooksService.class);
+			initializeTest(API, AddressbooksService.class);
 			Response _response = webclient.replacePath("/").post(new AddressbookModel());
 			adb = _response.readEntity(AddressbookModel.class);
+		}
+		
+		@After
+		public void cleanupTest() {
+			webclient.replacePath(adb.getId()).delete();
 		}
 		
 		/********************************** contact tests *********************************/			

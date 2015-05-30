@@ -47,7 +47,7 @@ public class UserTest extends AbstractTestClient<UsersService> {
 
 	@Before
 	public void initializeTests() {
-		initializeTests(API, UsersService.class);
+		initializeTest(API, UsersService.class);
 	}
 	
 	/********************************** users tests *********************************/	

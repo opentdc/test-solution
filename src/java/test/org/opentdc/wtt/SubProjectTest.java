@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
@@ -30,15 +31,21 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 	private static ProjectModel parentProject = null;
 
 	@Before
-	public void initializeTests(
+	public void initializeTest(
 	) {
-		initializeTests(API, WttService.class);
+		initializeTest(API, WttService.class);
 		Response _response = webclient.replacePath("/").post(new CompanyModel());
 		company = _response.readEntity(CompanyModel.class);
 		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
 		parentProject = _response.readEntity(ProjectModel.class);
 	}
-	
+
+	@After
+	public void cleanupTest() {
+		webclient.replacePath(company.getId()).delete();
+		webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).delete();
+	}
+
 	/********************************** subproject tests *********************************/		
 	// create:  POST p "api/company/{cid}/project/{pid}/project"
 	// read:    GET "api/company/{cid}/project/{pid}/project/{spid}"
@@ -314,7 +321,7 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 		assertEquals("description should have changed", "MY_DESC", _p3.getDescription());
 
 		// reset the attributes
-		// update(_c2) -> _p4
+		// update(_p2) -> _p4
 		_p2.setTitle("MY_TITLE2");
 		_p2.setDescription("MY_DESC2");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);

@@ -10,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressModel;
@@ -28,13 +29,19 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 	private static ContactModel contact = null;
 
 	@Before
-	public void initializeTests(
+	public void initializeTest(
 	) {
-		initializeTests(API, AddressbooksService.class);
+		initializeTest(API, AddressbooksService.class);
 		Response _response = webclient.replacePath("/").post(new AddressbookModel());
 		adb = _response.readEntity(AddressbookModel.class);
 		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(new ContactModel());
 		contact = _response.readEntity(ContactModel.class);
+	}
+	
+	@After
+	public void cleanupTest() {
+		webclient.replacePath(adb.getId()).delete();
+		webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).delete();
 	}
 
 	/********************************** address tests *********************************/			

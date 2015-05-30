@@ -34,6 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
@@ -49,11 +50,15 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 	private static CompanyModel company = null;
 
 	@Before
-	public void initializeTests(
-	) {
-		initializeTests(API, WttService.class);
+	public void initializeTest() {
+		initializeTest(API, WttService.class);
 		Response _response = webclient.replacePath("/").post(new CompanyModel());
 		company = _response.readEntity(CompanyModel.class);
+	}
+	
+	@After
+	public void cleanupTest() {
+		webclient.replacePath(company.getId()).delete();
 	}
 	
 	/********************************** project tests *********************************/			
