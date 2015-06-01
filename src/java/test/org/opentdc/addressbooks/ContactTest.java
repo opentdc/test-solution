@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.service.GenericService;
 
 import test.org.opentdc.AbstractTestClient;
 
@@ -39,7 +40,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			webclient.replacePath(adb.getId()).delete();
 		}
 		
-		/********************************** contact tests *********************************/			
+		/********************************** contact tests *********************************/	
 		@Test
 		public void testContactModelEmptyConstructor() {
 			// new() -> _p
@@ -410,11 +411,14 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_localList.add(_response.readEntity(ContactModel.class));
 			}
+			assertEquals("size of lists should be the same", LIMIT, _localList.size());
 			
 			// list(/) -> _remoteList
 			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).get();
 			List<ContactModel> _remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			assertEquals("size of lists should be the same", LIMIT, _remoteList.size());
+			// implicit proof: _localList.size() = _remoteList.size = LIMIT
 
 			ArrayList<String> _remoteListIds = new ArrayList<String>();
 			for (ContactModel _p : _remoteList) {
@@ -435,6 +439,120 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 				_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_p.getId()).delete();
 				assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			}
+		}
+
+		@Test
+		public void testContactListBatchDefSizeStatic() {
+			ArrayList<ContactModel> _localList = new ArrayList<ContactModel>();		
+			Response _response = null;
+			webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT);
+			// we want to allocate more than double the amount of default list size objects
+			int _batchSize = GenericService.DEF_SIZE;
+			int _increment = 5;
+			int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
+			for (int i = 0; i < _limit2; i++) {
+				// create(new()) -> _localList
+				_response = webclient.post(new ContactModel());
+				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+				_localList.add(_response.readEntity(ContactModel.class));
+			}
+			// get first batch
+			// list(position=0, size=25) -> elements 0 .. 24
+			webclient.reset();  // obviously, query params are not reset with replacePath only
+			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).get();
+			List<ContactModel> _remoteList1 = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
+			
+			// get second batch
+			// list(position=25, size=25) -> elements 25 .. 49
+			webclient.reset();  // obviously, query params are not reset with replacePath only
+			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).query("position", 25).get();
+			List<ContactModel> _remoteList2 = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
+			
+			// get rest 
+			// list(position=50, size=25) ->   elements 50 .. 54
+			webclient.reset();  // obviously, query params are not reset with replacePath only
+			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).query("position", 50).get();
+			List<ContactModel> _remoteList3 = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			assertEquals("size of lists should be the same", _increment, _remoteList3.size());
+		}
+		
+		@Test
+		public void testContactListIterate() {
+			ArrayList<ContactModel> _localList = new ArrayList<ContactModel>();		
+			Response _response = null;
+			webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT);
+			// we want to allocate more than double the amount of default list size objects
+			int _increment = 5;
+			int _limit2 = 2 * GenericService.DEF_SIZE + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
+			for (int i = 0; i < _limit2; i++) {
+				// create(new()) -> _localList
+				_response = webclient.post(new ContactModel());
+				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+				_localList.add(_response.readEntity(ContactModel.class));
+			}
+			int _numberOfBatches = 0;
+			int _numberOfReturnedObjects = 0;
+			int _position = 0;
+			List<ContactModel> _remoteList = null;
+			while(true) {
+				_numberOfBatches++;
+				webclient.reset();
+				_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).query("position", _position).get();
+				_remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+				assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+				_numberOfReturnedObjects += _remoteList.size();
+				if (_remoteList.size() < GenericService.DEF_SIZE) {
+					break;
+				} else {
+					_position += GenericService.DEF_SIZE;					
+				}
+			}
+			assertEquals("number of batches should be as expected", 3, _numberOfBatches);
+			assertEquals("should have returned all objects", _limit2, _numberOfReturnedObjects);
+			assertEquals("last batch size should be as expected", _increment, _remoteList.size());
+		}
+		
+		@Test
+		public void testContactListBatchExplicitSizePosition() {
+			ArrayList<ContactModel> _localList = new ArrayList<ContactModel>();		
+			Response _response = null;
+			webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT);
+			// we want to allocate more than double the amount of default list size objects
+			int _increment = 5;
+			int _limit2 = 2 * GenericService.DEF_SIZE + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
+			for (int i = 0; i < _limit2; i++) {
+				// create(new()) -> _localList
+				_response = webclient.post(new ContactModel());
+				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+				_localList.add(_response.readEntity(ContactModel.class));
+			}
+			List<ContactModel> _remoteList = null;
+			
+			webclient.reset();  // obviously, query params are not reset with replacePath only
+			// get next 5 elements from position 5
+			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).query("position", 5).query("size", 5).get();
+			_remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			assertEquals("list() should return correct number of elements", 5, _remoteList.size());
+			
+			// get last 4 elements 
+			webclient.reset();
+			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).query("position", _limit2-4).query("size", 4).get();
+			_remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			assertEquals("list() should return correct number of elements", 4, _remoteList.size());
+			
+			// read over end of list
+			webclient.reset();
+			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).query("position", _limit2-5).query("size", 10).get();
+			_remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		}
 
 		@Test
@@ -552,7 +670,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			// TODO: "reading a non-existing project should fail"
 
 			for (ContactModel _p : _localList) {
-				_response = webclient.replacePath(_p.getId()).delete();
+				_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_p.getId()).delete();
 				assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			}
 		}
@@ -744,7 +862,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_c1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		}
-		
+
 		/********************************** helper methods *********************************/			
 		private ContactModel setDefaultValues(ContactModel cm, Date bdate, String suffix) {
 			cm.setBirthday(bdate);

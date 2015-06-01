@@ -30,10 +30,11 @@ import org.apache.cxf.jaxrs.JAXRSBindingFactory;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
+import org.opentdc.service.GenericService;
 
 public abstract class AbstractTestClient<T> {
 	private static final String DEFAULT_URL = "http://localhost:8080/opentdc-services-test/";
-	protected static int LIMIT = 10;
+	protected static int LIMIT;			// when testing lists, this defined the number of elements in a list
 
 	protected WebClient webclient = null;
 	protected int status;
@@ -72,6 +73,16 @@ public abstract class AbstractTestClient<T> {
 	) {
 		apiUrl = createUrl(api);
 		webclient = createWebClient(serviceClass);
+		
+		// ensure that LIMIT < GenericeService.DEF_SIZE (for testing purposes)
+		if (GenericService.DEF_SIZE > 10) {
+			LIMIT = 10;
+		}
+		/*  dead code, if DEF_SIZE is set > 10
+		else {
+			throw new Exception("AbstractTestClient.LIMIT needs to be set smaller than GenericService.DEF_SIZE");
+		}
+		*/
 	}
 	
 	@After
