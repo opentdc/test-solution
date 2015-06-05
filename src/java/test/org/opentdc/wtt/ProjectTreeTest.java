@@ -1,10 +1,6 @@
 package test.org.opentdc.wtt;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -70,7 +66,7 @@ public static final String API = "api/company/";
 		// generate 3 subprojects on _p1 -> _p1p1, _p1p2, _p1p3, each with 1 resource
 		ProjectModel _p1p1 = createSubProject(_p1.getId(), "p1p1");
 		createResource(_p1p1.getId());
-		ProjectModel _p1p1p1 = createSubProject(_p1p1.getId(), "p1p1p1");
+		createSubProject(_p1p1.getId(), "p1p1p1");
 		ProjectModel _p1p2 = createSubProject(_p1.getId(), "p1p2");
 		createResource(_p1p2.getId());
 		ProjectModel _p1p3 = createSubProject(_p1.getId(), "p1p3");

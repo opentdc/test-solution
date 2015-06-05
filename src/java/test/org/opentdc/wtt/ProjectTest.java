@@ -58,7 +58,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 	
 	@After
 	public void cleanupTest() {
-		webclient.replacePath(company.getId()).delete();
+		webclient.replacePath("/").path(company.getId()).delete();
 	}
 	
 	/********************************** project tests *********************************/			

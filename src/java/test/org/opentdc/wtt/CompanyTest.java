@@ -220,7 +220,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
-	
+
 	@Test
 	public void testCompanyCreate() {
 		// new("MY_TITLE", "MY_DESC") -> _c1

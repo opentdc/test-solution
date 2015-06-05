@@ -248,7 +248,7 @@ public class ResourceRefTest extends AbstractTestClient<WttService> {
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
-	
+
 	private ResourceRefModel createResRef(String suffix) {
 		return new ResourceRefModel("MY_RESID" + suffix, "MY_FNAME" + suffix, "MY_LNAME" + suffix);
 	}

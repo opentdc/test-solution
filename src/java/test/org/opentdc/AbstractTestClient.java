@@ -53,7 +53,7 @@ public abstract class AbstractTestClient<T> {
 		return _serviceUrl + api;
 	}
 	
-	public WebClient createWebClient(
+	protected WebClient createWebClient(
 		Class<T> serviceClass) {
 		JAXRSClientFactoryBean _sf = new JAXRSClientFactoryBean();
 		_sf.setResourceClass(serviceClass);

@@ -331,7 +331,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
-	
+		
 	@Test
 	public void testWorkRecordCreate() {
 		// new("PID1", "RID1", _date1, 10, 10, "RATEID1", true, "MY_COMMENT1") -> _c1

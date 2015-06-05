@@ -34,14 +34,18 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 		initializeTest(API, AddressbooksService.class);
 		Response _response = webclient.replacePath("/").post(new AddressbookModel());
 		adb = _response.readEntity(AddressbookModel.class);
+		System.out.println("AddressTest posted AddressbookModel " + adb.getId());
 		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(new ContactModel());
 		contact = _response.readEntity(ContactModel.class);
+		System.out.println("AddressTest posted ContactModel " + contact.getId());
 	}
 	
 	@After
 	public void cleanupTest() {
-		webclient.replacePath(adb.getId()).delete();
 		webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).delete();
+		System.out.println("AddressTest deleted ContactModel " + contact.getId());
+		webclient.replacePath("/").path(adb.getId()).delete();
+		System.out.println("AddressTest deleted AddressbookModel " + adb.getId());
 	}
 
 	/********************************** address tests *********************************/			
@@ -299,7 +303,7 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 
 		// new() -> _p3 -> _p3.setId(_p2.getId())
 		AddressModel _p3 = new AddressModel();
-		_p3.setId(_p2.getId());		// wrongly create a 2nd ContactModel object with the same ID
+		_p3.setId(_p2.getId());		// wrongly create a 2nd AddressModel object with the same ID
 		
 		// create(_p3) -> CONFLICT
 		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_p3);
