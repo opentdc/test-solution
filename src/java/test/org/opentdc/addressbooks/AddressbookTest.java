@@ -88,6 +88,43 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 	}
 	
 	@Test
+	public void testAddressbookCreatedBy() {
+		// new() -> _o -> _o.setCreatedBy()
+		AddressbookModel _o = new AddressbookModel();
+		assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
+		_o.setCreatedBy("MY_NAME");
+		assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+	}
+	
+	@Test
+	public void testAddressbookCreatedAt() {
+		// new() -> _o -> _o.setCreatedAt()
+		AddressbookModel _o = new AddressbookModel();
+		assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
+		_o.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _o.getCreatedAt());
+	}
+		
+	@Test
+	public void testAddressbookModifiedBy() {
+		// new() -> _o -> _o.setModifiedBy()
+		AddressbookModel _o = new AddressbookModel();
+		assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
+		_o.setModifiedBy("MY_NAME");
+		assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+	}
+	
+	@Test
+	public void testAddressbookModifiedAt() {
+		// new() -> _o -> _o.setModifiedAt()
+		AddressbookModel _o = new AddressbookModel();
+		assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
+		_o.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+	}
+
+	/********************************** addressbook REST service tests *********************************/	
+	@Test
 	public void testAddressbookCreateReadDeleteWithEmptyConstructor() {
 		// new() -> _c1
 		AddressbookModel _c1 = new AddressbookModel();

@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
@@ -66,7 +67,7 @@ public class ResourceRefTest extends AbstractTestClient<WttService> {
 		webclient.replacePath("/").path(company.getId()).delete();
 	}
 
-	/********************************** resourceRef tests *********************************/
+	/********************************** resourceRef attribute tests *********************************/
 	@Test
 	public void testResourceRefModelEmptyConstructor() {
 		// new() -> _c
@@ -123,6 +124,43 @@ public class ResourceRefTest extends AbstractTestClient<WttService> {
 		assertEquals("lastname should have changed:", "MY_LNAME", _c.getLastName());
 	}
 	
+	@Test
+	public void testResourceRefCreatedBy() {
+		// new() -> _o -> _o.setCreatedBy()
+		ResourceRefModel _o = new ResourceRefModel();
+		assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
+		_o.setCreatedBy("MY_NAME");
+		assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+	}
+	
+	@Test
+	public void testResourceRefCreatedAt() {
+		// new() -> _o -> _o.setCreatedAt()
+		ResourceRefModel _o = new ResourceRefModel();
+		assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
+		_o.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _o.getCreatedAt());
+	}
+		
+	@Test
+	public void testResourceRefModifiedBy() {
+		// new() -> _o -> _o.setModifiedBy()
+		ResourceRefModel _o = new ResourceRefModel();
+		assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
+		_o.setModifiedBy("MY_NAME");
+		assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+	}
+	
+	@Test
+	public void testResourceRefModifiedAt() {
+		// new() -> _o -> _o.setModifiedAt()
+		ResourceRefModel _o = new ResourceRefModel();
+		assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
+		_o.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+	}
+
+	/********************************* REST service tests *********************************/	
 	// list: GET "api/company/{cid}/project/{pid}/resource"
 	// add:  POST "api/company/{cid}/project/{pid}/resource"
 	// delete:  DELETE "api/company/{cid}/project/{pid}/resource/{rid}"

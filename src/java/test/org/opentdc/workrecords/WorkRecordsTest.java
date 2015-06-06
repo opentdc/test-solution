@@ -52,7 +52,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		initializeTest(API, WorkRecordsService.class);
 	}
 	
-	/********************************** workrecord tests *********************************/	
+	/********************************** workrecord attributes tests *********************************/	
 	@Test
 	public void testWorkRecordModelEmptyConstructor() {
 		// new() -> _c
@@ -157,6 +157,43 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable should have changed:", true, _c.isBillable());
 	}
 	
+	@Test
+	public void testWorkRecordCreatedBy() {
+		// new() -> _o -> _o.setCreatedBy()
+		WorkRecordModel _o = new WorkRecordModel();
+		assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
+		_o.setCreatedBy("MY_NAME");
+		assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+	}
+	
+	@Test
+	public void testWorkRecordCreatedAt() {
+		// new() -> _o -> _o.setCreatedAt()
+		WorkRecordModel _o = new WorkRecordModel();
+		assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
+		_o.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _o.getCreatedAt());
+	}
+		
+	@Test
+	public void testWorkRecordModifiedBy() {
+		// new() -> _o -> _o.setModifiedBy()
+		WorkRecordModel _o = new WorkRecordModel();
+		assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
+		_o.setModifiedBy("MY_NAME");
+		assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+	}
+	
+	@Test
+	public void testWorkRecordModifiedAt() {
+		// new() -> _o -> _o.setModifiedAt()
+		WorkRecordModel _o = new WorkRecordModel();
+		assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
+		_o.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+	}
+
+	/********************************* REST service tests *********************************/	
 	@Test
 	public void testWorkRecordCreateReadDeleteWithEmptyConstructor() {
 		// new() -> _c1

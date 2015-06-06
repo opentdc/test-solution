@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -50,7 +51,7 @@ public class UserTest extends AbstractTestClient<UsersService> {
 		initializeTest(API, UsersService.class);
 	}
 	
-	/********************************** users tests *********************************/	
+	/********************************** users attributes tests *********************************/	
 	@Test
 	public void testUserModelEmptyConstructor() {
 		// new() -> _c
@@ -118,6 +119,43 @@ public class UserTest extends AbstractTestClient<UsersService> {
 		assertEquals("salt should have changed:", "MY_SALT", _c.getSalt());
 	}
 		
+	@Test
+	public void testUserCreatedBy() {
+		// new() -> _o -> _o.setCreatedBy()
+		UserModel _o = new UserModel();
+		assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
+		_o.setCreatedBy("MY_NAME");
+		assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+	}
+	
+	@Test
+	public void testUserCreatedAt() {
+		// new() -> _o -> _o.setCreatedAt()
+		UserModel _o = new UserModel();
+		assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
+		_o.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _o.getCreatedAt());
+	}
+		
+	@Test
+	public void testUserModifiedBy() {
+		// new() -> _o -> _o.setModifiedBy()
+		UserModel _o = new UserModel();
+		assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
+		_o.setModifiedBy("MY_NAME");
+		assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+	}
+	
+	@Test
+	public void testUserModifiedAt() {
+		// new() -> _o -> _o.setModifiedAt()
+		UserModel _o = new UserModel();
+		assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
+		_o.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+	}
+
+	/********************************* REST service tests *********************************/	
 	@Test
 	public void testUserCreateReadDeleteWithEmptyConstructor() {
 		// new() -> _c1

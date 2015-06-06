@@ -41,7 +41,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			System.out.println("ContactTest deleted AddressbookModel " + adb.getId());
 		}
 		
-		/********************************** contact tests *********************************/	
+		/********************************** contact attribute tests *********************************/	
 		@Test
 		public void testContactModelEmptyConstructor() {
 			// new() -> _p
@@ -213,6 +213,43 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("Suffix should have changed:", "MY_SUFFIX", _p.getSuffix());
 		}
 
+		@Test
+		public void testContactCreatedBy() {
+			// new() -> _o -> _o.setCreatedBy()
+			ContactModel _o = new ContactModel();
+			assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
+			_o.setCreatedBy("MY_NAME");
+			assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+		}
+		
+		@Test
+		public void testContactCreatedAt() {
+			// new() -> _o -> _o.setCreatedAt()
+			ContactModel _o = new ContactModel();
+			assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
+			_o.setCreatedAt(new Date());
+			assertNotNull("createdAt should have changed", _o.getCreatedAt());
+		}
+			
+		@Test
+		public void testContactModifiedBy() {
+			// new() -> _o -> _o.setModifiedBy()
+			ContactModel _o = new ContactModel();
+			assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
+			_o.setModifiedBy("MY_NAME");
+			assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+		}
+		
+		@Test
+		public void testContactModifiedAt() {
+			// new() -> _o -> _o.setModifiedAt()
+			ContactModel _o = new ContactModel();
+			assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
+			_o.setModifiedAt(new Date());
+			assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+		}
+
+		/********************************* REST service tests *********************************/	
 				
 		@Test
 		public void testContactCreateReadDeleteWithEmptyConstructor() {

@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -51,7 +52,7 @@ public class ResourcesTest extends AbstractTestClient<ResourcesService> {
 		initializeTest(API, ResourcesService.class);
 	}
 	
-	/********************************** resource tests *********************************/	
+	/********************************** resource attributes tests *********************************/	
 	@Test
 	public void testResourceModelEmptyConstructor() {
 		// new() -> _c
@@ -119,6 +120,43 @@ public class ResourcesTest extends AbstractTestClient<ResourcesService> {
 		assertEquals("contactId should have changed:", "MY_ID", _c.getContactId());
 	}
 	
+	@Test
+	public void testResourceCreatedBy() {
+		// new() -> _o -> _o.setCreatedBy()
+		ResourceModel _o = new ResourceModel();
+		assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
+		_o.setCreatedBy("MY_NAME");
+		assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+	}
+	
+	@Test
+	public void testResourceCreatedAt() {
+		// new() -> _o -> _o.setCreatedAt()
+		ResourceModel _o = new ResourceModel();
+		assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
+		_o.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _o.getCreatedAt());
+	}
+		
+	@Test
+	public void testResourceModifiedBy() {
+		// new() -> _o -> _o.setModifiedBy()
+		ResourceModel _o = new ResourceModel();
+		assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
+		_o.setModifiedBy("MY_NAME");
+		assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+	}
+	
+	@Test
+	public void testResourceModifiedAt() {
+		// new() -> _o -> _o.setModifiedAt()
+		ResourceModel _o = new ResourceModel();
+		assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
+		_o.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+	}
+
+	/********************************* REST service tests *********************************/	
 	@Test
 	public void testResourceCreateReadDeleteWithEmptyConstructor() {
 		// new() -> _c1

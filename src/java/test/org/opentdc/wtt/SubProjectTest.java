@@ -48,7 +48,10 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 		webclient.replacePath("/").path(company.getId()).delete();
 	}
 
-	/********************************** subproject tests *********************************/		
+	/********************************** subproject attributes tests *********************************/	
+	// testing of attributes is not needed here, because subProject use the same Model as Projects
+	
+	/********************************** REST service tests *********************************/		
 	// create:  POST p "api/company/{cid}/project/{pid}/project"
 	// read:    GET "api/company/{cid}/project/{pid}/project/{spid}"
 	// update:  PUT p "api/company/{cid}/project/{pid}/project/{spid}"
