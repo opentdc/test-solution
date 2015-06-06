@@ -61,7 +61,7 @@ public class ResourceRefBatchedListTest extends AbstractTestClient<WttService> {
 	@After
 	public void cleanupTest() {
 		webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).delete();
-		webclient.replacePath(company.getId()).delete();
+		webclient.replacePath("/").path(company.getId()).delete();
 	}
 
 	@Test

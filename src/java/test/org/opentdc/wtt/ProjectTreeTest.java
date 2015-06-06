@@ -28,8 +28,7 @@ public static final String API = "api/company/";
 		
 	@After
 	public void cleanupTest() {
-		webclient.reset();
-//		webclient.replacePath(company.getId()).delete();
+		webclient.replacePath("/").path(company.getId()).delete();
 	}
 	
 	private ProjectModel createProject(String title) {

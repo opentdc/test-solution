@@ -196,10 +196,9 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 	public void testProjectList() {
 		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();		
 		Response _response = null;
-		webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT);
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = webclient.post(new ProjectModel());
+			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ProjectModel.class));
 		}
@@ -311,9 +310,6 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 			assertEquals("ID should be unchanged when reading a project", _p.getId(), _tmpObj.getId());						
 		}
 
-		// TODO: "reading a project with ID = null should fail" -> ValidationException
-		// TODO: "reading a non-existing project should fail"
-
 		for (ProjectModel _p : _localList) {
 			_response = webclient.replacePath(_p.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -404,16 +400,10 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_c0);
 		ProjectModel _c1 = _response.readEntity(ProjectModel.class);
 		
-		// read(_c0) -> _tmpObj
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _tmpObj = _response.readEntity(ProjectModel.class);
-		assertEquals("ID should be unchanged when reading a project (remote):", _c1.getId(), _tmpObj.getId());						
-
 		// read(_c1) -> _tmpObj
 		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		_tmpObj = _response.readEntity(ProjectModel.class);
+		ProjectModel _tmpObj = _response.readEntity(ProjectModel.class);
 		assertEquals("ID should be unchanged when reading a project (remote):", _c1.getId(), _tmpObj.getId());						
 		
 		// delete(_c1) -> OK

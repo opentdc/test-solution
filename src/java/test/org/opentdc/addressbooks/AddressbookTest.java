@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -51,7 +52,7 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		initializeTest(API, AddressbooksService.class);
 	}
 		
-	/********************************** addressbook tests *********************************/	
+	/********************************** addressbook attribute tests *********************************/	
 	@Test
 	public void testAddressbookModelEmptyConstructor() {
 		// new() -> _c
@@ -74,7 +75,7 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		AddressbookModel _c = new AddressbookModel();
 		assertNull("id should not be set by constructor", _c.getId());
 		_c.setId("MY_ID");
-		assertEquals("id should have changed:", "MY_ID", _c.getId());
+		assertEquals("id should have changed", "MY_ID", _c.getId());
 	}
 
 	@Test
@@ -83,9 +84,9 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		AddressbookModel _c = new AddressbookModel();
 		assertNull("name should not be set by empty constructor", _c.getName());
 		_c.setName("MY_NAME");
-		assertEquals("name should have changed:", "MY_NAME", _c.getName());
+		assertEquals("name should have changed", "MY_NAME", _c.getName());
 	}
-		
+	
 	@Test
 	public void testAddressbookCreateReadDeleteWithEmptyConstructor() {
 		// new() -> _c1
