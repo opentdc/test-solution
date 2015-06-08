@@ -1,5 +1,5 @@
 /**
- * The MIT License (MIT)
+a * The MIT License (MIT)
  *
  * Copyright (c) 2015 Arbalo AG
  *
@@ -142,15 +142,21 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 		assertNull("id should not be set by empty constructor", _c1.getId());
 		assertNull("title should not be set by empty constructor", _c1.getTitle());
 		assertNull("description should not be set by empty constructor", _c1.getDescription());
-		// create(_c1) -> _c2
+		// create(_c1) -> BAD_REQUEST (because of empty title)
 		Response _response = webclient.replacePath("/").post(_c1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+
+		// create(_c1).setTitle("testCompanyCreateReadDeleteWithEmptyConstructor") -> _c2
+		_c1.setTitle("testCompanyCreateReadDeleteWithEmptyConstructor");
+		_response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());		
+		
 		CompanyModel _c2 = _response.readEntity(CompanyModel.class);
 		assertNull("create() should not change the id of the local object", _c1.getId());
-		assertNull("create() should not change the title of the local object", _c1.getTitle());
+		assertEquals("create() should not change the title of the local object", "testCompanyCreateReadDeleteWithEmptyConstructor", _c1.getTitle());
 		assertNull("create() should not change the description of the local object", _c1.getDescription());
 		assertNotNull("create() should set a valid id on the remote object returned", _c2.getId());
-		assertNull("title of returned object should still be null after remote create", _c2.getTitle());
+		assertEquals("create() should not change the title of the local object", "testCompanyCreateReadDeleteWithEmptyConstructor", _c2.getTitle());
 		assertNull("description of returned object should still be null after remote create", _c2.getDescription());
 		
 		// read(_c2) -> _c3
@@ -158,7 +164,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c3 = _response.readEntity(CompanyModel.class);
 		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
-		assertEquals("title of returned object should be unchanged after remote create", _c2.getTitle(), _c3.getTitle());
+		assertEquals("title of returned object should be unchanged after remote create", "testCompanyCreateReadDeleteWithEmptyConstructor", _c3.getTitle());
 		assertEquals("description of returned object should be unchanged after remote create", _c2.getDescription(), _c3.getDescription());
 
 		// delete(_c3)
@@ -169,20 +175,20 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	@Test
 	public void testCompanyCreateReadDelete() {
 		// new("MY_TITLE", "MY_DESC") -> _c1
-		CompanyModel _c1 = new CompanyModel("MY_TITLE", "MY_DESC");
+		CompanyModel _c1 = new CompanyModel("testCompanyCreateReadDelete", "MY_DESC");
 		assertNull("id should not be set by constructor", _c1.getId());
-		assertEquals("title should be set by constructor", "MY_TITLE", _c1.getTitle());
+		assertEquals("title should be set by constructor", "testCompanyCreateReadDelete", _c1.getTitle());
 		assertEquals("description should be set by constructor", "MY_DESC", _c1.getDescription());
 		// create(_c1) -> _c2
 		Response _response = webclient.replacePath("/").post(_c1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c2 = _response.readEntity(CompanyModel.class);
 		assertNull("id should be still null after remote create", _c1.getId());
-		assertEquals("title should be unchanged after remote create", "MY_TITLE", _c1.getTitle());
+		assertEquals("title should be unchanged after remote create", "testCompanyCreateReadDelete", _c1.getTitle());
 		assertEquals("description should be unchanged after remote create", "MY_DESC", _c1.getDescription());
 		
 		assertNotNull("id of returned object should be set", _c2.getId());
-		assertEquals("title of returned object should be unchanged after remote create", "MY_TITLE", _c2.getTitle());
+		assertEquals("title of returned object should be unchanged after remote create", "testCompanyCreateReadDelete", _c2.getTitle());
 		assertEquals("description of returned object should be unchanged after remote create", "MY_DESC", _c2.getDescription());
 
 		// read(_c2)  -> _c3
@@ -212,7 +218,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	@Test
 	public void testCreateCompanyWithDuplicateId() {
 		// create(new()) -> _c2
-		Response _response = webclient.replacePath("/").post(new CompanyModel());
+		Response _response = webclient.replacePath("/").post(new CompanyModel("testCreateCompanyWithDuplicateId", "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c2 = _response.readEntity(CompanyModel.class);
 
@@ -236,7 +242,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = webclient.replacePath("/").post(new CompanyModel());
+			_response = webclient.replacePath("/").post(new CompanyModel("testCompanyList" + i, "MY_DESC"));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(CompanyModel.class));
 		}
@@ -268,9 +274,9 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	@Test
 	public void testCompanyCreate() {
 		// new("MY_TITLE", "MY_DESC") -> _c1
-		CompanyModel _c1 = new CompanyModel("MY_TITLE", "MY_DESC");
+		CompanyModel _c1 = new CompanyModel("testCompanyCreate1", "MY_DESC1");
 		// new("MY_TITLE2", "MY_DESC2") -> _c2
-		CompanyModel _c2 = new CompanyModel("MY_TITLE2", "MY_DESC2");
+		CompanyModel _c2 = new CompanyModel("testCompanyCreate2", "MY_DESC2");
 		
 		// create(_c1)  -> _c3
 		Response _response = webclient.replacePath("/").post(_c1);
@@ -284,9 +290,9 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 		assertNotNull("ID should be set", _c3.getId());
 		assertNotNull("ID should be set", _c4.getId());
 		assertThat(_c4.getId(), not(equalTo(_c3.getId())));
-		assertEquals("title1 should be set correctly", "MY_TITLE", _c3.getTitle());
-		assertEquals("description1 should be set correctly", "MY_DESC", _c3.getDescription());
-		assertEquals("title2 should be set correctly", "MY_TITLE2", _c4.getTitle());
+		assertEquals("title1 should be set correctly", "testCompanyCreate1", _c3.getTitle());
+		assertEquals("description1 should be set correctly", "MY_DESC1", _c3.getDescription());
+		assertEquals("title2 should be set correctly", "testCompanyCreate2", _c4.getTitle());
 		assertEquals("description2 should be set correctly", "MY_DESC2", _c4.getDescription());
 
 		// delete(_c3) -> NO_CONTENT
@@ -302,7 +308,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	public void testCompanyDoubleCreate(
 	) {
 		// create(new()) -> _c
-		Response _response = webclient.replacePath("/").post(new CompanyModel());
+		Response _response = webclient.replacePath("/").post(new CompanyModel("testCompanyDoubleCreate", "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c = _response.readEntity(CompanyModel.class);
 		assertNotNull("ID should be set:", _c.getId());		
@@ -322,7 +328,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 		ArrayList<CompanyModel> _localList = new ArrayList<CompanyModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.replacePath("/").post(new CompanyModel());
+			_response = webclient.replacePath("/").post(new CompanyModel("testCompanyRead" + i, "MY_DESC"));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(CompanyModel.class));
 		}
@@ -357,7 +363,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	public void testCompanyMultiRead(
 	) {
 		// new() -> _c1
-		CompanyModel _c1 = new CompanyModel();
+		CompanyModel _c1 = new CompanyModel("testCompanyMultiRead", "MY_DESC");
 		
 		// create(_c1) -> _c2
 		Response _response = webclient.replacePath("/").post(_c1);
@@ -392,7 +398,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	public void testCompanyUpdate(
 	) {
 		// new() -> _c1
-		CompanyModel _c1 = new CompanyModel();
+		CompanyModel _c1 = new CompanyModel("testCompanyUpdate1", "MY_DESC1");
 		
 		// create(_c1) -> _c2
 		Response _response = webclient.replacePath("/").post(_c1);
@@ -400,8 +406,8 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 		
 		// change the attributes
 		// update(_c2) -> _c3
-		_c2.setTitle("MY_TITLE");
-		_c2.setDescription("MY_DESC");
+		_c2.setTitle("testCompanyUpdate2");
+		_c2.setDescription("MY_DESC2");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -409,13 +415,13 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 
 		assertNotNull("ID should be set", _c3.getId());
 		assertEquals("ID should be unchanged", _c2.getId(), _c3.getId());	
-		assertEquals("title should have changed", "MY_TITLE", _c3.getTitle());
-		assertEquals("description should have changed", "MY_DESC", _c3.getDescription());
+		assertEquals("title should have changed", "testCompanyUpdate2", _c3.getTitle());
+		assertEquals("description should have changed", "MY_DESC2", _c3.getDescription());
 
 		// reset the attributes
 		// update(_c2) -> _c4
-		_c2.setTitle("MY_TITLE2");
-		_c2.setDescription("MY_DESC2");
+		_c2.setTitle("testCompanyUpdate3");
+		_c2.setDescription("MY_DESC3");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -423,8 +429,8 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 
 		assertNotNull("ID should be set", _c4.getId());
 		assertEquals("ID should be unchanged", _c2.getId(), _c4.getId());	
-		assertEquals("title should have changed", "MY_TITLE2", _c4.getTitle());
-		assertEquals("description should have changed", "MY_DESC2", _c4.getDescription());
+		assertEquals("title should have changed", "testCompanyUpdate3", _c4.getTitle());
+		assertEquals("description should have changed", "MY_DESC3", _c4.getDescription());
 		
 		_response = webclient.replacePath("/").path(_c2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -434,7 +440,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	public void testCompanyDelete(
 	) {
 		// new() -> _c0
-		CompanyModel _c0 = new CompanyModel();
+		CompanyModel _c0 = new CompanyModel("testCompanyDelete1", "MY_DESC1");
 		// create(_c0) -> _c1
 		Response _response = webclient.replacePath("/").post(_c0);
 		CompanyModel _c1 = _response.readEntity(CompanyModel.class);
@@ -463,7 +469,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	public void testCompanyDoubleDelete(
 	) {
 		// new() -> _c0
-		CompanyModel _c0 = new CompanyModel();
+		CompanyModel _c0 = new CompanyModel("testCompanyDoubleDelete1", "MY_DESC1");
 		
 		// create(_c0) -> _c1
 		Response _response = webclient.replacePath("/").post(_c0);
@@ -493,7 +499,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 	@Test
 	public void testCompanyModifications() {
 		// create(new CompanyModel()) -> _o
-		Response _response = webclient.replacePath("/").post(new CompanyModel());
+		Response _response = webclient.replacePath("/").post(new CompanyModel("testCompanyModifications1", "MY_DESC1"));
 		CompanyModel _o = _response.readEntity(CompanyModel.class);
 		
 		// test createdAt and createdBy
@@ -506,7 +512,7 @@ public class CompanyTest extends AbstractTestClient<WttService> {
 		assertEquals("createdBy and modifiedBy should be identical after create()", _o.getCreatedBy(), _o.getModifiedBy());
 		
 		// update(_o)  -> _o2
-		_o.setTitle("NEW_TITLE");
+		_o.setTitle("testCompanyModifications2");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());

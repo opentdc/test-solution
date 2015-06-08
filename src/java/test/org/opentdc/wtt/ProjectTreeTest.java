@@ -22,7 +22,7 @@ public static final String API = "api/company/";
 	@Before
 	public void initializeTest() {
 		initializeTest(API, WttService.class);
-		Response _response = webclient.replacePath("/").post(new CompanyModel("MY_COMPANY", "MY_DESC"));
+		Response _response = webclient.replacePath("/").post(new CompanyModel("ProjectTreeTest", "MY_DESC"));
 		company = _response.readEntity(CompanyModel.class);
 	}
 		

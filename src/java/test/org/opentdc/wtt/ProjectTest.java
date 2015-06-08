@@ -53,7 +53,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 	@Before
 	public void initializeTest() {
 		initializeTest(API, WttService.class);
-		Response _response = webclient.replacePath("/").post(new CompanyModel());
+		Response _response = webclient.replacePath("/").post(new CompanyModel("ProjectTest", "MY_DESC"));
 		company = _response.readEntity(CompanyModel.class);
 	}
 	

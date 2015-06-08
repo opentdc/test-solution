@@ -52,7 +52,7 @@ public class ResourceRefBatchedListTest extends AbstractTestClient<WttService> {
 	@Before
 	public void initializeTest() {
 		initializeTest(API, WttService.class);
-		Response _response = webclient.replacePath("/").post(new CompanyModel());
+		Response _response = webclient.replacePath("/").post(new CompanyModel("ResourceRefBatchedListTest", "MY_DESC"));
 		company = _response.readEntity(CompanyModel.class);
 		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
 		parentProject = _response.readEntity(ProjectModel.class);

@@ -35,7 +35,7 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 	public void initializeTest(
 	) {
 		initializeTest(API, WttService.class);
-		Response _response = webclient.replacePath("/").post(new CompanyModel());
+		Response _response = webclient.replacePath("/").post(new CompanyModel("SubProjectTest", "MY_DESC"));
 		company = _response.readEntity(CompanyModel.class);
 		ProjectModel _pp = new ProjectModel();
 		_pp.setTitle("Parent Project");
