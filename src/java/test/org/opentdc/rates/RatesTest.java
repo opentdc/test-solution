@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -52,7 +53,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		initializeTest(API, RatesService.class);
 	}
 	
-	/********************************** rates tests *********************************/	
+	/********************************** rates attributes tests *********************************/	
 	@Test
 	public void testRatesModelEmptyConstructor() {
 		// new() -> _c
@@ -103,6 +104,43 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertEquals("rate should have changed", 100, _c.getRate());
 	}
 	
+	@Test
+	public void testRatesCreatedBy() {
+		// new() -> _o -> _o.setCreatedBy()
+		RatesModel _o = new RatesModel();
+		assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
+		_o.setCreatedBy("MY_NAME");
+		assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+	}
+	
+	@Test
+	public void testRatesCreatedAt() {
+		// new() -> _o -> _o.setCreatedAt()
+		RatesModel _o = new RatesModel();
+		assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
+		_o.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _o.getCreatedAt());
+	}
+		
+	@Test
+	public void testRatesModifiedBy() {
+		// new() -> _o -> _o.setModifiedBy()
+		RatesModel _o = new RatesModel();
+		assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
+		_o.setModifiedBy("MY_NAME");
+		assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+	}
+	
+	@Test
+	public void testRatesModifiedAt() {
+		// new() -> _o -> _o.setModifiedAt()
+		RatesModel _o = new RatesModel();
+		assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
+		_o.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+	}
+
+	/********************************* REST service tests *********************************/	
 	@Test
 	public void testRatesModelCurrencyAttributeChange() {
 		// new() -> _c -> _c.setCurrency()
@@ -175,25 +213,25 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 	
 	@Test
 	public void testRateCreateReadDelete() {
-		// new("MY_TITLE", 100, "MY_DESC") -> _c1
-		RatesModel _c1 = new RatesModel("MY_TITLE", 100, "MY_DESC");
+		// new("testRateCreateReadDelete1", 100, "MY_DESC") -> _c1
+		RatesModel _c1 = new RatesModel("testRateCreateReadDelete1", 100, "testRateCreateReadDelete2");
 		assertNull("id should not be set by constructor", _c1.getId());
-		assertEquals("title should be set by constructor", "MY_TITLE", _c1.getTitle());
-		assertEquals("description should be set by constructor", "MY_DESC", _c1.getDescription());
+		assertEquals("title should be set by constructor", "testRateCreateReadDelete1", _c1.getTitle());
+		assertEquals("description should be set by constructor", "testRateCreateReadDelete2", _c1.getDescription());
 		// create(_c1) -> _c2
 		Response _response = webclient.replacePath("/").post(_c1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _c2 = _response.readEntity(RatesModel.class);
 		assertNull("id should be still null after remote create", _c1.getId());
-		assertEquals("title should be unchanged after remote create", "MY_TITLE", _c1.getTitle());
+		assertEquals("title should be unchanged after remote create", "testRateCreateReadDelete1", _c1.getTitle());
 		assertEquals("rate should be unchanged after remote create", 100, _c1.getRate());
 		assertEquals("currency should be unchanged after remote create", Currency.getDefaultCurrency(), _c1.getCurrency());
-		assertEquals("description should be unchanged after remote create", "MY_DESC", _c1.getDescription());
+		assertEquals("description should be unchanged after remote create", "testRateCreateReadDelete2", _c1.getDescription());
 		assertNotNull("id of returned object should be set", _c2.getId());
-		assertEquals("title of returned object should be unchanged after remote create", "MY_TITLE", _c2.getTitle());
+		assertEquals("title of returned object should be unchanged after remote create", "testRateCreateReadDelete1", _c2.getTitle());
 		assertEquals("rate should be unchanged after remote create", 100, _c1.getRate());
 		assertEquals("currency should be unchanged after remote create", Currency.getDefaultCurrency(), _c1.getCurrency());
-		assertEquals("description of returned object should be unchanged after remote create", "MY_DESC", _c2.getDescription());
+		assertEquals("description of returned object should be unchanged after remote create", "testRateCreateReadDelete2", _c2.getDescription());
 		// read(_c2)  -> _c3
 		_response = webclient.replacePath("/").path(_c2.getId()).get();
 		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -279,9 +317,9 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 	@Test
 	public void testRateCreate() {
 		// new("MY_TITLE", "MY_DESC") -> _c1
-		RatesModel _c1 = new RatesModel("MY_TITLE", 100, "MY_DESC");
+		RatesModel _c1 = new RatesModel("testRateCreate1", 100, "testRateCreate2");
 		// new("MY_TITLE2", "MY_DESC2") -> _c2
-		RatesModel _c2 = new RatesModel("MY_TITLE2", 200, "MY_DESC2");
+		RatesModel _c2 = new RatesModel("testRateCreate3", 200, "testRateCreate4");
 		
 		// create(_c1)  -> _c3
 		Response _response = webclient.replacePath("/").post(_c1);
@@ -295,13 +333,13 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertNotNull("ID should be set", _c3.getId());
 		assertNotNull("ID should be set", _c4.getId());
 		assertThat(_c4.getId(), not(equalTo(_c3.getId())));
-		assertEquals("title1 should be set correctly", "MY_TITLE", _c3.getTitle());
-		assertEquals("description1 should be set correctly", "MY_DESC", _c3.getDescription());
+		assertEquals("title1 should be set correctly", "testRateCreate1", _c3.getTitle());
+		assertEquals("description1 should be set correctly", "testRateCreate2", _c3.getDescription());
 		assertEquals("rate1 should be set by constructor", 100, _c3.getRate());
 		assertEquals("currency1 should be set to default value by constructor", 
 				Currency.getDefaultCurrency(), _c3.getCurrency());
-		assertEquals("title2 should be set correctly", "MY_TITLE2", _c4.getTitle());
-		assertEquals("description2 should be set correctly", "MY_DESC2", _c4.getDescription());
+		assertEquals("title2 should be set correctly", "testRateCreate3", _c4.getTitle());
+		assertEquals("description2 should be set correctly", "testRateCreate4", _c4.getDescription());
 		assertEquals("rate2 should be set by constructor", 200, _c4.getRate());
 		assertEquals("currency2 should be set to default value by constructor", 
 				Currency.getDefaultCurrency(), _c4.getCurrency());
@@ -417,10 +455,10 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		
 		// change the attributes
 		// update(_c2) -> _c3
-		_c2.setTitle("MY_TITLE");
+		_c2.setTitle("testRateUpdate");
 		_c2.setRate(300);
 		_c2.setCurrency(Currency.USD);
-		_c2.setDescription("MY_DESC");
+		_c2.setDescription("testRateUpdate1");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -428,17 +466,17 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 
 		assertNotNull("ID should be set", _c3.getId());
 		assertEquals("ID should be unchanged", _c2.getId(), _c3.getId());	
-		assertEquals("title should have changed", "MY_TITLE", _c3.getTitle());
+		assertEquals("title should have changed", "testRateUpdate", _c3.getTitle());
 		assertEquals("rate should have changed", 300, _c3.getRate());
 		assertEquals("currency should have changed", Currency.USD, _c3.getCurrency());
-		assertEquals("description should have changed", "MY_DESC", _c3.getDescription());
+		assertEquals("description should have changed", "testRateUpdate1", _c3.getDescription());
 
 		// reset the attributes
 		// update(_c2) -> _c4
-		_c2.setTitle("MY_TITLE2");
+		_c2.setTitle("testRateUpdate2");
 		_c2.setRate(400);
 		_c2.setCurrency(Currency.EUR);
-		_c2.setDescription("MY_DESC2");
+		_c2.setDescription("testRateUpdate3");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -446,10 +484,10 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 
 		assertNotNull("ID should be set", _c4.getId());
 		assertEquals("ID should be unchanged", _c2.getId(), _c4.getId());	
-		assertEquals("title should have changed", "MY_TITLE2", _c4.getTitle());
+		assertEquals("title should have changed", "testRateUpdate2", _c4.getTitle());
 		assertEquals("rate should have changed", 400, _c4.getRate());
 		assertEquals("currency should have changed", Currency.EUR, _c4.getCurrency());
-		assertEquals("description should have changed", "MY_DESC2", _c4.getDescription());
+		assertEquals("description should have changed", "testRateUpdate3", _c4.getDescription());
 		
 		_response = webclient.replacePath("/").path(_c2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -514,5 +552,82 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		_response = webclient.replacePath("/").path(_c1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
+	
+	@Test
+	public void testRatesModifications() {
+		// create(new RatesModel()) -> _o
+		Response _response = webclient.replacePath("/").post(new RatesModel());
+		RatesModel _o = _response.readEntity(RatesModel.class);
+		System.out.println("created RatesModel " + _o.getId());
+		
+		// test createdAt and createdBy
+		assertNotNull("create() should set createdAt", _o.getCreatedAt());
+		assertNotNull("create() should set createdBy", _o.getCreatedBy());
+		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
+		assertNotNull("create() should set modifiedAt", _o.getModifiedAt());
+		assertNotNull("create() should set modifiedBy", _o.getModifiedBy());
+		assertEquals("createdAt and modifiedAt should be identical after create()", _o.getCreatedAt(), _o.getModifiedAt());
+		assertEquals("createdBy and modifiedBy should be identical after create()", _o.getCreatedBy(), _o.getModifiedBy());
+		try {
+			System.out.println("sleeping for 3 secs"); // in order to get different modifiedAt Dates
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// update(_o)  -> _o2
+		_o.setTitle("testRatesModifications1");
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		RatesModel _o2 = _response.readEntity(RatesModel.class);
+		System.out.println("updated RatesModel " + _o2.getId());
 
+		// test createdAt and createdBy (unchanged)
+		assertEquals("update() should not change createdAt", _o.getCreatedAt(), _o2.getCreatedAt());
+		assertEquals("update() should not change createdBy", _o.getCreatedBy(), _o2.getCreatedBy());
+		
+		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
+		System.out.println("comparing " + _o2.getModifiedAt().toString() + " with " + _o2.getCreatedAt().toString());
+		assertThat(_o2.getModifiedAt().toString(), not(equalTo(_o2.getCreatedAt().toString())));
+		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
+		// assertThat(_o2.getModifiedBy(), not(equalTo(_o2.getCreatedBy())));
+
+		// update(o2) with createdBy set on client side -> error
+		String _createdBy = _o.getCreatedBy();
+		_o.setCreatedBy("testRatesModifications2");
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		assertEquals("update() should return with status BAD_REQUEST", 
+				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_o.setCreatedBy(_createdBy);
+
+		// update(o) with createdAt set on client side -> error
+		Date _d = _o.getCreatedAt();
+		_o.setCreatedAt(new Date(1000));
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		assertEquals("update() should return with status BAD_REQUEST", 
+				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_o.setCreatedAt(_d);
+
+		// update(o) with modifiedBy/At set on client side -> ignored by server
+		_o.setModifiedBy("testRatesModifications3");
+		_o.setModifiedAt(new Date(1000));
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		RatesModel _o3 = _response.readEntity(RatesModel.class);
+		System.out.println("updated RatesModel " + _o3.getId());
+	
+		// test, that modifiedBy really ignored the client-side value "MYSELF"
+		assertThat(_o.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
+		// check whether the client-side modifiedAt() is ignored
+		assertThat(_o.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
+		
+		// delete(_o) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(_o.getId()).delete();		
+		System.out.println("deleted RatesModel " + _o.getId());
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
 }

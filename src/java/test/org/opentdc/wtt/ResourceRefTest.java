@@ -383,4 +383,25 @@ public class ResourceRefTest extends AbstractTestClient<WttService> {
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
+	@Test
+	public void testResourceRefModifications() {
+		// create(new ResourceRefModel()) -> _o
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_RESOURCE).post(new ResourceRefModel());
+		ResourceRefModel _o = _response.readEntity(ResourceRefModel.class);
+		
+		// test createdAt and createdBy
+		assertNotNull("create() should set createdAt", _o.getCreatedAt());
+		assertNotNull("create() should set createdBy", _o.getCreatedBy());
+		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
+		assertNotNull("create() should set modifiedAt", _o.getModifiedAt());
+		assertNotNull("create() should set modifiedBy", _o.getModifiedBy());
+		assertEquals("createdAt and modifiedAt should be identical after create()", _o.getCreatedAt(), _o.getModifiedAt());
+		assertEquals("createdBy and modifiedBy should be identical after create()", _o.getCreatedBy(), _o.getModifiedBy());
+		
+		// there is no update method for ResourceRef
+		
+		// delete(_o) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_RESOURCE).path(_o.getId()).delete();		
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
 }

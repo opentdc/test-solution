@@ -542,4 +542,71 @@ public class ResourcesTest extends AbstractTestClient<ResourcesService> {
 		_response = webclient.replacePath("/").path(_c1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
+	
+	@Test
+	public void testResourceModifications() {
+		// create(new ResourceModel()) -> _o
+		Response _response = webclient.replacePath("/").post(new ResourceModel());
+		ResourceModel _o = _response.readEntity(ResourceModel.class);
+		
+		// test createdAt and createdBy
+		assertNotNull("create() should set createdAt", _o.getCreatedAt());
+		assertNotNull("create() should set createdBy", _o.getCreatedBy());
+		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
+		assertNotNull("create() should set modifiedAt", _o.getModifiedAt());
+		assertNotNull("create() should set modifiedBy", _o.getModifiedBy());
+		assertEquals("createdAt and modifiedAt should be identical after create()", _o.getCreatedAt(), _o.getModifiedAt());
+		assertEquals("createdBy and modifiedBy should be identical after create()", _o.getCreatedBy(), _o.getModifiedBy());
+		
+		// update(_o)  -> _o2
+		_o.setName("MY_NAME2");
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		ResourceModel _o2 = _response.readEntity(ResourceModel.class);
+
+		// test createdAt and createdBy (unchanged)
+		assertEquals("update() should not change createdAt", _o.getCreatedAt(), _o2.getCreatedAt());
+		assertEquals("update() should not change createdBy", _o.getCreatedBy(), _o2.getCreatedBy());
+		
+		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
+		assertThat(_o2.getModifiedAt(), not(equalTo(_o2.getCreatedAt())));
+		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
+		// assertThat(_o2.getModifiedBy(), not(equalTo(_o2.getCreatedBy())));
+
+		// update(o2) with createdBy set on client side -> error
+		String _createdBy = _o.getCreatedBy();
+		_o.setCreatedBy("MYSELF");
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		assertEquals("update() should return with status BAD_REQUEST", 
+				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_o.setCreatedBy(_createdBy);
+
+		// update(o) with createdAt set on client side -> error
+		Date _d = _o.getCreatedAt();
+		_o.setCreatedAt(new Date(1000));
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		assertEquals("update() should return with status BAD_REQUEST", 
+				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_o.setCreatedAt(_d);
+
+		// update(o) with modifiedBy/At set on client side -> ignored by server
+		_o.setModifiedBy("MYSELF");
+		_o.setModifiedAt(new Date(1000));
+		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		ResourceModel _o3 = _response.readEntity(ResourceModel.class);
+		
+		// test, that modifiedBy really ignored the client-side value "MYSELF"
+		assertThat(_o.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
+		// check whether the client-side modifiedAt() is ignored
+		assertThat(_o.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
+		
+		// delete(_o) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(_o.getId()).delete();		
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
 }
