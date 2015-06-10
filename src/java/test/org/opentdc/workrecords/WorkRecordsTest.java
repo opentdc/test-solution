@@ -45,11 +45,13 @@ import test.org.opentdc.AbstractTestClient;
 public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 
 	private static final String API = "api/workrecord/";
+	private Date date;
 
 	@Before
 	public void initializeTests(
 	) {
 		initializeTest(API, WorkRecordsService.class);
+		date = new Date();
 	}
 	
 	/********************************** workrecord attributes tests *********************************/	
@@ -65,28 +67,28 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertNull("resourceId should not be set by empty constructor", _c.getResourceId());
 		assertNull("rateId should not be set by empty constructor", _c.getRateId());
 		assertNull("startAt should not be set by empty constructor", _c.getStartAt());
-		assertEquals("durationHours should be set on default initial value of an integer", 0, _c.getDurationHours());
-		assertEquals("durationMinutes should be set on default initial value of an integer", 0, _c.getDurationMinutes());
+		assertEquals("durationHours should be set on default initial value", 1, _c.getDurationHours());
+		assertEquals("durationMinutes should be set on default initial value", 30, _c.getDurationMinutes());
 		assertNull("comment should not be set by empty constructor", _c.getComment());
-		assertEquals("isBillable should be set on default initial value of a boolean", false, _c.isBillable());
+		assertEquals("isBillable should be set on default initial value", true, _c.isBillable());
 	}
 
 	@Test
 	public void testWorkRecordModelConstructor() {		
-		// new("PID", "RID", new Date(), 1, 30, "RATEID", true, "MY_COMMENT") -> _c
-		WorkRecordModel _c = new WorkRecordModel("CID", "CTITLE", "PID", "PTITLE", "RID", new Date(), 1, 30, "RATEID", true, "MY_COMMENT");
+		// new("CID1", "CTITLE1", "PID1", "PTITLE1", "RID1", date, 3, 45, "RATEID1", false, "MY_COMMENT1") -> _c
+		WorkRecordModel _c = createWorkRecord(1, date, 3, 45, false);
 		assertNull("id should not be set by constructor", _c.getId());
-		assertEquals("companyId should be set by constructor", "CID", _c.getCompanyId());
-		assertEquals("companyTitle should be set by constructor", "CTITLE", _c.getCompanyTitle());
-		assertEquals("projectId should be set by constructor", "PID", _c.getProjectId());
-		assertEquals("projectTitle should be set by constructor", "PTITLE", _c.getProjectTitle());
-		assertEquals("resourceId should be set by constructor", "RID", _c.getResourceId());
-		assertEquals("rateId should be set by constructor", "RATEID", _c.getRateId());
-		assertNotNull("startAt should be set by constructor", _c.getStartAt());
-		assertEquals("durationHours should be set by constructor", 1, _c.getDurationHours());
-		assertEquals("durationMinutes should be set by constructor", 30, _c.getDurationMinutes());
-		assertEquals("comment should be set by constructor", "MY_COMMENT", _c.getComment());
-		assertEquals("isBillable should be set by constructor", true, _c.isBillable());
+		assertEquals("companyId should be set by constructor", "CID1", _c.getCompanyId());
+		assertEquals("companyTitle should be set by constructor", "CTITLE1", _c.getCompanyTitle());
+		assertEquals("projectId should be set by constructor", "PID1", _c.getProjectId());
+		assertEquals("projectTitle should be set by constructor", "PTITLE1", _c.getProjectTitle());
+		assertEquals("resourceId should be set by constructor", "RID1", _c.getResourceId());
+		assertEquals("rateId should be set by constructor", "RATEID1", _c.getRateId());
+		assertEquals("startAt should be set by constructor", date.toString(), _c.getStartAt().toString());
+		assertEquals("durationHours should be set by constructor", 3, _c.getDurationHours());
+		assertEquals("durationMinutes should be set by constructor", 45, _c.getDurationMinutes());
+		assertEquals("comment should be set by constructor", "MY_COMMENT1", _c.getComment());
+		assertEquals("isBillable should be set by constructor", false, _c.isBillable());
 	}
 
 	@Test
@@ -158,7 +160,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testDurationHoursAttributeChange() {
 		// new() -> _c -> _c.setDurationHours()
 		WorkRecordModel _c = new WorkRecordModel();
-		assertEquals("durationHours should be initialized to 0 by empty constructor", 0, _c.getDurationHours());
+		assertEquals("durationHours should be initialized to default value by empty constructor", 1, _c.getDurationHours());
 		_c.setDurationHours(3);
 		assertEquals("durationHours should have changed:", 3, _c.getDurationHours());
 	}
@@ -167,7 +169,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testDurationMinutesAttributeChange() {
 		// new() -> _c -> _c.setDurationMinutes()
 		WorkRecordModel _c = new WorkRecordModel();
-		assertEquals("durationMinutes should be initialized to 0 by empty constructor", 0, _c.getDurationMinutes());
+		assertEquals("durationMinutes should be initialized to default value by empty constructor", 30, _c.getDurationMinutes());
 		_c.setDurationMinutes(45);
 		assertEquals("durationMinutes should have changed:", 45, _c.getDurationMinutes());
 	}
@@ -185,9 +187,9 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testIsBillableAttributeChange() {
 		// new() -> _c -> _c.setBillable()
 		WorkRecordModel _c = new WorkRecordModel();
-		assertEquals("isBillable should be initialized to false by empty constructor", false, _c.isBillable());
-		_c.setBillable(true);
-		assertEquals("isBillable should have changed:", true, _c.isBillable());
+		assertEquals("isBillable should be initialized to default value by empty constructor", true, _c.isBillable());
+		_c.setBillable(false);
+		assertEquals("isBillable should have changed:", false, _c.isBillable());
 	}
 	
 	@Test
@@ -239,39 +241,75 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertNull("resourceId should not be set by empty constructor", _c1.getResourceId());
 		assertNull("rateId should not be set by empty constructor", _c1.getRateId());
 		assertNull("startAt should not be set by empty constructor", _c1.getStartAt());
-		assertEquals("durationHours should be set on default initial value of an integer", 0, _c1.getDurationHours());
-		assertEquals("durationMinutes should be set on default initial value of an integer", 0, _c1.getDurationMinutes());
+		assertEquals("durationHours should be set on default initial value", 1, _c1.getDurationHours());
+		assertEquals("durationMinutes should be set on default initial value", 30, _c1.getDurationMinutes());
 		assertNull("comment should not be set by empty constructor", _c1.getComment());
-		assertEquals("isBillable should be set on default initial value of a boolean", false, _c1.isBillable());
+		assertEquals("isBillable should be set on default initial value", true, _c1.isBillable());
 		
-		// create(_c1) -> _c2
+		// create(_c1) -> BAD_REQUEST (because of empty companyId)
 		Response _response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+
+		// create(_c1).setCompanyId("CID") -> BAD_REQUEST (because of empty companyTitle)
+		_c1.setCompanyId("CID");
+		_response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+
+		// create(_c1).setCompanyTitle("CTITLE") -> BAD_REQUEST (because of empty projectId)
+		_c1.setCompanyTitle("CTITLE");
+		_response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		
+		// create(_c1).setProjectId("PID") -> BAD_REQUEST (because of empty projectTitle)
+		_c1.setProjectId("PID");
+		_response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+
+		// create(_c1).setProjectTitle("PTITLE") -> BAD_REQUEST (because of empty resourceId)
+		_c1.setProjectTitle("PTITLE");
+		_response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+
+		// create(_c1).setResourceId("RID") -> BAD_REQUEST (because of empty startAt)
+		_c1.setResourceId("RID");
+		_response = webclient.replacePath("/").post(_c1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+
+		// create(_c1).setStartAt(new Date()) -> _c2
+		Date _date = new Date();
+		_c1.setStartAt(_date);
+		_response = webclient.replacePath("/").post(_c1);		
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _c2 = _response.readEntity(WorkRecordModel.class);
+		
+		// validate _c1
 		assertNull("create() should not change the id of the local object", _c1.getId());
-		assertNull("create() should not change the companyId of the local object", _c1.getCompanyId());
-		assertNull("create() should not change the companyTitle of the local object", _c1.getCompanyTitle());
-		assertNull("create() should not change the projectId of the local object", _c1.getProjectId());
-		assertNull("create() should not change the projectTitle of the local object", _c1.getProjectTitle());
-		assertNull("create() should not change the resourceId of the local object", _c1.getResourceId());
+		assertEquals("create() should not change the companyId of the local object", "CID", _c1.getCompanyId());
+		assertEquals("create() should not change the companyTitle of the local object", "CTITLE", _c1.getCompanyTitle());
+		assertEquals("create() should not change the projectId of the local object", "PID", _c1.getProjectId());
+		assertEquals("create() should not change the projectTitle of the local object", "PTITLE", _c1.getProjectTitle());
+		assertEquals("create() should not change the resourceId of the local object", "RID", _c1.getResourceId());
 		assertNull("create() should not change the rateId of the local object", _c1.getRateId());
-		assertNull("create() should not change the startAt Date of the local object", _c1.getStartAt());
-		assertEquals("create() should not change durationHours on the local object", 0, _c1.getDurationHours());
-		assertEquals("create() should not change durationMinutes on the local object", 0, _c1.getDurationMinutes());
+		assertEquals("create() should not change the startAt Date of the local object", _date.toString(), _c1.getStartAt().toString());
+		assertEquals("create() should not change durationHours on the local object", 1, _c1.getDurationHours());
+		assertEquals("create() should not change durationMinutes on the local object", 30, _c1.getDurationMinutes());
 		assertNull("create() should not change comment on the local object", _c1.getComment());
-		assertEquals("create() should not change isBillable on the local object", false, _c1.isBillable());
+		assertEquals("create() should not change isBillable on the local object", true, _c1.isBillable());
 		
+		// validate _c2
 		assertNotNull("create() should set a valid id on the remote object returned", _c2.getId());
-		assertNull("companyId of returned object should  still be null after remote create", _c2.getCompanyId());
-		assertNull("companyTitle of returned object should  still be null after remote create", _c2.getCompanyTitle());
-		assertNull("projectId of returned object should  still be null after remote create", _c2.getProjectId());
-		assertNull("projectTitle of returned object should  still be null after remote create", _c2.getProjectTitle());
-		assertNull("resourceId of returned object should still be null after remote create", _c2.getResourceId());
-		assertNull("rateId of returned object should still be null after remote create", _c2.getRateId());
-		assertNull("startAt Date of returned object should still be null", _c2.getStartAt());
-		assertEquals("durationHours of returned object should be unchanged", 0, _c2.getDurationHours());
-		assertEquals("durationMinutes of returned object should unchanged", 0, _c2.getDurationMinutes());
-		
+		assertEquals("create() should not change the companyId", "CID", _c2.getCompanyId());
+		assertEquals("create() should not change the companyTitle", "CTITLE", _c2.getCompanyTitle());
+		assertEquals("create() should not change the projectId", "PID", _c2.getProjectId());
+		assertEquals("create() should not change the projectTitle", "PTITLE", _c2.getProjectTitle());
+		assertEquals("create() should not change the resourceId", "RID", _c2.getResourceId());
+		assertNull("create() should not change the rateId", _c2.getRateId());
+		assertEquals("create() should not change the startAt Date", _date.toString(), _c2.getStartAt().toString());
+		assertEquals("create() should not change durationHours", 1, _c2.getDurationHours());
+		assertEquals("create() should not change durationMinutes", 30, _c2.getDurationMinutes());
+		assertNull("create() should not change comment", _c2.getComment());
+		assertEquals("create() should not change isBillable", true, _c2.isBillable());
+
 		// read(_c2) -> _c3
 		_response = webclient.replacePath("/").path(_c2.getId()).get();
 		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -296,103 +334,108 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	
 	@Test
 	public void testWorkRecordCreateReadDelete() {
-		// new("MY_TITLE", "MY_DESC") -> _c1
-		Date _date = new Date();
-		WorkRecordModel _c1 = new WorkRecordModel("CID", "CTITLE", "PID", "PTITLE", "RID", _date, 4, 20, "RATEID", true, "MY_COMMENT");
-		assertNull("id should not be set by constructor", _c1.getId());
-		assertEquals("companyId should be set by constructor", "CID", _c1.getCompanyId());
-		assertEquals("companyTitle should be set by constructor", "CTITLE", _c1.getCompanyTitle());
-		assertEquals("projectId should be set by constructor", "PID", _c1.getProjectId());
-		assertEquals("projectTitle should be set by constructor", "PTITLE", _c1.getProjectTitle());
-		assertEquals("resourceId should be set by constructor", "RID", _c1.getResourceId());
-		assertEquals("rateId should be set by constructor", "RATEID", _c1.getRateId());
-		assertEquals("startAt should be set by constructor", _date, _c1.getStartAt());
-		assertEquals("durationHours should be set by constructor", 4, _c1.getDurationHours());
-		assertEquals("durationMinutes should be set by constructor", 20, _c1.getDurationMinutes());
-		assertEquals("comment should be set by constructor", "MY_COMMENT", _c1.getComment());
-		assertEquals("isBillable should be set by constructor", true, _c1.isBillable());
+		// new("MY_TITLE", "MY_DESC") -> _wrm1
+		WorkRecordModel _wrm1 = createWorkRecord(1, date, 4, 20, true);
 		
-		// create(_c1) -> _c2
-		Response _response = webclient.replacePath("/").post(_c1);
+		// validate _wrm1
+		assertNull("id should not be set by constructor", _wrm1.getId());
+		assertEquals("companyId should be set by constructor", "CID1", _wrm1.getCompanyId());
+		assertEquals("companyTitle should be set by constructor", "CTITLE1", _wrm1.getCompanyTitle());
+		assertEquals("projectId should be set by constructor", "PID1", _wrm1.getProjectId());
+		assertEquals("projectTitle should be set by constructor", "PTITLE1", _wrm1.getProjectTitle());
+		assertEquals("resourceId should be set by constructor", "RID1", _wrm1.getResourceId());
+		assertEquals("rateId should be set by constructor", "RATEID1", _wrm1.getRateId());
+		assertEquals("startAt should be set by constructor", date, _wrm1.getStartAt());
+		assertEquals("durationHours should be set by constructor", 4, _wrm1.getDurationHours());
+		assertEquals("durationMinutes should be set by constructor", 20, _wrm1.getDurationMinutes());
+		assertEquals("comment should be set by constructor", "MY_COMMENT1", _wrm1.getComment());
+		assertEquals("isBillable should be set by constructor", true, _wrm1.isBillable());
+		
+		// create(_wrm1) -> _wrm2
+		Response _response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c2 = _response.readEntity(WorkRecordModel.class);
-		assertNull("create() should not change the id of the local object", _c1.getId());
-		assertEquals("create() should not change the companyId of the local object", "CID", _c1.getCompanyId());
-		assertEquals("create() should not change the companyTitle of the local object", "CTITLE", _c1.getCompanyTitle());
-		assertEquals("create() should not change the projectId of the local object", "PID", _c1.getProjectId());
-		assertEquals("create() should not change the projectTitle of the local object", "PTITLE", _c1.getProjectTitle());
-		assertEquals("create() should not change the resourceId of the local object", "RID", _c1.getResourceId());
-		assertEquals("create() should not change the rateId of the local object", "RATEID", _c1.getRateId());
-		assertEquals("create() should not change the startAt Date of the local object", _date, _c1.getStartAt());
-		assertEquals("create() should not change durationHours on the local object", 4, _c1.getDurationHours());
-		assertEquals("create() should not change durationMinutes on the local object", 20, _c1.getDurationMinutes());
-		assertEquals("create() should not change comment on the local object", "MY_COMMENT", _c1.getComment());
-		assertEquals("create() should not change isBillable on the local object", true, _c1.isBillable());
-				
-		assertNotNull("id of returned object should be set", _c2.getId());
-		assertEquals("companyId of returned object should be unchanged after remote create", "CID", _c2.getCompanyId());
-		assertEquals("companyTitle of returned object should be unchanged after remote create", "CTITLE", _c2.getCompanyTitle());
-		assertEquals("projectId of returned object should be unchanged after remote create", "PID", _c2.getProjectId());
-		assertEquals("projectTitle of returned object should be unchanged after remote create", "PTITLE", _c2.getProjectTitle());
-		assertEquals("resourceId of returned object should be unchanged after remote create", "RID", _c2.getResourceId());
-		assertEquals("rateId of returned object should be unchanged after remote create", "RATEID", _c2.getRateId());
-		assertEquals("create() should not change the startAt Date of the local object", _date, _c2.getStartAt());
-		assertEquals("durationHours of returned object should be unchanged", 4, _c2.getDurationHours());
-		assertEquals("durationMinutes of returned object should be unchanged", 20, _c2.getDurationMinutes());
-		assertEquals("comment of returned object should be unchanged", "MY_COMMENT", _c2.getComment());
-		assertEquals("create() should not change isBillable", true, _c2.isBillable());
+		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
+		
+		// validate _wrm1 (after create())
+		assertNull("create() should not change the id of the local object", _wrm1.getId());
+		assertEquals("create() should not change the companyId of the local object", "CID1", _wrm1.getCompanyId());
+		assertEquals("create() should not change the companyTitle of the local object", "CTITLE1", _wrm1.getCompanyTitle());
+		assertEquals("create() should not change the projectId of the local object", "PID1", _wrm1.getProjectId());
+		assertEquals("create() should not change the projectTitle of the local object", "PTITLE1", _wrm1.getProjectTitle());
+		assertEquals("create() should not change the resourceId of the local object", "RID1", _wrm1.getResourceId());
+		assertEquals("create() should not change the rateId of the local object", "RATEID1", _wrm1.getRateId());
+		assertEquals("create() should not change the startAt Date of the local object", date, _wrm1.getStartAt());
+		assertEquals("create() should not change durationHours on the local object", 4, _wrm1.getDurationHours());
+		assertEquals("create() should not change durationMinutes on the local object", 20, _wrm1.getDurationMinutes());
+		assertEquals("create() should not change comment on the local object", "MY_COMMENT1", _wrm1.getComment());
+		assertEquals("create() should not change isBillable on the local object", true, _wrm1.isBillable());
+		
+		// validate _wrm2
+		assertNotNull("id of returned object should be set", _wrm2.getId());
+		assertEquals("companyId of returned object should be unchanged after remote create", "CID1", _wrm2.getCompanyId());
+		assertEquals("companyTitle of returned object should be unchanged after remote create", "CTITLE1", _wrm2.getCompanyTitle());
+		assertEquals("projectId of returned object should be unchanged after remote create", "PID1", _wrm2.getProjectId());
+		assertEquals("projectTitle of returned object should be unchanged after remote create", "PTITLE1", _wrm2.getProjectTitle());
+		assertEquals("resourceId of returned object should be unchanged after remote create", "RID1", _wrm2.getResourceId());
+		assertEquals("rateId of returned object should be unchanged after remote create", "RATEID1", _wrm2.getRateId());
+		assertEquals("create() should not change the startAt Date of the local object", date, _wrm2.getStartAt());
+		assertEquals("durationHours of returned object should be unchanged", 4, _wrm2.getDurationHours());
+		assertEquals("durationMinutes of returned object should be unchanged", 20, _wrm2.getDurationMinutes());
+		assertEquals("comment of returned object should be unchanged", "MY_COMMENT1", _wrm2.getComment());
+		assertEquals("create() should not change isBillable", true, _wrm2.isBillable());
 
-		// read(_c2)  -> _c3
-		_response = webclient.replacePath("/").path(_c2.getId()).get();
-		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c3 = _response.readEntity(WorkRecordModel.class);
-		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
-		assertEquals("companyId of returned object should be the same", _c2.getCompanyId(), _c3.getCompanyId());
-		assertEquals("companyTitle of returned object should be the same", _c2.getCompanyTitle(), _c3.getCompanyTitle());
-		assertEquals("projectId of returned object should be the same", _c2.getProjectId(), _c3.getProjectId());
-		assertEquals("projectTitle of returned object should be the same", _c2.getProjectTitle(), _c3.getProjectTitle());
-		assertEquals("resourceId of returned object should be the same", _c2.getResourceId(), _c3.getResourceId());
-		assertEquals("rateId of returned object should be the same", _c2.getRateId(), _c3.getRateId());
-		assertEquals("the startAt Date should be the same", _c2.getStartAt(), _c3.getStartAt());
-		assertEquals("durationHours of returned object should be the same", _c2.getDurationHours(), _c3.getDurationHours());
-		assertEquals("durationMinutes of returned object should be the same", _c2.getDurationMinutes(), _c3.getDurationMinutes());
-		assertEquals("comment of returned object should be the same", _c2.getComment(), _c3.getComment());
-		assertEquals("isBillable should be the same", _c2.isBillable(), _c3.isBillable());		
+		// read(_wrm2)  -> _wrm3
+		_response = webclient.replacePath("/").path(_wrm2.getId()).get();
+		assertEquals("read(" + _wrm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
+		assertEquals("id of returned object should be the same", _wrm2.getId(), _wrm3.getId());
+		assertEquals("companyId of returned object should be the same", _wrm2.getCompanyId(), _wrm3.getCompanyId());
+		assertEquals("companyTitle of returned object should be the same", _wrm2.getCompanyTitle(), _wrm3.getCompanyTitle());
+		assertEquals("projectId of returned object should be the same", _wrm2.getProjectId(), _wrm3.getProjectId());
+		assertEquals("projectTitle of returned object should be the same", _wrm2.getProjectTitle(), _wrm3.getProjectTitle());
+		assertEquals("resourceId of returned object should be the same", _wrm2.getResourceId(), _wrm3.getResourceId());
+		assertEquals("rateId of returned object should be the same", _wrm2.getRateId(), _wrm3.getRateId());
+		assertEquals("the startAt Date should be the same", _wrm2.getStartAt(), _wrm3.getStartAt());
+		assertEquals("durationHours of returned object should be the same", _wrm2.getDurationHours(), _wrm3.getDurationHours());
+		assertEquals("durationMinutes of returned object should be the same", _wrm2.getDurationMinutes(), _wrm3.getDurationMinutes());
+		assertEquals("comment of returned object should be the same", _wrm2.getComment(), _wrm3.getComment());
+		assertEquals("isBillable should be the same", _wrm2.isBillable(), _wrm3.isBillable());		
 
-		// delete(_c3)
-		_response = webclient.replacePath("/").path(_c3.getId()).delete();
-		assertEquals("delete(" + _c3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		// delete(_wrm3)
+		_response = webclient.replacePath("/").path(_wrm3.getId()).delete();
+		assertEquals("delete(" + _wrm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateWorkRecordWithClientSideId() {
-		// new() -> _c1 -> _c1.setId()
-		WorkRecordModel _c1 = new WorkRecordModel();
-		_c1.setId("LOCAL_ID");
-		assertEquals("id should have changed", "LOCAL_ID", _c1.getId());
+		// new(1) -> _wrm1 -> _wrm1.setId()
+		WorkRecordModel _wrm1 = createWorkRecord(1, date, 4, 20, true);
+		_wrm1.setId("LOCAL_ID");
+		assertEquals("id should have changed", "LOCAL_ID", _wrm1.getId());
 		// create(_c1) -> BAD_REQUEST
-		Response _response = webclient.replacePath("/").post(_c1);
+		Response _response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateWorkRecordWithDuplicateId() {
-		// create(new()) -> _c2
-		Response _response = webclient.replacePath("/").post(new WorkRecordModel());
+		// create(new(1)) -> _wrm2
+		WorkRecordModel _wrm1 = createWorkRecord(1, date, 4, 20, true);
+		Response _response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c2 = _response.readEntity(WorkRecordModel.class);
+		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 
-		// new() -> _c3 -> _c3.setId(_c2.getId())
-		WorkRecordModel _c3 = new WorkRecordModel();
-		_c3.setId(_c2.getId());		// wrongly create a 2nd WorkRecordModel object with the same ID
+		// new(3) -> _wrm3 -> _wrm3.setId(_wrm2.getId())
+		WorkRecordModel _wrm3 = createWorkRecord(3, date, 1, 30, true);
+		_wrm3.setId(_wrm2.getId());		// wrongly create a 2nd WorkRecordModel object with the same ID
 		
-		// create(_c3) -> CONFLICT
-		_response = webclient.replacePath("/").post(_c3);
+		// create(_wrm3) -> CONFLICT
+		_response = webclient.replacePath("/").post(_wrm3);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
-		// delete(_c3)
-		_response = webclient.replacePath("/").path(_c2.getId()).delete();
-		assertEquals("delete(" + _c2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		// delete(_wrm2)
+		_response = webclient.replacePath("/").path(_wrm2.getId()).delete();
+		assertEquals("delete(" + _wrm2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
@@ -401,8 +444,8 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		ArrayList<WorkRecordModel> _localList = new ArrayList<WorkRecordModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			// create(new()) -> _localList
-			_response = webclient.replacePath("/").post(new WorkRecordModel());
+			// create(new(i)) -> _localList
+			_response = webclient.replacePath("/").post(createWorkRecord(i, date, i, i, true));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(WorkRecordModel.class));
 		}
@@ -433,76 +476,76 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		
 	@Test
 	public void testWorkRecordCreate() {
-		// new("PID1", "RID1", _date1, 10, 10, "RATEID1", true, "MY_COMMENT1") -> _c1
+		// new(1) -> _wrm1
 		Date _date1 = new Date(1000);
-		WorkRecordModel _c1 = new WorkRecordModel("CID1", "CTITLE1", "PID1", "PTITLE1", "RID1", _date1, 10, 100, "RATEID1", true, "MY_COMMENT1");
-		// new("PID2", "RID2", _date2, 20, 20, "RATEID2", true, "MY_COMMENT2") -> _c2
+		WorkRecordModel _wrm1 = createWorkRecord(1, _date1, 1, 10, true);
+		// new(2) -> _wrm2
 		Date _date2 = new Date(2000);
-		WorkRecordModel _c2 = new WorkRecordModel("CID2", "CTITLE2", "PID2", "PTITLE2", "RID2", _date2, 20, 200, "RATEID2", true, "MY_COMMENT2");
+		WorkRecordModel _wrm2 = createWorkRecord(2, _date2, 2, 20, false);
 		
-		// create(_c1)  -> _c3
-		Response _response = webclient.replacePath("/").post(_c1);
+		// create(_wrm1)  -> _wrm3
+		Response _response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c3 = _response.readEntity(WorkRecordModel.class);
+		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
 
-		// create(_c2) -> _c4
-		_response = webclient.replacePath("/").post(_c2);
+		// create(_wrm2) -> _wrm4
+		_response = webclient.replacePath("/").post(_wrm2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c4 = _response.readEntity(WorkRecordModel.class);		
-		assertNotNull("ID should be set", _c3.getId());
-		assertNotNull("ID should be set", _c4.getId());
-		assertThat(_c4.getId(), not(equalTo(_c3.getId())));
+		WorkRecordModel _wrm4 = _response.readEntity(WorkRecordModel.class);		
+		assertNotNull("ID should be set", _wrm3.getId());
+		assertNotNull("ID should be set", _wrm4.getId());
+		assertThat(_wrm4.getId(), not(equalTo(_wrm3.getId())));
 
 		// examine _c3
-		assertEquals("companyId should be set correctly", "CID1", _c3.getCompanyId());
-		assertEquals("companyTitle should be set correctly", "CTITLE1", _c3.getCompanyTitle());
-		assertEquals("projectId should be set correctly", "PID1", _c3.getProjectId());
-		assertEquals("projectTitle should be set correctly", "PTITLE1", _c3.getProjectTitle());
-		assertEquals("resourceId should be set correctly", "RID1", _c3.getResourceId());
-		assertEquals("rateId should be set correctly", "RATEID1", _c3.getRateId());
-		assertEquals("the startAt Date should be set correctly", _date1, _c3.getStartAt());
-		assertEquals("durationHours should be set correctly", 10, _c3.getDurationHours());
-		assertEquals("durationMinutes should be set correctly", 100, _c3.getDurationMinutes());
-		assertEquals("comment should be set correctly", "MY_COMMENT1", _c3.getComment());
-		assertEquals("isBillable should be set correctly", true, _c3.isBillable());			
+		assertEquals("companyId should be set correctly", "CID1", _wrm3.getCompanyId());
+		assertEquals("companyTitle should be set correctly", "CTITLE1", _wrm3.getCompanyTitle());
+		assertEquals("projectId should be set correctly", "PID1", _wrm3.getProjectId());
+		assertEquals("projectTitle should be set correctly", "PTITLE1", _wrm3.getProjectTitle());
+		assertEquals("resourceId should be set correctly", "RID1", _wrm3.getResourceId());
+		assertEquals("rateId should be set correctly", "RATEID1", _wrm3.getRateId());
+		assertEquals("the startAt Date should be set correctly", _date1, _wrm3.getStartAt());
+		assertEquals("durationHours should be set correctly", 1, _wrm3.getDurationHours());
+		assertEquals("durationMinutes should be set correctly", 10, _wrm3.getDurationMinutes());
+		assertEquals("comment should be set correctly", "MY_COMMENT1", _wrm3.getComment());
+		assertEquals("isBillable should be set correctly", true, _wrm3.isBillable());			
 		
 		// examine _c4
-		assertEquals("companyId should be set correctly", "CID2", _c4.getCompanyId());
-		assertEquals("companyTitle should be set correctly", "CTITLE2", _c4.getCompanyTitle());
-		assertEquals("projectId should be set correctly", "PID2", _c4.getProjectId());
-		assertEquals("projectTitle should be set correctly", "PTITLE2", _c4.getProjectTitle());
-		assertEquals("resourceId should be set correctly", "RID2", _c4.getResourceId());
-		assertEquals("rateId should be set correctly", "RATEID2", _c4.getRateId());
-		assertEquals("the startAt Date should be set correctly", _date2, _c4.getStartAt());
-		assertEquals("durationHours should be set correctly", 20, _c4.getDurationHours());
-		assertEquals("durationMinutes should be set correctly", 200, _c4.getDurationMinutes());
-		assertEquals("comment should be set correctly", "MY_COMMENT2", _c4.getComment());
-		assertEquals("isBillable should be set correctly", true, _c4.isBillable());			
+		assertEquals("companyId should be set correctly", "CID2", _wrm4.getCompanyId());
+		assertEquals("companyTitle should be set correctly", "CTITLE2", _wrm4.getCompanyTitle());
+		assertEquals("projectId should be set correctly", "PID2", _wrm4.getProjectId());
+		assertEquals("projectTitle should be set correctly", "PTITLE2", _wrm4.getProjectTitle());
+		assertEquals("resourceId should be set correctly", "RID2", _wrm4.getResourceId());
+		assertEquals("rateId should be set correctly", "RATEID2", _wrm4.getRateId());
+		assertEquals("the startAt Date should be set correctly", _date2, _wrm4.getStartAt());
+		assertEquals("durationHours should be set correctly", 2, _wrm4.getDurationHours());
+		assertEquals("durationMinutes should be set correctly", 20, _wrm4.getDurationMinutes());
+		assertEquals("comment should be set correctly", "MY_COMMENT2", _wrm4.getComment());
+		assertEquals("isBillable should be set correctly", false, _wrm4.isBillable());			
 		
 		// delete(_c3) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_c3.getId()).delete();
+		_response = webclient.replacePath("/").path(_wrm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_c4) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_c4.getId()).delete();
+		_response = webclient.replacePath("/").path(_wrm4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testWorkRecordDoubleCreate(
 	) {
-		// create(new()) -> _c
-		Response _response = webclient.replacePath("/").post(new WorkRecordModel());
+		// create(new()) -> _wrm1
+		Response _response = webclient.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c = _response.readEntity(WorkRecordModel.class);
-		assertNotNull("ID should be set:", _c.getId());		
+		WorkRecordModel _wrm1 = _response.readEntity(WorkRecordModel.class);
+		assertNotNull("ID should be set:", _wrm1.getId());		
 		
-		// create(_c) -> CONFLICT
-		_response = webclient.replacePath("/").post(_c);
+		// create(_wrm1) -> CONFLICT
+		_response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
-		// delete(_c) -> NO_CONTENT
-		_response = webclient.replacePath(_c.getId()).delete();
+		// delete(_wrm1) -> NO_CONTENT
+		_response = webclient.replacePath(_wrm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
@@ -512,7 +555,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		ArrayList<WorkRecordModel> _localList = new ArrayList<WorkRecordModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.replacePath("/").post(new WorkRecordModel());
+			_response = webclient.replacePath("/").post(createWorkRecord(i, date, i, i*10, true));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(WorkRecordModel.class));
 		}
@@ -546,261 +589,274 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	@Test
 	public void testWorkRecordMultiRead(
 	) {
-		// new() -> _c1
-		WorkRecordModel _c1 = new WorkRecordModel();
+		// new() -> _wrm1
+		WorkRecordModel _wrm1 = createWorkRecord(1, date, 1, 10, true);
 		
-		// create(_c1) -> _c2
-		Response _response = webclient.replacePath("/").post(_c1);
-		WorkRecordModel _c2 = _response.readEntity(WorkRecordModel.class);
+		// create(_wrm1) -> _wrm2
+		Response _response = webclient.replacePath("/").post(_wrm1);
+		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 
-		// read(_c2) -> _c3
-		_response = webclient.replacePath("/").path(_c2.getId()).get();
+		// read(_wrm2) -> _wrm3
+		_response = webclient.replacePath("/").path(_wrm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c3 = _response.readEntity(WorkRecordModel.class);
-		assertEquals("ID should be unchanged after read", _c2.getId(), _c3.getId());		
+		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
+		assertEquals("ID should be unchanged after read", _wrm2.getId(), _wrm3.getId());		
 
-		// read(_c2) -> _c4
-		_response = webclient.replacePath("/").path(_c2.getId()).get();
+		// read(_wrm2) -> _wrm4
+		_response = webclient.replacePath("/").path(_wrm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c4 = _response.readEntity(WorkRecordModel.class);
+		WorkRecordModel _wrm4 = _response.readEntity(WorkRecordModel.class);
 		
 		// but: the two objects are not equal !
-		assertEquals("ID should be the same", _c4.getId(), _c3.getId());
-		assertEquals("companyId should be the same", _c4.getCompanyId(), _c3.getCompanyId());
-		assertEquals("companyTitle should be the same", _c4.getCompanyTitle(), _c3.getCompanyTitle());
-		assertEquals("projectId should be the same", _c4.getProjectId(), _c3.getProjectId());
-		assertEquals("projectTitle should be the same", _c4.getProjectTitle(), _c3.getProjectTitle());
-		assertEquals("resourceId should be the same", _c4.getResourceId(), _c3.getResourceId());
-		assertEquals("rateId should be the same", _c4.getRateId(), _c3.getRateId());
-		assertEquals("the startAt Date should be the same", _c4.getStartAt(), _c3.getStartAt());
-		assertEquals("durationHours should be the same", _c4.getDurationHours(), _c3.getDurationHours());
-		assertEquals("durationMinutes should be the same", _c4.getDurationMinutes(), _c3.getDurationMinutes());
-		assertEquals("comment should be the same", _c4.getComment(), _c3.getComment());
-		assertEquals("isBillable should be the same", _c4.isBillable(), _c3.isBillable());		
+		assertEquals("ID should be the same", _wrm4.getId(), _wrm3.getId());
+		assertEquals("companyId should be the same", _wrm4.getCompanyId(), _wrm3.getCompanyId());
+		assertEquals("companyTitle should be the same", _wrm4.getCompanyTitle(), _wrm3.getCompanyTitle());
+		assertEquals("projectId should be the same", _wrm4.getProjectId(), _wrm3.getProjectId());
+		assertEquals("projectTitle should be the same", _wrm4.getProjectTitle(), _wrm3.getProjectTitle());
+		assertEquals("resourceId should be the same", _wrm4.getResourceId(), _wrm3.getResourceId());
+		assertEquals("rateId should be the same", _wrm4.getRateId(), _wrm3.getRateId());
+		assertEquals("the startAt Date should be the same", _wrm4.getStartAt(), _wrm3.getStartAt());
+		assertEquals("durationHours should be the same", _wrm4.getDurationHours(), _wrm3.getDurationHours());
+		assertEquals("durationMinutes should be the same", _wrm4.getDurationMinutes(), _wrm3.getDurationMinutes());
+		assertEquals("comment should be the same", _wrm4.getComment(), _wrm3.getComment());
+		assertEquals("isBillable should be the same", _wrm4.isBillable(), _wrm3.isBillable());		
 				
-		assertEquals("ID should be the same", _c2.getId(), _c3.getId());
-		assertEquals("companyId should be the same", _c2.getCompanyId(), _c3.getCompanyId());
-		assertEquals("companyTitle should be the same", _c2.getCompanyTitle(), _c3.getCompanyTitle());
-		assertEquals("projectId should be the same", _c2.getProjectId(), _c3.getProjectId());
-		assertEquals("projectTitle should be the same", _c2.getProjectTitle(), _c3.getProjectTitle());
-		assertEquals("resourceId should be the same", _c2.getResourceId(), _c3.getResourceId());
-		assertEquals("rateId should be the same", _c2.getRateId(), _c3.getRateId());
-		assertEquals("the startAt Date should be the same", _c2.getStartAt(), _c3.getStartAt());
-		assertEquals("durationHours should be the same", _c2.getDurationHours(), _c3.getDurationHours());
-		assertEquals("durationMinutes should be the same", _c2.getDurationMinutes(), _c3.getDurationMinutes());
-		assertEquals("comment should be the same", _c2.getComment(), _c3.getComment());
-		assertEquals("isBillable should be the same", _c2.isBillable(), _c3.isBillable());		
+		assertEquals("ID should be the same", _wrm2.getId(), _wrm3.getId());
+		assertEquals("companyId should be the same", _wrm2.getCompanyId(), _wrm3.getCompanyId());
+		assertEquals("companyTitle should be the same", _wrm2.getCompanyTitle(), _wrm3.getCompanyTitle());
+		assertEquals("projectId should be the same", _wrm2.getProjectId(), _wrm3.getProjectId());
+		assertEquals("projectTitle should be the same", _wrm2.getProjectTitle(), _wrm3.getProjectTitle());
+		assertEquals("resourceId should be the same", _wrm2.getResourceId(), _wrm3.getResourceId());
+		assertEquals("rateId should be the same", _wrm2.getRateId(), _wrm3.getRateId());
+		assertEquals("the startAt Date should be the same", _wrm2.getStartAt(), _wrm3.getStartAt());
+		assertEquals("durationHours should be the same", _wrm2.getDurationHours(), _wrm3.getDurationHours());
+		assertEquals("durationMinutes should be the same", _wrm2.getDurationMinutes(), _wrm3.getDurationMinutes());
+		assertEquals("comment should be the same", _wrm2.getComment(), _wrm3.getComment());
+		assertEquals("isBillable should be the same", _wrm2.isBillable(), _wrm3.isBillable());		
 		
-		// delete(_c2)
-		_response = webclient.replacePath("/").path(_c2.getId()).delete();
+		// delete(_wrm2)
+		_response = webclient.replacePath("/").path(_wrm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testWorkRecordUpdate() {
-		// new() -> _c1
-		WorkRecordModel _c1 = new WorkRecordModel();
+		// new() -> _wrm1
+		WorkRecordModel _wrm1 = createWorkRecord(1, date, 1, 10, true);
 		
-		// create(_c1) -> _c2
-		Response _response = webclient.replacePath("/").post(_c1);
-		WorkRecordModel _c2 = _response.readEntity(WorkRecordModel.class);
+		// create(_wrm1) -> _wrm2
+		Response _response = webclient.replacePath("/").post(_wrm1);
+		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 		
 		// change the attributes
-		// update(_c2) -> _c3
-		_c2.setCompanyId("CID1");
-		_c2.setCompanyTitle("CTITLE1");
-		_c2.setProjectId("PID1");
-		_c2.setProjectTitle("PTITLE1");
-		_c2.setResourceId("RID1");
-		_c2.setRateId("RATEID1");
-		Date _date1 = new Date(1000);
-		_c2.setStartAt(_date1);
-		_c2.setDurationHours(10);
-		_c2.setDurationMinutes(100);
-		_c2.setComment("MY_COMMENT1");
-		_c2.setBillable(true);
+		// update(_wrm2) -> _wrm3
+		_wrm2.setCompanyId("CID2");
+		_wrm2.setCompanyTitle("CTITLE2");
+		_wrm2.setProjectId("PID2");
+		_wrm2.setProjectTitle("PTITLE2");
+		_wrm2.setResourceId("RID2");
+		_wrm2.setRateId("RATEID2");
+		Date _date2 = new Date(2000);
+		_wrm2.setStartAt(_date2);
+		_wrm2.setDurationHours(2);
+		_wrm2.setDurationMinutes(20);
+		_wrm2.setComment("MY_COMMENT2");
+		_wrm2.setBillable(false);
 		
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
+		_response = webclient.replacePath("/").path(_wrm2.getId()).put(_wrm2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c3 = _response.readEntity(WorkRecordModel.class);
+		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
 
-		assertNotNull("ID should be set", _c3.getId());
-		assertEquals("ID should be unchanged", _c2.getId(), _c3.getId());
-		assertEquals("companyId should be set correctly", "CID1", _c3.getCompanyId());
-		assertEquals("companyTitle should be set correctly", "CTITLE1", _c3.getCompanyTitle());
-		assertEquals("projectId should be set correctly", "PID1", _c3.getProjectId());
-		assertEquals("projectTitle should be set correctly", "PTITLE1", _c3.getProjectTitle());
-		assertEquals("resourceId should be set correctly", "RID1", _c3.getResourceId());
-		assertEquals("rateId should be set correctly", "RATEID1", _c3.getRateId());
-		assertEquals("the startAt Date should be set correctly", _date1, _c3.getStartAt());
-		assertEquals("durationHours should be set correctly", 10, _c3.getDurationHours());
-		assertEquals("durationMinutes should be set correctly", 100, _c3.getDurationMinutes());
-		assertEquals("comment should be set correctly", "MY_COMMENT1", _c3.getComment());
-		assertEquals("isBillable should be set correctly", true, _c3.isBillable());			
+		assertNotNull("ID should be set", _wrm3.getId());
+		assertEquals("ID should be unchanged", _wrm2.getId(), _wrm3.getId());
+		assertEquals("companyId should be set correctly", "CID2", _wrm3.getCompanyId());
+		assertEquals("companyTitle should be set correctly", "CTITLE2", _wrm3.getCompanyTitle());
+		assertEquals("projectId should be set correctly", "PID2", _wrm3.getProjectId());
+		assertEquals("projectTitle should be set correctly", "PTITLE2", _wrm3.getProjectTitle());
+		assertEquals("resourceId should be set correctly", "RID2", _wrm3.getResourceId());
+		assertEquals("rateId should be set correctly", "RATEID2", _wrm3.getRateId());
+		assertEquals("the startAt Date should be set correctly", _date2, _wrm3.getStartAt());
+		assertEquals("durationHours should be set correctly", 2, _wrm3.getDurationHours());
+		assertEquals("durationMinutes should be set correctly", 20, _wrm3.getDurationMinutes());
+		assertEquals("comment should be set correctly", "MY_COMMENT2", _wrm3.getComment());
+		assertEquals("isBillable should be set correctly", false, _wrm3.isBillable());			
 
 		// reset the attributes
-		// update(_c2) -> _c4
-		_c2.setCompanyId("CID2");
-		_c2.setCompanyTitle("CTITLE2");
-		_c2.setProjectId("PID2");
-		_c2.setProjectTitle("PTITLE2");
-		_c2.setResourceId("RID2");
-		_c2.setRateId("RATEID2");
-		Date _date2 = new Date(2000);
-		_c2.setStartAt(_date2);
-		_c2.setDurationHours(20);
-		_c2.setDurationMinutes(200);
-		_c2.setComment("MY_COMMENT2");
-		_c2.setBillable(false);
+		// update(_wrm2) -> _wrm4
+		_wrm2.setCompanyId("CID4");
+		_wrm2.setCompanyTitle("CTITLE4");
+		_wrm2.setProjectId("PID4");
+		_wrm2.setProjectTitle("PTITLE4");
+		_wrm2.setResourceId("RID4");
+		_wrm2.setRateId("RATEID4");
+		Date _date4 = new Date(4000);
+		_wrm2.setStartAt(_date4);
+		_wrm2.setDurationHours(4);
+		_wrm2.setDurationMinutes(40);
+		_wrm2.setComment("MY_COMMENT4");
+		_wrm2.setBillable(true);
 
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
+		_response = webclient.replacePath("/").path(_wrm2.getId()).put(_wrm2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c4 = _response.readEntity(WorkRecordModel.class);
+		WorkRecordModel _wrm4 = _response.readEntity(WorkRecordModel.class);
 
-		assertNotNull("ID should be set", _c4.getId());
-		assertEquals("ID should be unchanged", _c2.getId(), _c4.getId());	
-		assertEquals("companyId should be set correctly", "CID2", _c4.getCompanyId());
-		assertEquals("companyTitle should be set correctly", "CTITLE2", _c4.getCompanyTitle());
-		assertEquals("projectId should be set correctly", "PID2", _c4.getProjectId());
-		assertEquals("projectTitle should be set correctly", "PTITLE2", _c4.getProjectTitle());
-		assertEquals("resourceId should be set correctly", "RID2", _c4.getResourceId());
-		assertEquals("rateId should be set correctly", "RATEID2", _c4.getRateId());
-		assertEquals("the startAt Date should be set correctly", _date2, _c4.getStartAt());
-		assertEquals("durationHours should be set correctly", 20, _c4.getDurationHours());
-		assertEquals("durationMinutes should be set correctly", 200, _c4.getDurationMinutes());
-		assertEquals("comment should be set correctly", "MY_COMMENT2", _c4.getComment());
-		assertEquals("isBillable should be set correctly", false, _c4.isBillable());			
+		assertNotNull("ID should be set", _wrm4.getId());
+		assertEquals("ID should be unchanged", _wrm2.getId(), _wrm4.getId());	
+		assertEquals("companyId should be set correctly", "CID4", _wrm4.getCompanyId());
+		assertEquals("companyTitle should be set correctly", "CTITLE4", _wrm4.getCompanyTitle());
+		assertEquals("projectId should be set correctly", "PID4", _wrm4.getProjectId());
+		assertEquals("projectTitle should be set correctly", "PTITLE4", _wrm4.getProjectTitle());
+		assertEquals("resourceId should be set correctly", "RID4", _wrm4.getResourceId());
+		assertEquals("rateId should be set correctly", "RATEID4", _wrm4.getRateId());
+		assertEquals("the startAt Date should be set correctly", _date4, _wrm4.getStartAt());
+		assertEquals("durationHours should be set correctly", 4, _wrm4.getDurationHours());
+		assertEquals("durationMinutes should be set correctly", 40, _wrm4.getDurationMinutes());
+		assertEquals("comment should be set correctly", "MY_COMMENT4", _wrm4.getComment());
+		assertEquals("isBillable should be set correctly", true, _wrm4.isBillable());			
 		
-		_response = webclient.replacePath("/").path(_c2.getId()).delete();
+		_response = webclient.replacePath("/").path(_wrm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testWorkRecordDelete(
 	) {
-		// new() -> _c0
-		WorkRecordModel _c0 = new WorkRecordModel();
-		// create(_c0) -> _c1
-		Response _response = webclient.replacePath("/").post(_c0);
-		WorkRecordModel _c1 = _response.readEntity(WorkRecordModel.class);
+		// create(1) -> _wrm1
+		Response _response = webclient.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
+		WorkRecordModel _wrm1 = _response.readEntity(WorkRecordModel.class);
 		
-		// read(_c1) -> _tmpObj
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_wrm1) -> _wrm2
+		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _tmpObj = _response.readEntity(WorkRecordModel.class);
-		assertEquals("ID should be unchanged when reading a workrecord (remote):", _c1.getId(), _tmpObj.getId());						
+		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
+		assertEquals("ID should be unchanged when reading a workrecord (remote):", _wrm1.getId(), _wrm2.getId());						
 		
-		// delete(_c1) -> OK
-		_response = webclient.replacePath("/").path(_c1.getId()).delete();
+		// delete(_wrm1) -> OK
+		_response = webclient.replacePath("/").path(_wrm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_wrm1) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_wrm1) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testWorkRecordDoubleDelete(
 	) {
-		// new() -> _c0
-		WorkRecordModel _c0 = new WorkRecordModel();
-		
-		// create(_c0) -> _c1
-		Response _response = webclient.replacePath("/").post(_c0);
-		WorkRecordModel _c1 = _response.readEntity(WorkRecordModel.class);
+		// create(1) -> _wrm1
+		Response _response = webclient.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
+		WorkRecordModel _wrm1 = _response.readEntity(WorkRecordModel.class);
 
-		// read(_c1) -> OK
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_wrm1) -> OK
+		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
-		// delete(_c1) -> OK
-		_response = webclient.replacePath("/").path(_c1.getId()).delete();		
+		// delete(_wrm1) -> OK
+		_response = webclient.replacePath("/").path(_wrm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_wrm1) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// delete _c1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).delete();		
+		// delete _wrm1 -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_wrm1.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// read _c1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read _wrm1 -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testWorkRecordModifications() {
-		// create(new WorkRecordModel()) -> _o
-		Response _response = webclient.replacePath("/").post(new WorkRecordModel());
-		WorkRecordModel _o = _response.readEntity(WorkRecordModel.class);
+		// create(1) -> _wrm1
+		Response _response = webclient.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
+		WorkRecordModel _wrm1 = _response.readEntity(WorkRecordModel.class);
 		
 		// test createdAt and createdBy
-		assertNotNull("create() should set createdAt", _o.getCreatedAt());
-		assertNotNull("create() should set createdBy", _o.getCreatedBy());
+		assertNotNull("create() should set createdAt", _wrm1.getCreatedAt());
+		assertNotNull("create() should set createdBy", _wrm1.getCreatedBy());
 		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
-		assertNotNull("create() should set modifiedAt", _o.getModifiedAt());
-		assertNotNull("create() should set modifiedBy", _o.getModifiedBy());
-		assertEquals("createdAt and modifiedAt should be identical after create()", _o.getCreatedAt(), _o.getModifiedAt());
-		assertEquals("createdBy and modifiedBy should be identical after create()", _o.getCreatedBy(), _o.getModifiedBy());
+		assertNotNull("create() should set modifiedAt", _wrm1.getModifiedAt());
+		assertNotNull("create() should set modifiedBy", _wrm1.getModifiedBy());
+		assertEquals("createdAt and modifiedAt should be identical after create()", _wrm1.getCreatedAt(), _wrm1.getModifiedAt());
+		assertEquals("createdBy and modifiedBy should be identical after create()", _wrm1.getCreatedBy(), _wrm1.getModifiedBy());
 		
-		// update(_o)  -> _o2
-		_o.setProjectId("NEW_PROJECTID");
+		// update(_wrm1)  -> _wrm2
+		_wrm1.setProjectId("NEW_PROJECTID");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(_wrm1.getId()).put(_wrm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _o2 = _response.readEntity(WorkRecordModel.class);
+		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 
 		// test createdAt and createdBy (unchanged)
-		assertEquals("update() should not change createdAt", _o.getCreatedAt(), _o2.getCreatedAt());
-		assertEquals("update() should not change createdBy", _o.getCreatedBy(), _o2.getCreatedBy());
+		assertEquals("update() should not change createdAt", _wrm1.getCreatedAt(), _wrm2.getCreatedAt());
+		assertEquals("update() should not change createdBy", _wrm1.getCreatedBy(), _wrm2.getCreatedBy());
 		
 		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
-		assertThat(_o2.getModifiedAt(), not(equalTo(_o2.getCreatedAt())));
+		assertThat(_wrm2.getModifiedAt(), not(equalTo(_wrm2.getCreatedAt())));
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
 		// assertThat(_o2.getModifiedBy(), not(equalTo(_o2.getCreatedBy())));
 
 		// update(o2) with createdBy set on client side -> error
-		String _createdBy = _o.getCreatedBy();
-		_o.setCreatedBy("MYSELF");
+		String _createdBy = _wrm1.getCreatedBy();
+		_wrm1.setCreatedBy("MYSELF");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(_wrm1.getId()).put(_wrm1);
 		assertEquals("update() should return with status BAD_REQUEST", 
 				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_o.setCreatedBy(_createdBy);
+		_wrm1.setCreatedBy(_createdBy);
 
-		// update(o) with createdAt set on client side -> error
-		Date _d = _o.getCreatedAt();
-		_o.setCreatedAt(new Date(1000));
+		// update(_wrm1) with createdAt set on client side -> error
+		Date _d = _wrm1.getCreatedAt();
+		_wrm1.setCreatedAt(new Date(1000));
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(_wrm1.getId()).put(_wrm1);
 		assertEquals("update() should return with status BAD_REQUEST", 
 				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_o.setCreatedAt(_d);
+		_wrm1.setCreatedAt(_d);
 
-		// update(o) with modifiedBy/At set on client side -> ignored by server
-		_o.setModifiedBy("MYSELF");
-		_o.setModifiedAt(new Date(1000));
+		// update(_wrm1) with modifiedBy/At set on client side -> ignored by server
+		_wrm1.setModifiedBy("MYSELF");
+		_wrm1.setModifiedAt(new Date(1000));
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(_wrm1.getId()).put(_wrm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _o3 = _response.readEntity(WorkRecordModel.class);
 		
-		// test, that modifiedBy really ignored the client-side value "MYSELF"
-		assertThat(_o.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
+		// test, that modifiedBy really ignores the client-side value "MYSELF"
+		assertThat(_wrm1.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
 		// check whether the client-side modifiedAt() is ignored
-		assertThat(_o.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
+		assertThat(_wrm1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
-		// delete(_o) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_o.getId()).delete();		
+		// delete(_wrm1) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(_wrm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	/********************************** helper methods *********************************/	
+	private WorkRecordModel createWorkRecord(int suffix, Date d, int hours, int mins, boolean isBillable) {
+		String _buf = new Integer(suffix).toString();
+		return new WorkRecordModel(
+			"CID" + _buf,
+			"CTITLE" + _buf,
+			"PID" + _buf,
+			"PTITLE" + _buf,
+			"RID" + _buf,
+			d,
+			hours,
+			mins,
+			"RATEID" + _buf,
+			isBillable,
+			"MY_COMMENT" + _buf
+		);
 	}
 }
