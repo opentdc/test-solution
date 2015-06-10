@@ -58,7 +58,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		// new() -> _c
 		WorkRecordModel _c = new WorkRecordModel();
 		assertNull("id should not be set by empty constructor", _c.getId());
+		assertNull("companyId should not be set by empty constructor", _c.getCompanyId());
+		assertNull("companyTitle should not be set by empty constructor", _c.getCompanyTitle());
 		assertNull("projectId should not be set by empty constructor", _c.getProjectId());
+		assertNull("projectTitle should not be set by empty constructor", _c.getProjectTitle());
 		assertNull("resourceId should not be set by empty constructor", _c.getResourceId());
 		assertNull("rateId should not be set by empty constructor", _c.getRateId());
 		assertNull("startAt should not be set by empty constructor", _c.getStartAt());
@@ -71,9 +74,12 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	@Test
 	public void testWorkRecordModelConstructor() {		
 		// new("PID", "RID", new Date(), 1, 30, "RATEID", true, "MY_COMMENT") -> _c
-		WorkRecordModel _c = new WorkRecordModel("PID", "RID", new Date(), 1, 30, "RATEID", true, "MY_COMMENT");
+		WorkRecordModel _c = new WorkRecordModel("CID", "CTITLE", "PID", "PTITLE", "RID", new Date(), 1, 30, "RATEID", true, "MY_COMMENT");
 		assertNull("id should not be set by constructor", _c.getId());
+		assertEquals("companyId should be set by constructor", "CID", _c.getCompanyId());
+		assertEquals("companyTitle should be set by constructor", "CTITLE", _c.getCompanyTitle());
 		assertEquals("projectId should be set by constructor", "PID", _c.getProjectId());
+		assertEquals("projectTitle should be set by constructor", "PTITLE", _c.getProjectTitle());
 		assertEquals("resourceId should be set by constructor", "RID", _c.getResourceId());
 		assertEquals("rateId should be set by constructor", "RATEID", _c.getRateId());
 		assertNotNull("startAt should be set by constructor", _c.getStartAt());
@@ -93,12 +99,39 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	}
 
 	@Test
+	public void testCompanyIdAttributeChange() {
+		// new() -> _c -> _c.setCompanyId()
+		WorkRecordModel _c = new WorkRecordModel();
+		assertNull("companyId should not be set by empty constructor", _c.getCompanyId());
+		_c.setCompanyId("CID");
+		assertEquals("companyId should have changed:", "CID", _c.getCompanyId());
+	}
+	
+	@Test
+	public void testCompanyTitleAttributeChange() {
+		// new() -> _c -> _c.setCompanyTitle()
+		WorkRecordModel _c = new WorkRecordModel();
+		assertNull("CompanyTitle should not be set by empty constructor", _c.getCompanyTitle());
+		_c.setCompanyTitle("CTITLE");
+		assertEquals("CompanyTitle should have changed:", "CTITLE", _c.getCompanyTitle());
+	}
+	
+	@Test
 	public void testProjectIdAttributeChange() {
 		// new() -> _c -> _c.setProjectId()
 		WorkRecordModel _c = new WorkRecordModel();
 		assertNull("projectId should not be set by empty constructor", _c.getProjectId());
 		_c.setProjectId("PID");
 		assertEquals("projectId should have changed:", "PID", _c.getProjectId());
+	}
+	
+	@Test
+	public void testProjectTitleAttributeChange() {
+		// new() -> _c -> _c.setProjectTitle()
+		WorkRecordModel _c = new WorkRecordModel();
+		assertNull("projectTitle should not be set by empty constructor", _c.getProjectTitle());
+		_c.setProjectTitle("PTITLE");
+		assertEquals("projectTitle should have changed:", "PTITLE", _c.getProjectTitle());
 	}
 	
 	@Test
@@ -199,7 +232,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		// new() -> _c1
 		WorkRecordModel _c1 = new WorkRecordModel();
 		assertNull("id should not be set by empty constructor", _c1.getId());
+		assertNull("companyId should not be set by empty constructor", _c1.getCompanyId());
+		assertNull("companyTitle should not be set by empty constructor", _c1.getCompanyTitle());
 		assertNull("projectId should not be set by empty constructor", _c1.getProjectId());
+		assertNull("projectTitle should not be set by empty constructor", _c1.getProjectTitle());
 		assertNull("resourceId should not be set by empty constructor", _c1.getResourceId());
 		assertNull("rateId should not be set by empty constructor", _c1.getRateId());
 		assertNull("startAt should not be set by empty constructor", _c1.getStartAt());
@@ -213,7 +249,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _c2 = _response.readEntity(WorkRecordModel.class);
 		assertNull("create() should not change the id of the local object", _c1.getId());
+		assertNull("create() should not change the companyId of the local object", _c1.getCompanyId());
+		assertNull("create() should not change the companyTitle of the local object", _c1.getCompanyTitle());
 		assertNull("create() should not change the projectId of the local object", _c1.getProjectId());
+		assertNull("create() should not change the projectTitle of the local object", _c1.getProjectTitle());
 		assertNull("create() should not change the resourceId of the local object", _c1.getResourceId());
 		assertNull("create() should not change the rateId of the local object", _c1.getRateId());
 		assertNull("create() should not change the startAt Date of the local object", _c1.getStartAt());
@@ -223,7 +262,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("create() should not change isBillable on the local object", false, _c1.isBillable());
 		
 		assertNotNull("create() should set a valid id on the remote object returned", _c2.getId());
+		assertNull("companyId of returned object should  still be null after remote create", _c2.getCompanyId());
+		assertNull("companyTitle of returned object should  still be null after remote create", _c2.getCompanyTitle());
 		assertNull("projectId of returned object should  still be null after remote create", _c2.getProjectId());
+		assertNull("projectTitle of returned object should  still be null after remote create", _c2.getProjectTitle());
 		assertNull("resourceId of returned object should still be null after remote create", _c2.getResourceId());
 		assertNull("rateId of returned object should still be null after remote create", _c2.getRateId());
 		assertNull("startAt Date of returned object should still be null", _c2.getStartAt());
@@ -235,7 +277,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _c3 = _response.readEntity(WorkRecordModel.class);
 		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
+		assertEquals("companyId of returned object should be unchanged after remote create", _c2.getCompanyId(), _c3.getCompanyId());
+		assertEquals("companyTitle of returned object should be unchanged after remote create", _c2.getCompanyTitle(), _c3.getCompanyTitle());
 		assertEquals("projectId of returned object should be unchanged after remote create", _c2.getProjectId(), _c3.getProjectId());
+		assertEquals("projectTitle of returned object should be unchanged after remote create", _c2.getProjectTitle(), _c3.getProjectTitle());
 		assertEquals("resourceId of returned object should be unchanged after remote create", _c2.getResourceId(), _c3.getResourceId());
 		assertEquals("rateId of returned object should be unchanged after remote create", _c2.getRateId(), _c3.getRateId());
 		assertEquals("startAt of returned object should be unchanged after remote create", _c2.getStartAt(), _c3.getStartAt());
@@ -253,9 +298,12 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testWorkRecordCreateReadDelete() {
 		// new("MY_TITLE", "MY_DESC") -> _c1
 		Date _date = new Date();
-		WorkRecordModel _c1 = new WorkRecordModel("PID", "RID", _date, 4, 20, "RATEID", true, "MY_COMMENT");
+		WorkRecordModel _c1 = new WorkRecordModel("CID", "CTITLE", "PID", "PTITLE", "RID", _date, 4, 20, "RATEID", true, "MY_COMMENT");
 		assertNull("id should not be set by constructor", _c1.getId());
+		assertEquals("companyId should be set by constructor", "CID", _c1.getCompanyId());
+		assertEquals("companyTitle should be set by constructor", "CTITLE", _c1.getCompanyTitle());
 		assertEquals("projectId should be set by constructor", "PID", _c1.getProjectId());
+		assertEquals("projectTitle should be set by constructor", "PTITLE", _c1.getProjectTitle());
 		assertEquals("resourceId should be set by constructor", "RID", _c1.getResourceId());
 		assertEquals("rateId should be set by constructor", "RATEID", _c1.getRateId());
 		assertEquals("startAt should be set by constructor", _date, _c1.getStartAt());
@@ -269,7 +317,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _c2 = _response.readEntity(WorkRecordModel.class);
 		assertNull("create() should not change the id of the local object", _c1.getId());
+		assertEquals("create() should not change the companyId of the local object", "CID", _c1.getCompanyId());
+		assertEquals("create() should not change the companyTitle of the local object", "CTITLE", _c1.getCompanyTitle());
 		assertEquals("create() should not change the projectId of the local object", "PID", _c1.getProjectId());
+		assertEquals("create() should not change the projectTitle of the local object", "PTITLE", _c1.getProjectTitle());
 		assertEquals("create() should not change the resourceId of the local object", "RID", _c1.getResourceId());
 		assertEquals("create() should not change the rateId of the local object", "RATEID", _c1.getRateId());
 		assertEquals("create() should not change the startAt Date of the local object", _date, _c1.getStartAt());
@@ -279,7 +330,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("create() should not change isBillable on the local object", true, _c1.isBillable());
 				
 		assertNotNull("id of returned object should be set", _c2.getId());
+		assertEquals("companyId of returned object should be unchanged after remote create", "CID", _c2.getCompanyId());
+		assertEquals("companyTitle of returned object should be unchanged after remote create", "CTITLE", _c2.getCompanyTitle());
 		assertEquals("projectId of returned object should be unchanged after remote create", "PID", _c2.getProjectId());
+		assertEquals("projectTitle of returned object should be unchanged after remote create", "PTITLE", _c2.getProjectTitle());
 		assertEquals("resourceId of returned object should be unchanged after remote create", "RID", _c2.getResourceId());
 		assertEquals("rateId of returned object should be unchanged after remote create", "RATEID", _c2.getRateId());
 		assertEquals("create() should not change the startAt Date of the local object", _date, _c2.getStartAt());
@@ -293,7 +347,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _c3 = _response.readEntity(WorkRecordModel.class);
 		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
+		assertEquals("companyId of returned object should be the same", _c2.getCompanyId(), _c3.getCompanyId());
+		assertEquals("companyTitle of returned object should be the same", _c2.getCompanyTitle(), _c3.getCompanyTitle());
 		assertEquals("projectId of returned object should be the same", _c2.getProjectId(), _c3.getProjectId());
+		assertEquals("projectTitle of returned object should be the same", _c2.getProjectTitle(), _c3.getProjectTitle());
 		assertEquals("resourceId of returned object should be the same", _c2.getResourceId(), _c3.getResourceId());
 		assertEquals("rateId of returned object should be the same", _c2.getRateId(), _c3.getRateId());
 		assertEquals("the startAt Date should be the same", _c2.getStartAt(), _c3.getStartAt());
@@ -378,10 +435,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testWorkRecordCreate() {
 		// new("PID1", "RID1", _date1, 10, 10, "RATEID1", true, "MY_COMMENT1") -> _c1
 		Date _date1 = new Date(1000);
-		WorkRecordModel _c1 = new WorkRecordModel("PID1", "RID1", _date1, 10, 100, "RATEID1", true, "MY_COMMENT1");
+		WorkRecordModel _c1 = new WorkRecordModel("CID1", "CTITLE1", "PID1", "PTITLE1", "RID1", _date1, 10, 100, "RATEID1", true, "MY_COMMENT1");
 		// new("PID2", "RID2", _date2, 20, 20, "RATEID2", true, "MY_COMMENT2") -> _c2
 		Date _date2 = new Date(2000);
-		WorkRecordModel _c2 = new WorkRecordModel("PID2", "RID2", _date2, 20, 200, "RATEID2", true, "MY_COMMENT2");
+		WorkRecordModel _c2 = new WorkRecordModel("CID2", "CTITLE2", "PID2", "PTITLE2", "RID2", _date2, 20, 200, "RATEID2", true, "MY_COMMENT2");
 		
 		// create(_c1)  -> _c3
 		Response _response = webclient.replacePath("/").post(_c1);
@@ -397,7 +454,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertThat(_c4.getId(), not(equalTo(_c3.getId())));
 
 		// examine _c3
+		assertEquals("companyId should be set correctly", "CID1", _c3.getCompanyId());
+		assertEquals("companyTitle should be set correctly", "CTITLE1", _c3.getCompanyTitle());
 		assertEquals("projectId should be set correctly", "PID1", _c3.getProjectId());
+		assertEquals("projectTitle should be set correctly", "PTITLE1", _c3.getProjectTitle());
 		assertEquals("resourceId should be set correctly", "RID1", _c3.getResourceId());
 		assertEquals("rateId should be set correctly", "RATEID1", _c3.getRateId());
 		assertEquals("the startAt Date should be set correctly", _date1, _c3.getStartAt());
@@ -407,7 +467,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable should be set correctly", true, _c3.isBillable());			
 		
 		// examine _c4
+		assertEquals("companyId should be set correctly", "CID2", _c4.getCompanyId());
+		assertEquals("companyTitle should be set correctly", "CTITLE2", _c4.getCompanyTitle());
 		assertEquals("projectId should be set correctly", "PID2", _c4.getProjectId());
+		assertEquals("projectTitle should be set correctly", "PTITLE2", _c4.getProjectTitle());
 		assertEquals("resourceId should be set correctly", "RID2", _c4.getResourceId());
 		assertEquals("rateId should be set correctly", "RATEID2", _c4.getRateId());
 		assertEquals("the startAt Date should be set correctly", _date2, _c4.getStartAt());
@@ -503,7 +566,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		
 		// but: the two objects are not equal !
 		assertEquals("ID should be the same", _c4.getId(), _c3.getId());
+		assertEquals("companyId should be the same", _c4.getCompanyId(), _c3.getCompanyId());
+		assertEquals("companyTitle should be the same", _c4.getCompanyTitle(), _c3.getCompanyTitle());
 		assertEquals("projectId should be the same", _c4.getProjectId(), _c3.getProjectId());
+		assertEquals("projectTitle should be the same", _c4.getProjectTitle(), _c3.getProjectTitle());
 		assertEquals("resourceId should be the same", _c4.getResourceId(), _c3.getResourceId());
 		assertEquals("rateId should be the same", _c4.getRateId(), _c3.getRateId());
 		assertEquals("the startAt Date should be the same", _c4.getStartAt(), _c3.getStartAt());
@@ -513,7 +579,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable should be the same", _c4.isBillable(), _c3.isBillable());		
 				
 		assertEquals("ID should be the same", _c2.getId(), _c3.getId());
+		assertEquals("companyId should be the same", _c2.getCompanyId(), _c3.getCompanyId());
+		assertEquals("companyTitle should be the same", _c2.getCompanyTitle(), _c3.getCompanyTitle());
 		assertEquals("projectId should be the same", _c2.getProjectId(), _c3.getProjectId());
+		assertEquals("projectTitle should be the same", _c2.getProjectTitle(), _c3.getProjectTitle());
 		assertEquals("resourceId should be the same", _c2.getResourceId(), _c3.getResourceId());
 		assertEquals("rateId should be the same", _c2.getRateId(), _c3.getRateId());
 		assertEquals("the startAt Date should be the same", _c2.getStartAt(), _c3.getStartAt());
@@ -538,7 +607,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		
 		// change the attributes
 		// update(_c2) -> _c3
+		_c2.setCompanyId("CID1");
+		_c2.setCompanyTitle("CTITLE1");
 		_c2.setProjectId("PID1");
+		_c2.setProjectTitle("PTITLE1");
 		_c2.setResourceId("RID1");
 		_c2.setRateId("RATEID1");
 		Date _date1 = new Date(1000);
@@ -555,7 +627,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 
 		assertNotNull("ID should be set", _c3.getId());
 		assertEquals("ID should be unchanged", _c2.getId(), _c3.getId());
+		assertEquals("companyId should be set correctly", "CID1", _c3.getCompanyId());
+		assertEquals("companyTitle should be set correctly", "CTITLE1", _c3.getCompanyTitle());
 		assertEquals("projectId should be set correctly", "PID1", _c3.getProjectId());
+		assertEquals("projectTitle should be set correctly", "PTITLE1", _c3.getProjectTitle());
 		assertEquals("resourceId should be set correctly", "RID1", _c3.getResourceId());
 		assertEquals("rateId should be set correctly", "RATEID1", _c3.getRateId());
 		assertEquals("the startAt Date should be set correctly", _date1, _c3.getStartAt());
@@ -566,7 +641,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 
 		// reset the attributes
 		// update(_c2) -> _c4
+		_c2.setCompanyId("CID2");
+		_c2.setCompanyTitle("CTITLE2");
 		_c2.setProjectId("PID2");
+		_c2.setProjectTitle("PTITLE2");
 		_c2.setResourceId("RID2");
 		_c2.setRateId("RATEID2");
 		Date _date2 = new Date(2000);
@@ -583,7 +661,10 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 
 		assertNotNull("ID should be set", _c4.getId());
 		assertEquals("ID should be unchanged", _c2.getId(), _c4.getId());	
+		assertEquals("companyId should be set correctly", "CID2", _c4.getCompanyId());
+		assertEquals("companyTitle should be set correctly", "CTITLE2", _c4.getCompanyTitle());
 		assertEquals("projectId should be set correctly", "PID2", _c4.getProjectId());
+		assertEquals("projectTitle should be set correctly", "PTITLE2", _c4.getProjectTitle());
 		assertEquals("resourceId should be set correctly", "RID2", _c4.getResourceId());
 		assertEquals("rateId should be set correctly", "RATEID2", _c4.getRateId());
 		assertEquals("the startAt Date should be set correctly", _date2, _c4.getStartAt());
