@@ -35,11 +35,11 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 	public void initializeTest(
 	) {
 		initializeTest(API, WttService.class);
-		Response _response = webclient.replacePath("/").post(new CompanyModel("SubProjectTest", "MY_DESC"));
+		Response _response = webclient.replacePath("/")
+				.post(new CompanyModel("SubProjectTest", "MY_DESC"));
 		company = _response.readEntity(CompanyModel.class);
-		ProjectModel _pp = new ProjectModel();
-		_pp.setTitle("Parent Project");
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pp);
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("SubProjectTest", "MY_DESC"));
 		parentProject = _response.readEntity(ProjectModel.class);
 	}
 
@@ -59,98 +59,109 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 	// delete:  DELETE "api/company/{cid}/project/{pid}/project/{spid}"
 	@Test
 	public void testSubProjectCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _p1
-		ProjectModel _p1 = new ProjectModel();
-		// create(_p1) -> _p2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p1);
+		// new() -> _pm1
+		ProjectModel _pm1 = new ProjectModel();
+		
+		// create(_pm1) -> BAD_REQUEST (because of empty title)
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_pm1.setTitle("testSubProjectCreateReadDeleteWithEmptyConstructor");
+
+		// create(_pm1) -> _pm2
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p2 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectCreateReadDeleteWithEmptyConstructor created " + _p2.getId());
-		assertNull("create() should not change the id of the local object", _p1.getId());
-		assertNull("create() should not change the title of the local object", _p1.getTitle());
-		assertNull("create() should not change the description of the local object", _p1.getDescription());
-		assertNotNull("create() should set a valid id on the remote object returned", _p2.getId());
-		assertNull("title of returned object should be null after remote create", _p2.getTitle());
-		assertNull("description of returned object should be null after remote create", _p2.getDescription());
+		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
+		
+		// validate _pm1 (local object)
+		assertNull("create() should not change the id", _pm1.getId());
+		assertEquals("create() should not change the title", "testSubProjectCreateReadDeleteWithEmptyConstructor", _pm1.getTitle());
+		assertNull("create() should not change the description", _pm1.getDescription());
+		
+		// validate _pm2 (remote object returned from create())
+		assertNotNull("create() should set a valid id on the remote object returned", _pm2.getId());
+		assertEquals("create() should not change the title", "testSubProjectCreateReadDeleteWithEmptyConstructor", _pm2.getTitle());
+		assertNull("create() should not change the description", _pm2.getDescription());
 
-		// read(_p2) -> _p3
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).get();
-		assertEquals("read(" + _p2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p3 = _response.readEntity(ProjectModel.class);
-		assertEquals("id of returned object should be the same", _p2.getId(), _p3.getId());
-		assertEquals("title of returned object should be unchanged after remote create", _p2.getTitle(), _p3.getTitle());
-		assertEquals("description of returned object should be unchanged after remote create", _p2.getDescription(), _p3.getDescription());
+		// read(_pm2) -> _pm3
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		assertEquals("read(" + _pm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
+		
+		// validate _pm3 (remote object returned from read())
+		assertEquals("read() should not change the id", _pm2.getId(), _pm3.getId());
+		assertEquals("read() should not change the title", _pm2.getTitle(), _pm3.getTitle());
+		assertEquals("read() should not change the description", _pm2.getDescription(), _pm3.getDescription());
 
-		// delete(_p3)
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p3.getId()).delete();
-		assertEquals("delete(" + _p3.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreateReadDeleteWithEmptyConstructor deleted " + _p3.getId());
+		// delete(_pm3)
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
+		assertEquals("delete(" + _pm3.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
 	@Test
 	public void testSubProjectCreateReadDelete() {
-		// new("MY_TITLE", "MY_DESC") -> _p1
-		ProjectModel _p1 = new ProjectModel("MY_TITLE", "MY_DESC");
-		assertNull("id should not be set by constructor", _p1.getId());
-		assertEquals("title should be set by constructor", "MY_TITLE", _p1.getTitle());
-		assertEquals("description should be set by constructor", "MY_DESC", _p1.getDescription());
-		// create(_p1) -> _p2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p1);
+		// new() -> _pm1
+		ProjectModel _pm1 = new ProjectModel("testSubProjectCreateReadDelete", "MY_DESC");
+		assertNull("id should not be set by constructor", _pm1.getId());
+		assertEquals("title should be set by constructor", "testSubProjectCreateReadDelete", _pm1.getTitle());
+		assertEquals("description should be set by constructor", "MY_DESC", _pm1.getDescription());
+		// create(_pm1) -> _pm2
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p2 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectCreateReadDelete created " + _p2.getId());
-		assertNull("id should be null after remote create", _p1.getId());
-		assertEquals("title should be unchanged after remote create", "MY_TITLE", _p1.getTitle());
-		assertEquals("description should be unchanged after remote create", "MY_DESC", _p1.getDescription());
-		assertNotNull("id of returned object should be set", _p2.getId());
-		assertEquals("title of returned object should be unchanged after remote create", "MY_TITLE", _p2.getTitle());
-		assertEquals("description of returned object should be unchanged after remote create", "MY_DESC", _p2.getDescription());
+		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 
-		// read(_p2)  -> _p3
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).get();
-		assertEquals("read(" + _p2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p3 = _response.readEntity(ProjectModel.class);
-		assertEquals("id of returned object should be the same", _p2.getId(), _p3.getId());
-		assertEquals("title of returned object should be unchanged after remote create", _p2.getTitle(), _p3.getTitle());
-		assertEquals("description of returned object should be unchanged after remote create", _p2.getDescription(), _p3.getDescription());
+		assertNull("id should be null after remote create", _pm1.getId());
+		assertEquals("title should be unchanged after remote create", "testSubProjectCreateReadDelete", _pm1.getTitle());
+		assertEquals("description should be unchanged after remote create", "MY_DESC", _pm1.getDescription());
+		assertNotNull("id of returned object should be set", _pm2.getId());
+		assertEquals("title of returned object should be unchanged after remote create", "testSubProjectCreateReadDelete", _pm2.getTitle());
+		assertEquals("description of returned object should be unchanged after remote create", "MY_DESC", _pm2.getDescription());
 
-		// delete(_p3)
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p3.getId()).delete();
-		assertEquals("delete(" + _p3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreateReadDelete deleted " + _p3.getId());
+		// read(_pm2)  -> _pm3
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		assertEquals("read(" + _pm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
+		assertEquals("id of returned object should be the same", _pm2.getId(), _pm3.getId());
+		assertEquals("title of returned object should be unchanged after remote create", _pm2.getTitle(), _pm3.getTitle());
+		assertEquals("description of returned object should be unchanged after remote create", _pm2.getDescription(), _pm3.getDescription());
+
+		// delete(_pm3)
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
+		assertEquals("delete(" + _pm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		System.out.println("testSubProjectCreateReadDelete deleted " + _pm3.getId());
 	}
 	
 	@Test
 	public void testCreateSubProjectWithClientSideId() {
-		// new() -> _p1 -> _p1.setId()
-		ProjectModel _p1 = new ProjectModel();
-		_p1.setId("LOCAL_ID");
-		assertEquals("id should have changed", "LOCAL_ID", _p1.getId());
-		// create(_p1) -> BAD_REQUEST
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p1);
+		// new() -> _pm1 -> _pm1.setId()
+		ProjectModel _pm1 = new ProjectModel("testCreateSubProjectWithClientSideId", "MY_DESC");
+		_pm1.setId("LOCAL_ID");
+		assertEquals("id should have changed", "LOCAL_ID", _pm1.getId());
+		// create(_pm1) -> BAD_REQUEST
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateSubProjectWithDuplicateId() {
-		// create(new()) -> _p2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
+		// create(new()) -> _pm1
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("testCreateSubProjectWithDuplicateId", "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p2 = _response.readEntity(ProjectModel.class);
-		System.out.println("testCreateSubProjectWithDuplicateId created " + _p2.getId());
+		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
+		System.out.println("testCreateSubProjectWithDuplicateId created " + _pm1.getId());
 
-		// new() -> _p3 -> _p3.setId(_p2.getId())
-		ProjectModel _p3 = new ProjectModel();
-		_p3.setId(_p2.getId());		// wrongly create a 2nd ProjectModel object with the same ID
+		// new() -> _pm2 -> _pm2.setId(_pm1.getId())
+		ProjectModel _pm2 = new ProjectModel("testCreateSubProjectWithClientSideId2", "MY_DESC2");
+		_pm2.setId(_pm1.getId());		// wrongly create a 2nd ProjectModel object with the same ID
 		
-		// create(_p3) -> CONFLICT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p3);
+		// create(_pm2) -> CONFLICT
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
-		// delete(_p2)
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).delete();
-		assertEquals("delete(" + _p2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testCreateSubProjectWithDuplicateId deleted " + _p2.getId());
+		// delete(_pm1)
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();
+		assertEquals("delete(" + _pm1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		System.out.println("testCreateSubProjectWithDuplicateId deleted " + _pm1.getId());
 }
 	
 	// GET "api/company/{cid}/project/{pid}/project"
@@ -158,14 +169,12 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 	public void testSubProjectList() {
 		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();		
 		Response _response = null;
-		ProjectModel _pm = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
+			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+					.post(new ProjectModel("testSubProjectList" + i, "MY_DESC" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_pm = _response.readEntity(ProjectModel.class);
-			_localList.add(_pm);
-			System.out.println("testSubProjectList created " + _pm.getId());
+			_localList.add(_response.readEntity(ProjectModel.class));
 		}
 		
 		// list(/) -> _remoteList
@@ -174,99 +183,97 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
-		for (ProjectModel _p : _remoteList) {
-			_remoteListIds.add(_p.getId());
+		for (ProjectModel _pm : _remoteList) {
+			_remoteListIds.add(_pm.getId());
 		}
 		
-		for (ProjectModel _p : _localList) {
-			assertTrue("project <" + _p.getId() + "> should be listed", _remoteListIds.contains(_p.getId()));
+		for (ProjectModel _pm : _localList) {
+			assertTrue("project <" + _pm.getId() + "> should be listed", _remoteListIds.contains(_pm.getId()));
 		}
 		
-		for (ProjectModel _p : _localList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p.getId()).get();
+		for (ProjectModel _pm : _localList) {
+			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(ProjectModel.class);
 		}
 		
-		for (ProjectModel _p : _localList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p.getId()).delete();
+		for (ProjectModel _pm : _localList) {
+			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-			System.out.println("testSubProjectList deleted " + _p.getId());
 		}
 	}
 
 	@Test
 	public void testSubProjectCreate() {	
-		// new("MY_TITLE", "MY_DESC") -> _p1
-		ProjectModel _p1 = new ProjectModel("MY_TITLE", "MY_DESC");
-		// new("MY_TITLE2", "MY_DESC2") -> _p2
-		ProjectModel _p2 = new ProjectModel("MY_TITLE2", "MY_DESC2");
+		// new(1) -> _pm1
+		ProjectModel _pm1 = new ProjectModel("testSubProjectCreate1", "MY_DESC1");
+		// new(2) -> _pm2
+		ProjectModel _pm2 = new ProjectModel("testSubProjectCreate2", "MY_DESC2");
 		
-		// create(_p1)  -> _p3
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p1);
+		// create(_pm1)  -> _pm3
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p3 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectCreate created " + _p3.getId());
+		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
+		System.out.println("testSubProjectCreate created " + _pm3.getId());
 
-		// create(_p2) -> _p4
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p2);
+		// create(_pm2) -> _pm4
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p4 = _response.readEntity(ProjectModel.class);		
-		System.out.println("testSubProjectCreate created " + _p4.getId());
-		assertNotNull("ID should be set", _p3.getId());
-		assertNotNull("ID should be set", _p4.getId());
-		assertThat(_p4.getId(), not(equalTo(_p3.getId())));
-		assertEquals("title1 should be set correctly", "MY_TITLE", _p3.getTitle());
-		assertEquals("description1 should be set correctly", "MY_DESC", _p3.getDescription());
-		assertEquals("title2 should be set correctly", "MY_TITLE2", _p4.getTitle());
-		assertEquals("description2 should be set correctly", "MY_DESC2", _p4.getDescription());
+		ProjectModel _pm4 = _response.readEntity(ProjectModel.class);		
+		System.out.println("testSubProjectCreate created " + _pm4.getId());
+		assertNotNull("ID should be set", _pm3.getId());
+		assertNotNull("ID should be set", _pm4.getId());
+		assertThat(_pm4.getId(), not(equalTo(_pm3.getId())));
+		assertEquals("title1 should be set correctly", "testSubProjectCreate1", _pm3.getTitle());
+		assertEquals("description1 should be set correctly", "MY_DESC1", _pm3.getDescription());
+		assertEquals("title2 should be set correctly", "testSubProjectCreate2", _pm4.getTitle());
+		assertEquals("description2 should be set correctly", "MY_DESC2", _pm4.getDescription());
 
 		// delete(_p3) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p3.getId()).delete();
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreate deleted " + _p3.getId());
+		System.out.println("testSubProjectCreate deleted " + _pm3.getId());
 
 		// delete(_p4) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p4.getId()).delete();
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreate deleted " + _p4.getId());
+		System.out.println("testSubProjectCreate deleted " + _pm4.getId());
 	}
 	
 	@Test
 	public void testSubProjectCreateDouble() {		
-		// create(new()) -> _p
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
+		// create(new()) -> _pm
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("testSubProjectCreateDouble", "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectCreateDouble created " + _p.getId());
-		assertNotNull("ID should be set:", _p.getId());		
+		ProjectModel _pm = _response.readEntity(ProjectModel.class);
+		System.out.println("testSubProjectCreateDouble created " + _pm.getId());
+		assertNotNull("ID should be set:", _pm.getId());		
 		
-		// create(_p) -> CONFLICT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p);
+		// create(_pm) -> CONFLICT
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
-		// delete(_p) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p.getId()).delete();
+		// delete(_pm) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreateDouble deleted " + _p.getId());
+		System.out.println("testSubProjectCreateDouble deleted " + _pm.getId());
 	}
 	
 	@Test
 	public void testSubProjectRead() {
 		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();
 		Response _response = null;
-		ProjectModel _pm = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
+			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+					.post(new ProjectModel("testSubProjectRead", "MY_DESC"));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_pm = _response.readEntity(ProjectModel.class);
-			_localList.add(_pm);
-			System.out.println("testSubProjectRead created " + _pm.getId());			
+			_localList.add(_response.readEntity(ProjectModel.class));
 		}
 	
 		// test read on each local element
-		for (ProjectModel _p : _localList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p.getId()).get();
+		for (ProjectModel _pm : _localList) {
+			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(ProjectModel.class);
 		}
@@ -277,167 +284,161 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ProjectModel _tmpObj = null;
-		for (ProjectModel _p : _remoteList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p.getId()).get();
+		for (ProjectModel _pm : _remoteList) {
+			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(ProjectModel.class);
-			assertEquals("ID should be unchanged when reading a project", _p.getId(), _tmpObj.getId());						
+			assertEquals("ID should be unchanged when reading a project", _pm.getId(), _tmpObj.getId());						
 		}
 
-		for (ProjectModel _p : _localList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p.getId()).delete();
+		for (ProjectModel _pm : _localList) {
+			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-			System.out.println("testSubProjectRead deleted " + _p.getId());			
+			System.out.println("testSubProjectRead deleted " + _pm.getId());			
 		}
 	}
 		
 	@Test
 	public void testSubProjectMultiRead() {
-		// new() -> _p1
-		ProjectModel _p1 = new ProjectModel();
+		// new() -> _pm1
+		ProjectModel _pm1 = new ProjectModel("testSubProjectMultiRead", "MY_DESC");
 		
-		// create(_p1) -> _p2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p1);
-		ProjectModel _p2 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectMultiRead created " + _p2.getId());			
+		// create(_pm1) -> _pm2
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
+		System.out.println("testSubProjectMultiRead created " + _pm2.getId());			
 
-		// read(_p2) -> _p3
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).get();
+		// read(_pm2) -> _pm3
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p3 = _response.readEntity(ProjectModel.class);
-		assertEquals("ID should be unchanged after read:", _p2.getId(), _p3.getId());		
+		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
+		assertEquals("ID should be unchanged after read:", _pm2.getId(), _pm3.getId());		
 
-		// read(_p2) -> _p4
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).get();
+		// read(_pm2) -> _pm4
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p4 = _response.readEntity(ProjectModel.class);
-		assertEquals("ID should be unchanged after read:", _p2.getId(), _p4.getId());		
+		ProjectModel _pm4 = _response.readEntity(ProjectModel.class);
+		assertEquals("ID should be unchanged after read:", _pm2.getId(), _pm4.getId());		
 		
 		// but: the two objects are not equal !
-		assertEquals("ID should be the same:", _p3.getId(), _p4.getId());
-		assertEquals("title should be the same:", _p3.getTitle(), _p4.getTitle());
-		assertEquals("description should be the same:", _p3.getDescription(), _p4.getDescription());
+		assertEquals("ID should be the same:", _pm3.getId(), _pm4.getId());
+		assertEquals("title should be the same:", _pm3.getTitle(), _pm4.getTitle());
+		assertEquals("description should be the same:", _pm3.getDescription(), _pm4.getDescription());
 		
-		assertEquals("ID should be the same:", _p3.getId(), _p2.getId());
-		assertEquals("title should be the same:", _p3.getTitle(), _p2.getTitle());
-		assertEquals("description should be the same:", _p3.getDescription(), _p2.getDescription());
+		assertEquals("ID should be the same:", _pm3.getId(), _pm2.getId());
+		assertEquals("title should be the same:", _pm3.getTitle(), _pm2.getTitle());
+		assertEquals("description should be the same:", _pm3.getDescription(), _pm2.getDescription());
 		
-		// delete(_p2)
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).delete();
+		// delete(_pm2)
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectMultiRead deleted " + _p2.getId());			
+		System.out.println("testSubProjectMultiRead deleted " + _pm2.getId());			
 	}
 	
 	@Test
 	public void testSubProjectUpdate() {
-		// new() -> _p1
-		ProjectModel _p1 = new ProjectModel();
-		
-		// create(_p1) -> _p2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_p1);
-		ProjectModel _p2 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectUpdate created " + _p2.getId());			
+		// create() -> _pm1
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("testSubProjectUpdate", "MY_DESC"));
+		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
 		
 		// change the attributes
-		// update(_p2) -> _p3
-		_p2.setTitle("MY_TITLE");
-		_p2.setDescription("MY_DESC");
+		// update(_pm1) -> _pm2
+		_pm1.setTitle("MY_TITLE1");
+		_pm1.setDescription("MY_DESC1");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).put(_p2);
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p3 = _response.readEntity(ProjectModel.class);
+		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 
-		assertNotNull("ID should be set", _p3.getId());
-		assertEquals("ID should be unchanged", _p2.getId(), _p3.getId());	
-		assertEquals("title should have changed", "MY_TITLE", _p3.getTitle());
-		assertEquals("description should have changed", "MY_DESC", _p3.getDescription());
+		assertNotNull("ID should be set", _pm2.getId());
+		assertEquals("ID should be unchanged", _pm1.getId(), _pm2.getId());	
+		assertEquals("title should have changed", "MY_TITLE1", _pm2.getTitle());
+		assertEquals("description should have changed", "MY_DESC1", _pm2.getDescription());
 
 		// reset the attributes
-		// update(_p2) -> _p4
-		_p2.setTitle("MY_TITLE2");
-		_p2.setDescription("MY_DESC2");
+		// update(_pm1) -> _pm3
+		_pm1.setTitle("MY_TITLE2");
+		_pm1.setDescription("MY_DESC2");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).put(_p2);
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _p4 = _response.readEntity(ProjectModel.class);
+		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
 
-		assertNotNull("ID should be set", _p4.getId());
-		assertEquals("ID should be unchanged", _p2.getId(), _p4.getId());	
-		assertEquals("title should have changed", "MY_TITLE2", _p4.getTitle());
-		assertEquals("description should have changed", "MY_DESC2", _p4.getDescription());
+		assertNotNull("ID should be set", _pm3.getId());
+		assertEquals("ID should be unchanged", _pm1.getId(), _pm3.getId());	
+		assertEquals("title should have changed", "MY_TITLE2", _pm3.getTitle());
+		assertEquals("description should have changed", "MY_DESC2", _pm3.getDescription());
 		
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_p2.getId()).delete();
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectUpdate deleted " + _p2.getId());			
 	}
 
 	@Test
 	public void testSubProjectDelete(
 	) {
-		// new() -> _c0
-		ProjectModel _c0 = new ProjectModel();
-		// create(_c0) -> _c1
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_c0);
-		ProjectModel _c1 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectDelete created " + _c1.getId());			
+		// create() -> _pm1
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("testSubProjectDelete", "MY_DESC"));
+		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
+		System.out.println("testSubProjectDelete created " + _pm1.getId());			
 		
-		// read(_c1) -> _tmpObj
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).get();
+		// read(_pm1) -> _pm2
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _tmpObj = _response.readEntity(ProjectModel.class);
-		assertEquals("ID should be unchanged when reading a project (remote):", _c1.getId(), _tmpObj.getId());						
+		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
+		assertEquals("ID should be unchanged when reading a project (remote):", _pm1.getId(), _pm2.getId());						
 		
-		// delete(_c1) -> OK
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).delete();
+		// delete(_pm1) -> OK
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectDelete deleted " + _c1.getId());			
+		System.out.println("testSubProjectDelete deleted " + _pm1.getId());			
 	
 		// read the deleted object twice
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).get();
+		// read(_pm1) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).get();
+		// read(_pm1) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
-	public void testSubProjectDoubleDelete() {
-		// new() -> _c0
-		ProjectModel _c0 = new ProjectModel();
-		
-		// create(_c0) -> _c1
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(_c0);
-		ProjectModel _c1 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectDoubleDelete created " + _c1.getId());			
+	public void testSubProjectDoubleDelete() {		
+		// create() -> _pm1
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("testSubProjectDoubleDelete", "MY_DESC"));
+		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
+		System.out.println("testSubProjectDoubleDelete created " + _pm1.getId());			
 
-		// read(_c1) -> OK
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).get();
+		// read(_pm1) -> OK
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
-		// delete(_c1) -> OK
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).delete();		
+		// delete(_pm1) -> OK
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectDoubleDelete deleted " + _c1.getId());			
+		System.out.println("testSubProjectDoubleDelete deleted " + _pm1.getId());			
 		
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).get();
+		// read(_pm1) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// delete _c1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).delete();		
+		// delete _pm1 -> NOT_FOUND
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// read _c1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_c1.getId()).get();
+		// read _pm1 -> NOT_FOUND
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 
 	@Test
 	public void testSubProjectDeep() throws Exception {
-			// create(_p1) -> _parentProject
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
+			// create() -> _parentProject
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("parentProject", "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _parentProject = _response.readEntity(ProjectModel.class);
 		String _parentProjectId = null;
@@ -447,7 +448,7 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 		for (int i = 0; i < LIMIT; i++) {
 			_parentProjectId = _parentProject.getId();
 			_parentProject = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_parentProject.getId()).
-					path(PATH_EL_PROJECT).post(new ProjectModel()).readEntity(ProjectModel.class);
+					path(PATH_EL_PROJECT).post(new ProjectModel("testSubProjectDeep" + i, "MY_DESC" + i)).readEntity(ProjectModel.class);
 			// parentProjectId, clientProjectId
 			_projectTree.put(_parentProjectId, _parentProject.getId());
 			// System.out.println("created <" + _parentProjectId + ">/<" + _parentProject.getId() + ">");
@@ -484,68 +485,69 @@ public class SubProjectTest  extends AbstractTestClient<WttService> {
 	
 	@Test
 	public void testSubProjectModifications() {
-		// create(new ProjectModel()) -> _o
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
-		ProjectModel _o = _response.readEntity(ProjectModel.class);
+		// create(new ProjectModel()) -> _pm1
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("testSubProjectModifications", "MY_DESC"));
+		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
 		
 		// test createdAt and createdBy
-		assertNotNull("create() should set createdAt", _o.getCreatedAt());
-		assertNotNull("create() should set createdBy", _o.getCreatedBy());
+		assertNotNull("create() should set createdAt", _pm1.getCreatedAt());
+		assertNotNull("create() should set createdBy", _pm1.getCreatedBy());
 		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
-		assertNotNull("create() should set modifiedAt", _o.getModifiedAt());
-		assertNotNull("create() should set modifiedBy", _o.getModifiedBy());
-		assertEquals("createdAt and modifiedAt should be identical after create()", _o.getCreatedAt(), _o.getModifiedAt());
-		assertEquals("createdBy and modifiedBy should be identical after create()", _o.getCreatedBy(), _o.getModifiedBy());
+		assertNotNull("create() should set modifiedAt", _pm1.getModifiedAt());
+		assertNotNull("create() should set modifiedBy", _pm1.getModifiedBy());
+		assertEquals("createdAt and modifiedAt should be identical after create()", _pm1.getCreatedAt(), _pm1.getModifiedAt());
+		assertEquals("createdBy and modifiedBy should be identical after create()", _pm1.getCreatedBy(), _pm1.getModifiedBy());
 		
-		// update(_o)  -> _o2
-		_o.setTitle("NEW_TITLE");
+		// update(_pm1)  -> _pm2
+		_pm1.setTitle("NEW_TITLE");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _o2 = _response.readEntity(ProjectModel.class);
+		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 
 		// test createdAt and createdBy (unchanged)
-		assertEquals("update() should not change createdAt", _o.getCreatedAt(), _o2.getCreatedAt());
-		assertEquals("update() should not change createdBy", _o.getCreatedBy(), _o2.getCreatedBy());
+		assertEquals("update() should not change createdAt", _pm1.getCreatedAt(), _pm2.getCreatedAt());
+		assertEquals("update() should not change createdBy", _pm1.getCreatedBy(), _pm2.getCreatedBy());
 		
 		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
-		assertThat(_o2.getModifiedAt(), not(equalTo(_o2.getCreatedAt())));
+		assertThat(_pm2.getModifiedAt(), not(equalTo(_pm2.getCreatedAt())));
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
-		// assertThat(_o2.getModifiedBy(), not(equalTo(_o2.getCreatedBy())));
+		// assertThat(_pm2.getModifiedBy(), not(equalTo(_pm2.getCreatedBy())));
 
-		// update(o2) with createdBy set on client side -> error
-		String _createdBy = _o.getCreatedBy();
-		_o.setCreatedBy("MYSELF");
+		// update(_pm1) with createdBy set on client side -> error
+		String _createdBy = _pm1.getCreatedBy();
+		_pm1.setCreatedBy("MYSELF");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status BAD_REQUEST", 
 				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_o.setCreatedBy(_createdBy);
+		_pm1.setCreatedBy(_createdBy);
 
-		// update(o) with createdAt set on client side -> error
-		Date _d = _o.getCreatedAt();
-		_o.setCreatedAt(new Date(1000));
+		// update(_pm1) with createdAt set on client side -> error
+		Date _d = _pm1.getCreatedAt();
+		_pm1.setCreatedAt(new Date(1000));
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status BAD_REQUEST", 
 				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_o.setCreatedAt(_d);
+		_pm1.setCreatedAt(_d);
 
-		// update(o) with modifiedBy/At set on client side -> ignored by server
-		_o.setModifiedBy("MYSELF");
-		_o.setModifiedAt(new Date(1000));
+		// update(_pm1) with modifiedBy/At set on client side -> ignored by server
+		_pm1.setModifiedBy("MYSELF");
+		_pm1.setModifiedAt(new Date(1000));
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _o3 = _response.readEntity(ProjectModel.class);
 		
 		// test, that modifiedBy really ignored the client-side value "MYSELF"
-		assertThat(_o.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
+		assertThat(_pm1.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
 		// check whether the client-side modifiedAt() is ignored
-		assertThat(_o.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
+		assertThat(_pm1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
-		// delete(_o) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_o.getId()).delete();		
+		// delete(_pm1) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(parentProject.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 }

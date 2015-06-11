@@ -185,12 +185,12 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertNull("currency should not be set by empty constructor", _rm1.getCurrency());
 		assertNull("description should not be set by empty constructor", _rm1.getDescription());
 		
-		// create(_rm1) -> BAD_REQUEST (because of empty title
+		// create(_rm1) -> BAD_REQUEST (because of empty title)
 		Response _response = webclient.replacePath("/").post(_rm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-
-		// _rm1.setTitle() -> create(_rm1) -> _rm2
 		_rm1.setTitle("testRateCreateReadDeleteWithEmptyConstructor");
+
+		// create(_rm1) -> _rm2
 		_response = webclient.replacePath("/").post(_rm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm2 = _response.readEntity(RatesModel.class);

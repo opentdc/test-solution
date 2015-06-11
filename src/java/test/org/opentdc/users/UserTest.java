@@ -54,217 +54,231 @@ public class UserTest extends AbstractTestClient<UsersService> {
 	/********************************** users attributes tests *********************************/	
 	@Test
 	public void testUserModelEmptyConstructor() {
-		// new() -> _c
-		UserModel _c = new UserModel();
-		assertNull("id should not be set by empty constructor", _c.getId());
-		assertNull("loginId should not be set by empty constructor", _c.getLoginId());
-		assertNull("contactId should not be set by empty constructor", _c.getContactId());
-		assertNull("hashedPassword should not be set by empty constructor", _c.getHashedPassword());
-		assertNull("salt should not be set by empty constructor", _c.getSalt());
+		// new() -> _um
+		UserModel _um = new UserModel();
+		assertNull("id should not be set by empty constructor", _um.getId());
+		assertNull("loginId should not be set by empty constructor", _um.getLoginId());
+		assertNull("contactId should not be set by empty constructor", _um.getContactId());
+		assertNull("hashedPassword should not be set by empty constructor", _um.getHashedPassword());
+		assertNull("salt should not be set by empty constructor", _um.getSalt());
 	}
 	
 	@Test
 	public void testUserModelConstructor() {		
-		// new("LID", "CID", "MY_PWD", "MY_SALT") -> _c
-		UserModel _c = new UserModel("LID", "CID", "MY_PWD", "MY_SALT");
-		assertNull("id should not be set by constructor", _c.getId());
-		assertEquals("loginId should be set by constructor", "LID", _c.getLoginId());
-		assertEquals("contactId should be set by constructor", "CID", _c.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD", _c.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT", _c.getSalt());
+		// new("LID", "CID", "MY_PWD", "MY_SALT") -> _um
+		UserModel _um = new UserModel("LID", "CID", "MY_PWD", "MY_SALT");
+		assertNull("id should not be set by constructor", _um.getId());
+		assertEquals("loginId should be set by constructor", "LID", _um.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID", _um.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD", _um.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT", _um.getSalt());
 	}
 	
 	@Test
 	public void testUserIdAttributeChange() {
-		// new() -> _c -> _c.setId()
-		UserModel _c = new UserModel();
-		assertNull("id should not be set by constructor", _c.getId());
-		_c.setId("MY_ID");
-		assertEquals("id should have changed:", "MY_ID", _c.getId());
+		// new() -> _um -> _um.setId()
+		UserModel _um = new UserModel();
+		assertNull("id should not be set by constructor", _um.getId());
+		_um.setId("MY_ID");
+		assertEquals("id should have changed:", "MY_ID", _um.getId());
 	}
 
 	@Test
 	public void testLoginIdAttributeChange() {
-		// new() -> _c -> _c.setLoginId()
-		UserModel _c = new UserModel();
-		assertNull("loginId should not be set by empty constructor", _c.getLoginId());
-		_c.setLoginId("LID");
-		assertEquals("loginId should have changed:", "LID", _c.getLoginId());
+		// new() -> _um -> _um.setLoginId()
+		UserModel _um = new UserModel();
+		assertNull("loginId should not be set by empty constructor", _um.getLoginId());
+		_um.setLoginId("LID");
+		assertEquals("loginId should have changed:", "LID", _um.getLoginId());
 	}
 
 	@Test
 	public void testContactIdAttributeChange() {
-		// new() -> _c -> _c.setContactId()
-		UserModel _c = new UserModel();
-		assertNull("contactId should not be set by empty constructor", _c.getContactId());
-		_c.setContactId("CID");
-		assertEquals("contactId should have changed:", "CID", _c.getContactId());
+		// new() -> _um -> _um.setContactId()
+		UserModel _um = new UserModel();
+		assertNull("contactId should not be set by empty constructor", _um.getContactId());
+		_um.setContactId("CID");
+		assertEquals("contactId should have changed:", "CID", _um.getContactId());
 	}
 	
 	@Test
 	public void testHashedPasswordAttributeChange() {
-		// new() -> _c -> _c.setHashedPassword()
-		UserModel _c = new UserModel();
-		assertNull("hashedPassword should not be set by empty constructor", _c.getHashedPassword());
-		_c.setHashedPassword("MY_PWD");
-		assertEquals("hashedPassword should have changed:", "MY_PWD", _c.getHashedPassword());
+		// new() -> _um -> _um.setHashedPassword()
+		UserModel _um = new UserModel();
+		assertNull("hashedPassword should not be set by empty constructor", _um.getHashedPassword());
+		_um.setHashedPassword("MY_PWD");
+		assertEquals("hashedPassword should have changed:", "MY_PWD", _um.getHashedPassword());
 	}
 	
 	@Test
 	public void testSaltAttributeChange() {
-		// new() -> _c -> _c.setSalt()
-		UserModel _c = new UserModel();
-		assertNull("salt should not be set by empty constructor", _c.getSalt());
-		_c.setSalt("MY_SALT");
-		assertEquals("salt should have changed:", "MY_SALT", _c.getSalt());
+		// new() -> _um -> _um.setSalt()
+		UserModel _um = new UserModel();
+		assertNull("salt should not be set by empty constructor", _um.getSalt());
+		_um.setSalt("MY_SALT");
+		assertEquals("salt should have changed:", "MY_SALT", _um.getSalt());
 	}
 		
 	@Test
 	public void testUserCreatedBy() {
-		// new() -> _o -> _o.setCreatedBy()
-		UserModel _o = new UserModel();
-		assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
-		_o.setCreatedBy("MY_NAME");
-		assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+		// new() -> _um -> _um.setCreatedBy()
+		UserModel _um = new UserModel();
+		assertNull("createdBy should not be set by empty constructor", _um.getCreatedBy());
+		_um.setCreatedBy("MY_NAME");
+		assertEquals("createdBy should have changed", "MY_NAME", _um.getCreatedBy());	
 	}
 	
 	@Test
 	public void testUserCreatedAt() {
-		// new() -> _o -> _o.setCreatedAt()
-		UserModel _o = new UserModel();
-		assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
-		_o.setCreatedAt(new Date());
-		assertNotNull("createdAt should have changed", _o.getCreatedAt());
+		// new() -> _um -> _um.setCreatedAt()
+		UserModel __um = new UserModel();
+		assertNull("createdAt should not be set by empty constructor", __um.getCreatedAt());
+		__um.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", __um.getCreatedAt());
 	}
 		
 	@Test
 	public void testUserModifiedBy() {
-		// new() -> _o -> _o.setModifiedBy()
-		UserModel _o = new UserModel();
-		assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
-		_o.setModifiedBy("MY_NAME");
-		assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+		// new() -> _um -> _um.setModifiedBy()
+		UserModel _um = new UserModel();
+		assertNull("modifiedBy should not be set by empty constructor", _um.getModifiedBy());
+		_um.setModifiedBy("MY_NAME");
+		assertEquals("modifiedBy should have changed", "MY_NAME", _um.getModifiedBy());	
 	}
 	
 	@Test
 	public void testUserModifiedAt() {
-		// new() -> _o -> _o.setModifiedAt()
-		UserModel _o = new UserModel();
-		assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
-		_o.setModifiedAt(new Date());
-		assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+		// new() -> _um -> _um.setModifiedAt()
+		UserModel _um = new UserModel();
+		assertNull("modifiedAt should not be set by empty constructor", _um.getModifiedAt());
+		_um.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _um.getModifiedAt());
 	}
 
 	/********************************* REST service tests *********************************/	
 	@Test
 	public void testUserCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _c1
-		UserModel _c1 = new UserModel();
-		assertNull("id should not be set by empty constructor", _c1.getId());
-		assertNull("loginId should not be set by empty constructor", _c1.getLoginId());
-		assertNull("contactId should not be set by empty constructor", _c1.getContactId());
-		assertNull("hashedPassword should not be set by empty constructor", _c1.getHashedPassword());
-		assertNull("salt should not be set by empty constructor", _c1.getSalt());
+		// new() -> _um1
+		UserModel _um1 = createUser("testUserCreateReadDeleteWithEmptyConstructor", 1);
+		assertNull("id should not be set by constructor", _um1.getId());
+		assertEquals("loginId should be set by constructor", "testUserCreateReadDeleteWithEmptyConstructor1", _um1.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID1", _um1.getContactId());
+		assertEquals("hashedPassword should be set by constructor", "MY_PWD1", _um1.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT1", _um1.getSalt());
 
-		// create(_c1) -> _c2
-		Response _response = webclient.replacePath("/").post(_c1);
+		// create(_um1) -> _um2
+		Response _response = webclient.replacePath("/").post(_um1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c2 = _response.readEntity(UserModel.class);
-		assertNull("create() should not change the id of the local object", _c1.getId());
-		assertNull("create() should not change the loginId of the local object", _c1.getLoginId());
-		assertNull("create() should not change the contactId of the local object", _c1.getContactId());
-		assertNull("create() should not change hashedPassword of the local object", _c1.getHashedPassword());
-		assertNull("create() should not change the salt of the local object", _c1.getSalt());
+		UserModel _um2 = _response.readEntity(UserModel.class);
+		
+		// validate _um1 (local object)
+		assertNull("create() should not change the id of the local object", _um1.getId());
+		assertEquals("create() should not change the loginId of the local object", "testUserCreateReadDeleteWithEmptyConstructor1", _um1.getLoginId());
+		assertEquals("create() should not change the contactId of the local object", "CID1", _um1.getContactId());
+		assertEquals("create() should not change hashedPassword of the local object", "MY_PWD1", _um1.getHashedPassword());
+		assertEquals("create() should not change the salt of the local object", "MY_SALT1", _um1.getSalt());
 
-		assertNotNull("create() should set a valid id on the remote object returned", _c2.getId());
-		assertNull("loginId of returned object should still be null after remote create", _c2.getLoginId());
-		assertNull("contactId of returned object should still be null after remote create", _c2.getContactId());
-		assertNull("hashedPassword of returned object should still be null after remote create", _c2.getHashedPassword());
-		assertNull("salt of returned object should still be null after remote create", _c2.getSalt());
+		// validate _um2 (remote object)
+		assertNotNull("create() should set a valid id on the remote object returned", _um2.getId());
+		assertEquals("create() should not change the loginId", "testUserCreateReadDeleteWithEmptyConstructor1", _um2.getLoginId());
+		assertEquals("create() should not change the contactId", "CID1", _um2.getContactId());
+		assertEquals("create() should not change the hashedPassword", "MY_PWD1", _um2.getHashedPassword());
+		assertEquals("create() should not change the salt", "MY_SALT1", _um2.getSalt());
 
-		// read(_c2) -> _c3
-		_response = webclient.replacePath("/").path(_c2.getId()).get();
-		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c3 = _response.readEntity(UserModel.class);
-		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
-		assertEquals("loginId of returned object should be unchanged after remote create", _c2.getLoginId(), _c3.getLoginId());
-		assertEquals("contactId of returned object should be unchanged after remote create", _c2.getContactId(), _c3.getContactId());
-		assertEquals("hashedPassword of returned object should be unchanged after remote create", _c2.getHashedPassword(), _c3.getHashedPassword());
-		assertEquals("salt of returned object should be unchanged after remote create", _c2.getSalt(), _c3.getSalt());
-		// delete(_c3)
-		_response = webclient.replacePath("/").path(_c3.getId()).delete();
-		assertEquals("delete(" + _c3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		// read(_um2) -> _um3
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
+		assertEquals("read(" + _um2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _um3 = _response.readEntity(UserModel.class);
+		
+		// validate _um3 (read)
+		assertEquals("id of returned object should be the same", _um2.getId(), _um3.getId());
+		assertEquals("read() should not change the loginId", _um2.getLoginId(), _um3.getLoginId());
+		assertEquals("read() should not change the contactId", _um2.getContactId(), _um3.getContactId());
+		assertEquals("read() should not change the hashedPassword", _um2.getHashedPassword(), _um3.getHashedPassword());
+		assertEquals("read() should not change the salt", _um2.getSalt(), _um3.getSalt());
+		
+		// delete(_um3)
+		_response = webclient.replacePath("/").path(_um3.getId()).delete();
+		assertEquals("delete(" + _um3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testUserCreateReadDelete() {
-		// new("MY_TITLE", "MY_DESC") -> _c1
-		UserModel _c1 = new UserModel("LID", "CID", "MY_PWD", "MY_SALT");
-		assertNull("id should not be set by constructor", _c1.getId());
-		assertEquals("loginId should be set by constructor", "LID", _c1.getLoginId());
-		assertEquals("contactId should be set by constructor", "CID", _c1.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD", _c1.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT", _c1.getSalt());
+		// new(1) -> _um1
+		UserModel _um1 = createUser("testUserCreateReadDelete", 1);
 		
-		// create(_c1) -> _c2
-		Response _response = webclient.replacePath("/").post(_c1);
+		// validating _um1 (before create())
+		assertNull("id should not be set by constructor", _um1.getId());
+		assertEquals("loginId should be set by constructor", "testUserCreateReadDelete1", _um1.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID1", _um1.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD1", _um1.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT1", _um1.getSalt());
+		
+		// create(_um1) -> _um2
+		Response _response = webclient.replacePath("/").post(_um1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c2 = _response.readEntity(UserModel.class);
-		assertNull("id should be unchanged", _c1.getId());
-		assertEquals("loginId should be unchanged", "LID", _c1.getLoginId());
-		assertEquals("contactId should be unchanged", "CID", _c1.getContactId());
-		assertEquals("hashedPassword should be unchangede", "MY_PWD", _c1.getHashedPassword());
-		assertEquals("salt should be unchanged", "MY_SALT", _c1.getSalt());
+		UserModel _um2 = _response.readEntity(UserModel.class);
 		
-		assertNotNull("id of returned object should be set", _c2.getId());
-		assertEquals("loginId should be unchanged", "LID", _c2.getLoginId());
-		assertEquals("contactId should be unchanged", "CID", _c2.getContactId());
-		assertEquals("hashedPassword should be unchangede", "MY_PWD", _c2.getHashedPassword());
-		assertEquals("salt should be unchanged", "MY_SALT", _c2.getSalt());
+		// validating _um1 (after create())
+		assertNull("id should be unchanged", _um1.getId());
+		assertEquals("loginId should be unchanged", "testUserCreateReadDelete1", _um1.getLoginId());
+		assertEquals("contactId should be unchanged", "CID1", _um1.getContactId());
+		assertEquals("hashedPassword should be unchangede", "MY_PWD1", _um1.getHashedPassword());
+		assertEquals("salt should be unchanged", "MY_SALT1", _um1.getSalt());
+		
+		// validating _um2 (created object)
+		assertNotNull("id of returned object should be set", _um2.getId());
+		assertEquals("loginId should be unchanged", "testUserCreateReadDelete1", _um2.getLoginId());
+		assertEquals("contactId should be unchanged", "CID1", _um2.getContactId());
+		assertEquals("hashedPassword should be unchangede", "MY_PWD1", _um2.getHashedPassword());
+		assertEquals("salt should be unchanged", "MY_SALT1", _um2.getSalt());
 				
-		// read(_c2)  -> _c3
-		_response = webclient.replacePath("/").path(_c2.getId()).get();
-		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c3 = _response.readEntity(UserModel.class);
-		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
-		assertEquals("loginId should be unchanged", _c2.getLoginId(), _c3.getLoginId());
-		assertEquals("contactId should be unchanged", _c2.getContactId(), _c3.getContactId());
-		assertEquals("hashedPassword should be unchangede", _c2.getHashedPassword(), _c3.getHashedPassword());
-		assertEquals("salt should be unchanged", _c2.getSalt(), _c3.getSalt());
-		// delete(_c3)
-		_response = webclient.replacePath("/").path(_c3.getId()).delete();
-		assertEquals("delete(" + _c3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		// read(_um2)  -> _um3
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
+		assertEquals("read(" + _um2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		UserModel _um3 = _response.readEntity(UserModel.class);
+		
+		// both objects should have the same attributes
+		assertEquals("id of returned object should be the same", _um2.getId(), _um3.getId());
+		assertEquals("loginId should be unchanged", _um2.getLoginId(), _um3.getLoginId());
+		assertEquals("contactId should be unchanged", _um2.getContactId(), _um3.getContactId());
+		assertEquals("hashedPassword should be unchangede", _um2.getHashedPassword(), _um3.getHashedPassword());
+		assertEquals("salt should be unchanged", _um2.getSalt(), _um3.getSalt());
+		
+		// delete(_um3)
+		_response = webclient.replacePath("/").path(_um3.getId()).delete();
+		assertEquals("delete(" + _um3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateUserWithClientSideId() {
-		// new() -> _c1 -> _c1.setId()
-		UserModel _c1 = new UserModel();
-		_c1.setId("LOCAL_ID");
-		assertEquals("id should have changed", "LOCAL_ID", _c1.getId());
-		// create(_c1) -> BAD_REQUEST
-		Response _response = webclient.replacePath("/").post(_c1);
+		// new() -> _um1 -> _um1.setId()
+		UserModel _um1 = createUser("testCreateUserWithClientSideId", 1);
+		_um1.setId("LOCAL_ID");
+		assertEquals("id should have changed", "LOCAL_ID", _um1.getId());
+		// create(_um1) -> BAD_REQUEST
+		Response _response = webclient.replacePath("/").post(_um1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateUserWithDuplicateId() {
-		// create(new()) -> _c2
-		Response _response = webclient.replacePath("/").post(new UserModel());
+		// create(new()) -> _um1
+		Response _response = webclient.replacePath("/").post(createUser("testCreateUserWithDuplicateId", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c2 = _response.readEntity(UserModel.class);
+		UserModel _um1 = _response.readEntity(UserModel.class);
 
-		// new() -> _c3 -> _c3.setId(_c2.getId())
-		UserModel _c3 = new UserModel();
-		_c3.setId(_c2.getId());		// wrongly create a 2nd UserModel object with the same ID
+		// new() -> _um2 -> _um2.setId(_um1.getId())
+		UserModel _um2 = createUser("testCreateUserWithDuplicateId", 2);
+		_um2.setId(_um1.getId());		// wrongly create a 2nd UserModel object with the same ID
 		
-		// create(_c3) -> CONFLICT
-		_response = webclient.replacePath("/").post(_c3);
+		// create(_um2) -> CONFLICT
+		_response = webclient.replacePath("/").post(_um2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
-		// delete(_c2)
-		_response = webclient.replacePath("/").path(_c2.getId()).delete();
-		assertEquals("delete(" + _c2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		// delete(_um1)
+		_response = webclient.replacePath("/").path(_um1.getId()).delete();
+		assertEquals("delete(" + _um1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
@@ -274,7 +288,7 @@ public class UserTest extends AbstractTestClient<UsersService> {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = webclient.replacePath("/").post(new UserModel());
+			_response = webclient.replacePath("/").post(createUser("testUserList", i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(UserModel.class));
 		}
@@ -285,81 +299,81 @@ public class UserTest extends AbstractTestClient<UsersService> {
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
-		for (UserModel _c : _remoteList) {
-			_remoteListIds.add(_c.getId());
+		for (UserModel _um : _remoteList) {
+			_remoteListIds.add(_um.getId());
 		}
 		
-		for (UserModel _c : _localList) {
-			assertTrue("user <" + _c.getId() + "> should be listed", _remoteListIds.contains(_c.getId()));
+		for (UserModel _um : _localList) {
+			assertTrue("user <" + _um.getId() + "> should be listed", _remoteListIds.contains(_um.getId()));
 		}
-		for (UserModel _c : _localList) {
-			_response = webclient.replacePath("/").path(_c.getId()).get();
+		for (UserModel _um : _localList) {
+			_response = webclient.replacePath("/").path(_um.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(UserModel.class);
 		}
-		for (UserModel _c : _localList) {
-			_response = webclient.replacePath("/").path(_c.getId()).delete();
+		for (UserModel _um : _localList) {
+			_response = webclient.replacePath("/").path(_um.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
 
 	@Test
 	public void testUserCreate() {
-		// new("LID1", "CID1", "MY_PWD1", "MY_SALT1") -> _c1
-		UserModel _c1 = new UserModel("LID1", "CID1", "MY_PWD1", "MY_SALT1");
+		// new(1) -> _um1
+		UserModel _um1 = createUser("testUserCreate", 1);
 		
-		// new("LID2", "CID2", "MY_PWD2", "MY_SALT2") -> _c2
-		UserModel _c2 = new UserModel("LID2", "CID2", "MY_PWD2", "MY_SALT2");
+		// new(2) -> _um2
+		UserModel _um2 = createUser("testUserCreate", 2);
 		
-		// create(_c1)  -> _c3
-		Response _response = webclient.replacePath("/").post(_c1);
+		// create(_um1)  -> _um3
+		Response _response = webclient.replacePath("/").post(_um1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c3 = _response.readEntity(UserModel.class);
+		UserModel _um3 = _response.readEntity(UserModel.class);
 
-		// create(_c2) -> _c4
-		_response = webclient.replacePath("/").post(_c2);
+		// create(_um2) -> _um4
+		_response = webclient.replacePath("/").post(_um2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c4 = _response.readEntity(UserModel.class);
-		assertThat(_c4.getId(), not(equalTo(_c3.getId())));
+		UserModel _um4 = _response.readEntity(UserModel.class);
+		assertThat(_um4.getId(), not(equalTo(_um3.getId())));
 		
-		// validate _c3
-		assertNotNull("ID should be set", _c3.getId());
-		assertEquals("loginId should be set by constructor", "LID1", _c3.getLoginId());
-		assertEquals("contactId should be set by constructor", "CID1", _c3.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD1", _c3.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT1", _c3.getSalt());
+		// validate _um3
+		assertNotNull("ID should be set", _um3.getId());
+		assertEquals("loginId should be set by constructor", "testUserCreate1", _um3.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID1", _um3.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD1", _um3.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT1", _um3.getSalt());
 				
-		// validate _c4
-		assertNotNull("ID should be set", _c4.getId());
-		assertEquals("loginId should be set by constructor", "LID2", _c4.getLoginId());
-		assertEquals("contactId should be set by constructor", "CID2", _c4.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD2", _c4.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT2", _c4.getSalt());
+		// validate _um4
+		assertNotNull("ID should be set", _um4.getId());
+		assertEquals("loginId should be set by constructor", "testUserCreate2", _um4.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID2", _um4.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD2", _um4.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT2", _um4.getSalt());
 		
-		// delete(_c3) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_c3.getId()).delete();
+		// delete(_um3) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(_um3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
-		// delete(_c4) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_c4.getId()).delete();
+		// delete(_um4) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(_um4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testUserDoubleCreate(
 	) {
-		// create(new()) -> _c
-		Response _response = webclient.replacePath("/").post(new UserModel());
+		// create(new()) -> _um
+		Response _response = webclient.replacePath("/").post(createUser("testUserDoubleCreate", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c = _response.readEntity(UserModel.class);
-		assertNotNull("ID should be set:", _c.getId());		
+		UserModel _um = _response.readEntity(UserModel.class);
+		assertNotNull("ID should be set:", _um.getId());		
 		
-		// create(_c) -> CONFLICT
-		_response = webclient.replacePath("/").post(_c);
+		// create(_um) -> CONFLICT
+		_response = webclient.replacePath("/").post(_um);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
-		// delete(_c) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_c.getId()).delete();
+		// delete(_um) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(_um.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
@@ -369,14 +383,14 @@ public class UserTest extends AbstractTestClient<UsersService> {
 		ArrayList<UserModel> _localList = new ArrayList<UserModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.replacePath("/").post(new UserModel());
+			_response = webclient.replacePath("/").post(createUser("testUserRead", i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(UserModel.class));
 		}
 	
 		// test read on each local element
-		for (UserModel _c : _localList) {
-			_response = webclient.replacePath("/").path(_c.getId()).get();
+		for (UserModel _um : _localList) {
+			_response = webclient.replacePath("/").path(_um.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(UserModel.class);
 		}
@@ -387,15 +401,15 @@ public class UserTest extends AbstractTestClient<UsersService> {
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		UserModel _tmpObj = null;
-		for (UserModel _c : _remoteList) {
-			_response = webclient.replacePath("/").path(_c.getId()).get();
+		for (UserModel _um : _remoteList) {
+			_response = webclient.replacePath("/").path(_um.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(UserModel.class);
-			assertEquals("ID should be unchanged when reading a user", _c.getId(), _tmpObj.getId());						
+			assertEquals("ID should be unchanged when reading a user", _um.getId(), _tmpObj.getId());						
 		}
 
-		for (UserModel _c : _localList) {
-			_response = webclient.replacePath("/").path(_c.getId()).delete();
+		for (UserModel _um : _localList) {
+			_response = webclient.replacePath("/").path(_um.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}	
@@ -403,39 +417,39 @@ public class UserTest extends AbstractTestClient<UsersService> {
 	@Test
 	public void testUserMultiRead(
 	) {
-		// new() -> _c1
-		UserModel _c1 = new UserModel();
+		// new() -> _um1
+		UserModel _um1 = createUser("testUserMultiRead", 1);
 		
-		// create(_c1) -> _c2
-		Response _response = webclient.replacePath("/").post(_c1);
-		UserModel _c2 = _response.readEntity(UserModel.class);
+		// create(_um1) -> _um2
+		Response _response = webclient.replacePath("/").post(_um1);
+		UserModel _um2 = _response.readEntity(UserModel.class);
 
-		// read(_c2) -> _c3
-		_response = webclient.replacePath("/").path(_c2.getId()).get();
+		// read(_um2) -> _um3
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c3 = _response.readEntity(UserModel.class);
-		assertEquals("ID should be unchanged after read", _c2.getId(), _c3.getId());		
+		UserModel _um3 = _response.readEntity(UserModel.class);
+		assertEquals("ID should be unchanged after read", _um2.getId(), _um3.getId());		
 
-		// read(_c2) -> _c4
-		_response = webclient.replacePath("/").path(_c2.getId()).get();
+		// read(_um2) -> _um4
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c4 = _response.readEntity(UserModel.class);
+		UserModel _um4 = _response.readEntity(UserModel.class);
 		
-		// but: the two objects are not equal !
-		assertEquals("ID should be the same", _c3.getId(), _c4.getId());
-		assertEquals("loginId should be unchanged", _c3.getLoginId(), _c4.getLoginId());
-		assertEquals("contactId should be unchanged", _c3.getContactId(), _c4.getContactId());
-		assertEquals("hashedPassword should be unchangede", _c3.getHashedPassword(), _c4.getHashedPassword());
-		assertEquals("salt should be unchanged", _c3.getSalt(), _c4.getSalt());
+		// both object should have the same attributes, but should be different objects
+		assertEquals("ID should be the same", _um3.getId(), _um4.getId());
+		assertEquals("loginId should be unchanged", _um3.getLoginId(), _um4.getLoginId());
+		assertEquals("contactId should be unchanged", _um3.getContactId(), _um4.getContactId());
+		assertEquals("hashedPassword should be unchangede", _um3.getHashedPassword(), _um4.getHashedPassword());
+		assertEquals("salt should be unchanged", _um3.getSalt(), _um4.getSalt());
 
-		assertEquals("ID should be the same", _c2.getId(), _c3.getId());
-		assertEquals("loginId should be unchanged", _c2.getLoginId(), _c3.getLoginId());
-		assertEquals("contactId should be unchanged", _c2.getContactId(), _c3.getContactId());
-		assertEquals("hashedPassword should be unchangede", _c2.getHashedPassword(), _c3.getHashedPassword());
-		assertEquals("salt should be unchanged", _c2.getSalt(), _c3.getSalt());
+		assertEquals("ID should be the same", _um2.getId(), _um3.getId());
+		assertEquals("loginId should be unchanged", _um2.getLoginId(), _um3.getLoginId());
+		assertEquals("contactId should be unchanged", _um2.getContactId(), _um3.getContactId());
+		assertEquals("hashedPassword should be unchangede", _um2.getHashedPassword(), _um3.getHashedPassword());
+		assertEquals("salt should be unchanged", _um2.getSalt(), _um3.getSalt());
 		
-		// delete(_c2)
-		_response = webclient.replacePath("/").path(_c2.getId()).delete();
+		// delete(_um2)
+		_response = webclient.replacePath("/").path(_um2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -443,178 +457,183 @@ public class UserTest extends AbstractTestClient<UsersService> {
 	public void testUserUpdate(
 	) {
 		// new() -> _c1
-		UserModel _c1 = new UserModel();
+		UserModel _um1 = createUser("testUserUpdate", 1);
 		
 		// create(_c1) -> _c2
-		Response _response = webclient.replacePath("/").post(_c1);
-		UserModel _c2 = _response.readEntity(UserModel.class);
+		Response _response = webclient.replacePath("/").post(_um1);
+		UserModel _um2 = _response.readEntity(UserModel.class);
 		
 		// change the attributes
 		// update(_c2) -> _c3
-		_c2.setLoginId("LID1");
-		_c2.setContactId("CID1");
-		_c2.setHashedPassword("MY_PWD1");
-		_c2.setSalt("MY_SALT1");
+		_um2.setLoginId("LID1");
+		_um2.setContactId("CID1");
+		_um2.setHashedPassword("MY_PWD1");
+		_um2.setSalt("MY_SALT1");
 		
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
+		_response = webclient.replacePath("/").path(_um2.getId()).put(_um2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c3 = _response.readEntity(UserModel.class);
+		UserModel _um3 = _response.readEntity(UserModel.class);
 
-		assertNotNull("ID should be set", _c3.getId());
-		assertEquals("ID should be unchanged", _c2.getId(), _c3.getId());
-		assertEquals("loginId should be set by constructor", "LID1", _c3.getLoginId());
-		assertEquals("contactId should be set by constructor", "CID1", _c3.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD1", _c3.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT1", _c3.getSalt());
+		assertNotNull("ID should be set", _um3.getId());
+		assertEquals("ID should be unchanged", _um2.getId(), _um3.getId());
+		assertEquals("loginId should be set by constructor", "LID1", _um3.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID1", _um3.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD1", _um3.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT1", _um3.getSalt());
 		
 		// reset the attributes
 		// update(_c2) -> _c4
-		_c2.setLoginId("LID2");
-		_c2.setContactId("CID2");
-		_c2.setHashedPassword("MY_PWD2");
-		_c2.setSalt("MY_SALT2");		
+		_um2.setLoginId("LID2");
+		_um2.setContactId("CID2");
+		_um2.setHashedPassword("MY_PWD2");
+		_um2.setSalt("MY_SALT2");		
 		
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_c2.getId()).put(_c2);
+		_response = webclient.replacePath("/").path(_um2.getId()).put(_um2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _c4 = _response.readEntity(UserModel.class);
+		UserModel _um4 = _response.readEntity(UserModel.class);
 
-		assertNotNull("ID should be set", _c4.getId());
-		assertEquals("ID should be unchanged", _c2.getId(), _c4.getId());	
-		assertEquals("loginId should be set by constructor", "LID2", _c4.getLoginId());
-		assertEquals("contactId should be set by constructor", "CID2", _c4.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD2", _c4.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT2", _c4.getSalt());
+		assertNotNull("ID should be set", _um4.getId());
+		assertEquals("ID should be unchanged", _um2.getId(), _um4.getId());	
+		assertEquals("loginId should be set by constructor", "LID2", _um4.getLoginId());
+		assertEquals("contactId should be set by constructor", "CID2", _um4.getContactId());
+		assertEquals("v should be set by constructor", "MY_PWD2", _um4.getHashedPassword());
+		assertEquals("salt should be set by constructor", "MY_SALT2", _um4.getSalt());
 		
-		_response = webclient.replacePath("/").path(_c2.getId()).delete();
+		_response = webclient.replacePath("/").path(_um2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testUserDelete(
 	) {
-		// new() -> _c0
-		UserModel _c0 = new UserModel();
-		// create(_c0) -> _c1
-		Response _response = webclient.replacePath("/").post(_c0);
-		UserModel _c1 = _response.readEntity(UserModel.class);
+		// new() -> _um1
+		UserModel _um1 = createUser("testUserDelete", 1);
+		// create(_um1) -> _um2
+		Response _response = webclient.replacePath("/").post(_um1);
+		UserModel _um2 = _response.readEntity(UserModel.class);
 		
-		// read(_c0) -> _tmpObj
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_um2) -> _um3
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _tmpObj = _response.readEntity(UserModel.class);
-		assertEquals("ID should be unchanged when reading a user (remote):", _c1.getId(), _tmpObj.getId());						
+		UserModel _um3 = _response.readEntity(UserModel.class);
+		assertEquals("ID should be unchanged when reading a user (remote):", _um2.getId(), _um3.getId());						
 		
-		// delete(_c1) -> OK
-		_response = webclient.replacePath("/").path(_c1.getId()).delete();
+		// delete(_um2) -> OK
+		_response = webclient.replacePath("/").path(_um2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_um2) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_um2) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testUserDoubleDelete(
 	) {
-		// new() -> _c0
-		UserModel _c0 = new UserModel();
+		// new() -> _um1
+		UserModel _um1 = createUser("testUserDoubleDelete", 1);
 		
-		// create(_c0) -> _c1
-		Response _response = webclient.replacePath("/").post(_c0);
-		UserModel _c1 = _response.readEntity(UserModel.class);
+		// create(_um1) -> _um2
+		Response _response = webclient.replacePath("/").post(_um1);
+		UserModel _um2 = _response.readEntity(UserModel.class);
 
-		// read(_c1) -> OK
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_um2) -> OK
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
-		// delete(_c1) -> OK
-		_response = webclient.replacePath("/").path(_c1.getId()).delete();		
+		// delete(_um2) -> OK
+		_response = webclient.replacePath("/").path(_um2.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
-		// read(_c1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read(_um2) -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// delete _c1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).delete();		
+		// delete _um2 -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_um2.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
-		// read _c1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_c1.getId()).get();
+		// read _um2 -> NOT_FOUND
+		_response = webclient.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testUserModifications() {
-		// create(new UserModel()) -> _o
-		Response _response = webclient.replacePath("/").post(new UserModel());
-		UserModel _o = _response.readEntity(UserModel.class);
+		// create(new UserModel()) -> _um1
+		Response _response = webclient.replacePath("/").post(createUser("testUserModifications", 1));
+		UserModel _um1 = _response.readEntity(UserModel.class);
 		
 		// test createdAt and createdBy
-		assertNotNull("create() should set createdAt", _o.getCreatedAt());
-		assertNotNull("create() should set createdBy", _o.getCreatedBy());
+		assertNotNull("create() should set createdAt", _um1.getCreatedAt());
+		assertNotNull("create() should set createdBy", _um1.getCreatedBy());
 		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
-		assertNotNull("create() should set modifiedAt", _o.getModifiedAt());
-		assertNotNull("create() should set modifiedBy", _o.getModifiedBy());
-		assertEquals("createdAt and modifiedAt should be identical after create()", _o.getCreatedAt(), _o.getModifiedAt());
-		assertEquals("createdBy and modifiedBy should be identical after create()", _o.getCreatedBy(), _o.getModifiedBy());
+		assertNotNull("create() should set modifiedAt", _um1.getModifiedAt());
+		assertNotNull("create() should set modifiedBy", _um1.getModifiedBy());
+		assertEquals("createdAt and modifiedAt should be identical after create()", _um1.getCreatedAt(), _um1.getModifiedAt());
+		assertEquals("createdBy and modifiedBy should be identical after create()", _um1.getCreatedBy(), _um1.getModifiedBy());
 		
-		// update(_o)  -> _o2
-		_o.setLoginId("NEW_LOGINID");
+		// update(_um1)  -> _um2
+		_um1.setLoginId("NEW_LOGINID");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(_um1.getId()).put(_um1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _o2 = _response.readEntity(UserModel.class);
+		UserModel _um2 = _response.readEntity(UserModel.class);
 
 		// test createdAt and createdBy (unchanged)
-		assertEquals("update() should not change createdAt", _o.getCreatedAt(), _o2.getCreatedAt());
-		assertEquals("update() should not change createdBy", _o.getCreatedBy(), _o2.getCreatedBy());
+		assertEquals("update() should not change createdAt", _um1.getCreatedAt(), _um2.getCreatedAt());
+		assertEquals("update() should not change createdBy", _um1.getCreatedBy(), _um2.getCreatedBy());
 		
 		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
-		assertThat(_o2.getModifiedAt(), not(equalTo(_o2.getCreatedAt())));
+		assertThat(_um2.getModifiedAt(), not(equalTo(_um2.getCreatedAt())));
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
-		// assertThat(_o2.getModifiedBy(), not(equalTo(_o2.getCreatedBy())));
+		// assertThat(_um2.getModifiedBy(), not(equalTo(_um2.getCreatedBy())));
 
-		// update(o2) with createdBy set on client side -> error
-		String _createdBy = _o.getCreatedBy();
-		_o.setCreatedBy("MYSELF");
+		// update(_um1) with createdBy set on client side -> error
+		String _createdBy = _um1.getCreatedBy();
+		_um1.setCreatedBy("MYSELF");
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(_um1.getId()).put(_um1);
 		assertEquals("update() should return with status BAD_REQUEST", 
 				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_o.setCreatedBy(_createdBy);
+		_um1.setCreatedBy(_createdBy);
 
-		// update(o) with createdAt set on client side -> error
-		Date _d = _o.getCreatedAt();
-		_o.setCreatedAt(new Date(1000));
+		// update(_um1) with createdAt set on client side -> error
+		Date _d = _um1.getCreatedAt();
+		_um1.setCreatedAt(new Date(1000));
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(_um1.getId()).put(_um1);
 		assertEquals("update() should return with status BAD_REQUEST", 
 				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_o.setCreatedAt(_d);
+		_um1.setCreatedAt(_d);
 
-		// update(o) with modifiedBy/At set on client side -> ignored by server
-		_o.setModifiedBy("MYSELF");
-		_o.setModifiedAt(new Date(1000));
+		// update(_um1) with modifiedBy/At set on client side -> ignored by server
+		_um1.setModifiedBy("MYSELF");
+		_um1.setModifiedAt(new Date(1000));
 		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_o.getId()).put(_o);
+		_response = webclient.replacePath("/").path(_um1.getId()).put(_um1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _o3 = _response.readEntity(UserModel.class);
 		
 		// test, that modifiedBy really ignored the client-side value "MYSELF"
-		assertThat(_o.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
+		assertThat(_um1.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
 		// check whether the client-side modifiedAt() is ignored
-		assertThat(_o.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
+		assertThat(_um1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
-		// delete(_o) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_o.getId()).delete();		
+		// delete(_um1) -> NO_CONTENT
+		_response = webclient.replacePath("/").path(_um1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	/********************************* helper methods *********************************/	
+	public static UserModel createUser(String loginId, int suffix) {
+		return new UserModel(loginId + suffix, "CID" + suffix, "MY_PWD" + suffix, "MY_SALT" + suffix);
 	}
 }

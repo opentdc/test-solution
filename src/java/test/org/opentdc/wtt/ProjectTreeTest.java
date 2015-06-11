@@ -44,7 +44,8 @@ public static final String API = "api/company/";
 	}
 	
 	private ResourceRefModel createResource(String pid) {
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(pid).path(PATH_EL_RESOURCE).post(new ResourceRefModel());
+		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(pid).path(PATH_EL_RESOURCE)
+				.post(ResourceRefTest.createResourceRef("createResource", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		return _response.readEntity(ResourceRefModel.class);	
 	}

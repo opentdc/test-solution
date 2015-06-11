@@ -53,7 +53,8 @@ public class SubProjectBatchedListTest extends AbstractTestClient<WttService> {
 		initializeTest(API, WttService.class);
 		Response _response = webclient.replacePath("/").post(new CompanyModel("SubProjectBatchedListTest", "MY_DESC"));
 		company = _response.readEntity(CompanyModel.class);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(new ProjectModel());
+		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
+				.post(new ProjectModel("SubProjectBatchedListTest", "MY_DESC"));
 		parentProject = _response.readEntity(ProjectModel.class);
 	}
 
@@ -77,7 +78,7 @@ public class SubProjectBatchedListTest extends AbstractTestClient<WttService> {
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
 			_res = new ProjectModel();
-			_res.setTitle(String.format("%2d", i));
+			_res.setTitle(String.format("testSubProjectBatchedList%2d", i));
 			_response = webclient.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ProjectModel.class));

@@ -63,6 +63,9 @@ public class UserBatchedListTest extends AbstractTestClient<UsersService> {
 			// create(new()) -> _localList
 			_res = new UserModel();
 			_res.setLoginId(String.format("testUserBatchedList%2d", i));
+			_res.setContactId("MY_CONTACT_ID" + i);
+			_res.setHashedPassword("MY_PASSWORD" + i);
+			_res.setSalt("MY_SALT" + i);
 			_response = webclient.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(UserModel.class));

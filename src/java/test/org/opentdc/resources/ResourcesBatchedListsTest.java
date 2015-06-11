@@ -63,6 +63,9 @@ public class ResourcesBatchedListsTest extends AbstractTestClient<ResourcesServi
 			// create(new()) -> _localList
 			_res = new ResourceModel();
 			_res.setName(String.format("%2d", i));
+			_res.setFirstName("MY_FNAME" + i);
+			_res.setLastName("MY_LNAME" + i);
+			_res.setContactId("MY_CONTACT_ID" + i);
 			_response = webclient.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ResourceModel.class));
