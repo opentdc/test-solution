@@ -50,7 +50,7 @@ public class ContactBatchedListTest extends AbstractTestClient<AddressbooksServi
 	public void initializeTest(
 	) {
 		initializeTest(API, AddressbooksService.class);
-		Response _response = webclient.replacePath("/").post(new AddressbookModel());
+		Response _response = webclient.replacePath("/").post(new AddressbookModel("ContactBatchedListTest"));
 		adb = _response.readEntity(AddressbookModel.class);
 		System.out.println("posted AddressbookModel " + adb.getId());
 	}

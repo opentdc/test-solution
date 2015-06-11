@@ -57,279 +57,285 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	/********************************** workrecord attributes tests *********************************/	
 	@Test
 	public void testWorkRecordModelEmptyConstructor() {
-		// new() -> _c
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("id should not be set by empty constructor", _c.getId());
-		assertNull("companyId should not be set by empty constructor", _c.getCompanyId());
-		assertNull("companyTitle should not be set by empty constructor", _c.getCompanyTitle());
-		assertNull("projectId should not be set by empty constructor", _c.getProjectId());
-		assertNull("projectTitle should not be set by empty constructor", _c.getProjectTitle());
-		assertNull("resourceId should not be set by empty constructor", _c.getResourceId());
-		assertNull("rateId should not be set by empty constructor", _c.getRateId());
-		assertNull("startAt should not be set by empty constructor", _c.getStartAt());
-		assertEquals("durationHours should be set on default initial value", 1, _c.getDurationHours());
-		assertEquals("durationMinutes should be set on default initial value", 30, _c.getDurationMinutes());
-		assertNull("comment should not be set by empty constructor", _c.getComment());
-		assertEquals("isBillable should be set on default initial value", true, _c.isBillable());
+		// new() -> _wrm
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("id should not be set by empty constructor", _wrm.getId());
+		assertNull("companyId should not be set by empty constructor", _wrm.getCompanyId());
+		assertNull("companyTitle should not be set by empty constructor", _wrm.getCompanyTitle());
+		assertNull("projectId should not be set by empty constructor", _wrm.getProjectId());
+		assertNull("projectTitle should not be set by empty constructor", _wrm.getProjectTitle());
+		assertNull("resourceId should not be set by empty constructor", _wrm.getResourceId());
+		assertNull("rateId should not be set by empty constructor", _wrm.getRateId());
+		assertNull("startAt should not be set by empty constructor", _wrm.getStartAt());
+		assertEquals("durationHours should be set on default initial value", 1, _wrm.getDurationHours());
+		assertEquals("durationMinutes should be set on default initial value", 30, _wrm.getDurationMinutes());
+		assertNull("comment should not be set by empty constructor", _wrm.getComment());
+		assertEquals("isBillable should be set on default initial value", true, _wrm.isBillable());
 	}
 
 	@Test
 	public void testWorkRecordModelConstructor() {		
-		// new("CID1", "CTITLE1", "PID1", "PTITLE1", "RID1", date, 3, 45, "RATEID1", false, "MY_COMMENT1") -> _c
-		WorkRecordModel _c = createWorkRecord(1, date, 3, 45, false);
-		assertNull("id should not be set by constructor", _c.getId());
-		assertEquals("companyId should be set by constructor", "CID1", _c.getCompanyId());
-		assertEquals("companyTitle should be set by constructor", "CTITLE1", _c.getCompanyTitle());
-		assertEquals("projectId should be set by constructor", "PID1", _c.getProjectId());
-		assertEquals("projectTitle should be set by constructor", "PTITLE1", _c.getProjectTitle());
-		assertEquals("resourceId should be set by constructor", "RID1", _c.getResourceId());
-		assertEquals("rateId should be set by constructor", "RATEID1", _c.getRateId());
-		assertEquals("startAt should be set by constructor", date.toString(), _c.getStartAt().toString());
-		assertEquals("durationHours should be set by constructor", 3, _c.getDurationHours());
-		assertEquals("durationMinutes should be set by constructor", 45, _c.getDurationMinutes());
-		assertEquals("comment should be set by constructor", "MY_COMMENT1", _c.getComment());
-		assertEquals("isBillable should be set by constructor", false, _c.isBillable());
+		WorkRecordModel _wrm = createWorkRecord(1, date, 3, 45, false);
+		assertNull("id should not be set by constructor", _wrm.getId());
+		assertEquals("companyId should be set by constructor", "CID1", _wrm.getCompanyId());
+		assertEquals("companyTitle should be set by constructor", "CTITLE1", _wrm.getCompanyTitle());
+		assertEquals("projectId should be set by constructor", "PID1", _wrm.getProjectId());
+		assertEquals("projectTitle should be set by constructor", "PTITLE1", _wrm.getProjectTitle());
+		assertEquals("resourceId should be set by constructor", "RID1", _wrm.getResourceId());
+		assertEquals("rateId should be set by constructor", "RATEID1", _wrm.getRateId());
+		assertEquals("startAt should be set by constructor", date.toString(), _wrm.getStartAt().toString());
+		assertEquals("durationHours should be set by constructor", 3, _wrm.getDurationHours());
+		assertEquals("durationMinutes should be set by constructor", 45, _wrm.getDurationMinutes());
+		assertEquals("comment should be set by constructor", "MY_COMMENT1", _wrm.getComment());
+		assertEquals("isBillable should be set by constructor", false, _wrm.isBillable());
 	}
 
 	@Test
 	public void testIdAttributeChange() {
-		// new() -> _c -> _c.setId()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("id should not be set by constructor", _c.getId());
-		_c.setId("MY_ID");
-		assertEquals("id should have changed:", "MY_ID", _c.getId());
+		// new() -> _wrm -> _wrm.setId()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("id should not be set by constructor", _wrm.getId());
+		_wrm.setId("MY_ID");
+		assertEquals("id should have changed", "MY_ID", _wrm.getId());
 	}
 
 	@Test
 	public void testCompanyIdAttributeChange() {
-		// new() -> _c -> _c.setCompanyId()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("companyId should not be set by empty constructor", _c.getCompanyId());
-		_c.setCompanyId("CID");
-		assertEquals("companyId should have changed:", "CID", _c.getCompanyId());
+		// new() -> _wrm -> _wrm.setCompanyId()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("companyId should not be set by empty constructor", _wrm.getCompanyId());
+		_wrm.setCompanyId("CID");
+		assertEquals("companyId should have changed", "CID", _wrm.getCompanyId());
 	}
 	
 	@Test
 	public void testCompanyTitleAttributeChange() {
-		// new() -> _c -> _c.setCompanyTitle()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("CompanyTitle should not be set by empty constructor", _c.getCompanyTitle());
-		_c.setCompanyTitle("CTITLE");
-		assertEquals("CompanyTitle should have changed:", "CTITLE", _c.getCompanyTitle());
+		// new() -> _wrm -> _wrm.setCompanyTitle()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("CompanyTitle should not be set by empty constructor", _wrm.getCompanyTitle());
+		_wrm.setCompanyTitle("CTITLE");
+		assertEquals("CompanyTitle should have changed", "CTITLE", _wrm.getCompanyTitle());
 	}
 	
 	@Test
 	public void testProjectIdAttributeChange() {
-		// new() -> _c -> _c.setProjectId()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("projectId should not be set by empty constructor", _c.getProjectId());
-		_c.setProjectId("PID");
-		assertEquals("projectId should have changed:", "PID", _c.getProjectId());
+		// new() -> _wrm -> _wrm.setProjectId()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("projectId should not be set by empty constructor", _wrm.getProjectId());
+		_wrm.setProjectId("PID");
+		assertEquals("projectId should have changed", "PID", _wrm.getProjectId());
 	}
 	
 	@Test
 	public void testProjectTitleAttributeChange() {
-		// new() -> _c -> _c.setProjectTitle()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("projectTitle should not be set by empty constructor", _c.getProjectTitle());
-		_c.setProjectTitle("PTITLE");
-		assertEquals("projectTitle should have changed:", "PTITLE", _c.getProjectTitle());
+		// new() -> _wrm -> _wrm.setProjectTitle()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("projectTitle should not be set by empty constructor", _wrm.getProjectTitle());
+		_wrm.setProjectTitle("PTITLE");
+		assertEquals("projectTitle should have changed", "PTITLE", _wrm.getProjectTitle());
 	}
 	
 	@Test
 	public void testResourceIdAttributeChange() {
-		// new() -> _c -> _c.setResourceId()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("resourceId should not be set by empty constructor", _c.getResourceId());
-		_c.setResourceId("RID");
-		assertEquals("resourceId should have changed:", "RID", _c.getResourceId());
+		// new() -> _wrm -> _wrm.setResourceId()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("resourceId should not be set by empty constructor", _wrm.getResourceId());
+		_wrm.setResourceId("RID");
+		assertEquals("resourceId should have changed", "RID", _wrm.getResourceId());
 	}
 		
 	@Test
 	public void testRateIdAttributeChange() {
-		// new() -> _c -> _c.setRateId()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("rateId should not be set by empty constructor", _c.getRateId());
-		_c.setRateId("RATEID");
-		assertEquals("rateId should have changed:", "RATEID", _c.getRateId());
+		// new() -> _wrm -> _wrm.setRateId()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("rateId should not be set by empty constructor", _wrm.getRateId());
+		_wrm.setRateId("RATEID");
+		assertEquals("rateId should have changed", "RATEID", _wrm.getRateId());
 	}
 	
-	// TODO: getStartAt
-	
+	@Test
+	public void testStartAtAttributeChange() {
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("startAt should not be set by empty constructor", _wrm.getStartAt());
+		Date _d = new Date();
+		_wrm.setStartAt(_d);
+		assertEquals("startAt should have changed", _d.toString(), _wrm.getStartAt().toString());
+	}
+		
 	@Test
 	public void testDurationHoursAttributeChange() {
-		// new() -> _c -> _c.setDurationHours()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertEquals("durationHours should be initialized to default value by empty constructor", 1, _c.getDurationHours());
-		_c.setDurationHours(3);
-		assertEquals("durationHours should have changed:", 3, _c.getDurationHours());
+		// new() -> _wrm -> _wrm.setDurationHours()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertEquals("durationHours should be initialized to default value by empty constructor", 1, _wrm.getDurationHours());
+		_wrm.setDurationHours(3);
+		assertEquals("durationHours should have changed", 3, _wrm.getDurationHours());
 	}
 	
 	@Test
 	public void testDurationMinutesAttributeChange() {
-		// new() -> _c -> _c.setDurationMinutes()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertEquals("durationMinutes should be initialized to default value by empty constructor", 30, _c.getDurationMinutes());
-		_c.setDurationMinutes(45);
-		assertEquals("durationMinutes should have changed:", 45, _c.getDurationMinutes());
+		// new() -> _wrm -> _wrm.setDurationMinutes()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertEquals("durationMinutes should be initialized to default value by empty constructor", 30, _wrm.getDurationMinutes());
+		_wrm.setDurationMinutes(45);
+		assertEquals("durationMinutes should have changed", 45, _wrm.getDurationMinutes());
 	}
 	
 	@Test
 	public void testCommentAttributeChange() {
-		// new() -> _c -> _c.setComment()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertNull("comment should not be set by empty constructor", _c.getComment());
-		_c.setComment("MY_COMMENT");
-		assertEquals("comment should have changed:", "MY_COMMENT", _c.getComment());
+		// new() -> _wrm -> _wrm.setComment()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("comment should not be set by empty constructor", _wrm.getComment());
+		_wrm.setComment("MY_COMMENT");
+		assertEquals("comment should have changed", "MY_COMMENT", _wrm.getComment());
 	}
 	
 	@Test
 	public void testIsBillableAttributeChange() {
-		// new() -> _c -> _c.setBillable()
-		WorkRecordModel _c = new WorkRecordModel();
-		assertEquals("isBillable should be initialized to default value by empty constructor", true, _c.isBillable());
-		_c.setBillable(false);
-		assertEquals("isBillable should have changed:", false, _c.isBillable());
+		// new() -> _wrm -> _wrm.setBillable()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertEquals("isBillable should be initialized to default value by empty constructor", true, _wrm.isBillable());
+		_wrm.setBillable(false);
+		assertEquals("isBillable should have changed", false, _wrm.isBillable());
 	}
 	
 	@Test
 	public void testWorkRecordCreatedBy() {
-		// new() -> _o -> _o.setCreatedBy()
-		WorkRecordModel _o = new WorkRecordModel();
-		assertNull("createdBy should not be set by empty constructor", _o.getCreatedBy());
-		_o.setCreatedBy("MY_NAME");
-		assertEquals("createdBy should have changed", "MY_NAME", _o.getCreatedBy());	
+		// new() -> _wrm -> _wrm.setCreatedBy()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("createdBy should not be set by empty constructor", _wrm.getCreatedBy());
+		_wrm.setCreatedBy("MY_NAME");
+		assertEquals("createdBy should have changed", "MY_NAME", _wrm.getCreatedBy());	
 	}
 	
 	@Test
 	public void testWorkRecordCreatedAt() {
-		// new() -> _o -> _o.setCreatedAt()
-		WorkRecordModel _o = new WorkRecordModel();
-		assertNull("createdAt should not be set by empty constructor", _o.getCreatedAt());
-		_o.setCreatedAt(new Date());
-		assertNotNull("createdAt should have changed", _o.getCreatedAt());
+		// new() -> _wrm -> _wrm.setCreatedAt()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("createdAt should not be set by empty constructor", _wrm.getCreatedAt());
+		_wrm.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _wrm.getCreatedAt());
 	}
 		
 	@Test
 	public void testWorkRecordModifiedBy() {
-		// new() -> _o -> _o.setModifiedBy()
-		WorkRecordModel _o = new WorkRecordModel();
-		assertNull("modifiedBy should not be set by empty constructor", _o.getModifiedBy());
-		_o.setModifiedBy("MY_NAME");
-		assertEquals("modifiedBy should have changed", "MY_NAME", _o.getModifiedBy());	
+		// new() -> _wrm -> _wrm.setModifiedBy()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("modifiedBy should not be set by empty constructor", _wrm.getModifiedBy());
+		_wrm.setModifiedBy("MY_NAME");
+		assertEquals("modifiedBy should have changed", "MY_NAME", _wrm.getModifiedBy());	
 	}
 	
 	@Test
 	public void testWorkRecordModifiedAt() {
-		// new() -> _o -> _o.setModifiedAt()
-		WorkRecordModel _o = new WorkRecordModel();
-		assertNull("modifiedAt should not be set by empty constructor", _o.getModifiedAt());
-		_o.setModifiedAt(new Date());
-		assertNotNull("modifiedAt should have changed", _o.getModifiedAt());
+		// new() -> _wrm -> _wrm.setModifiedAt()
+		WorkRecordModel _wrm = new WorkRecordModel();
+		assertNull("modifiedAt should not be set by empty constructor", _wrm.getModifiedAt());
+		_wrm.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _wrm.getModifiedAt());
 	}
 
 	/********************************* REST service tests *********************************/	
 	@Test
 	public void testWorkRecordCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _c1
-		WorkRecordModel _c1 = new WorkRecordModel();
-		assertNull("id should not be set by empty constructor", _c1.getId());
-		assertNull("companyId should not be set by empty constructor", _c1.getCompanyId());
-		assertNull("companyTitle should not be set by empty constructor", _c1.getCompanyTitle());
-		assertNull("projectId should not be set by empty constructor", _c1.getProjectId());
-		assertNull("projectTitle should not be set by empty constructor", _c1.getProjectTitle());
-		assertNull("resourceId should not be set by empty constructor", _c1.getResourceId());
-		assertNull("rateId should not be set by empty constructor", _c1.getRateId());
-		assertNull("startAt should not be set by empty constructor", _c1.getStartAt());
-		assertEquals("durationHours should be set on default initial value", 1, _c1.getDurationHours());
-		assertEquals("durationMinutes should be set on default initial value", 30, _c1.getDurationMinutes());
-		assertNull("comment should not be set by empty constructor", _c1.getComment());
-		assertEquals("isBillable should be set on default initial value", true, _c1.isBillable());
+		// new() -> _wrm1
+		WorkRecordModel _wrm1 = new WorkRecordModel();
+		assertNull("id should not be set by empty constructor", _wrm1.getId());
+		assertNull("companyId should not be set by empty constructor", _wrm1.getCompanyId());
+		assertNull("companyTitle should not be set by empty constructor", _wrm1.getCompanyTitle());
+		assertNull("projectId should not be set by empty constructor", _wrm1.getProjectId());
+		assertNull("projectTitle should not be set by empty constructor", _wrm1.getProjectTitle());
+		assertNull("resourceId should not be set by empty constructor", _wrm1.getResourceId());
+		assertNull("rateId should not be set by empty constructor", _wrm1.getRateId());
+		assertNull("startAt should not be set by empty constructor", _wrm1.getStartAt());
+		assertEquals("durationHours should be set on default initial value", 1, _wrm1.getDurationHours());
+		assertEquals("durationMinutes should be set on default initial value", 30, _wrm1.getDurationMinutes());
+		assertNull("comment should not be set by empty constructor", _wrm1.getComment());
+		assertEquals("isBillable should be set on default initial value", true, _wrm1.isBillable());
 		
-		// create(_c1) -> BAD_REQUEST (because of empty companyId)
-		Response _response = webclient.replacePath("/").post(_c1);
+		// create(_wrm1) -> BAD_REQUEST (because of empty companyId)
+		Response _response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
-		// create(_c1).setCompanyId("CID") -> BAD_REQUEST (because of empty companyTitle)
-		_c1.setCompanyId("CID");
-		_response = webclient.replacePath("/").post(_c1);
+		// create(_wrm1).setCompanyId("CID") -> BAD_REQUEST (because of empty companyTitle)
+		_wrm1.setCompanyId("CID");
+		_response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
-		// create(_c1).setCompanyTitle("CTITLE") -> BAD_REQUEST (because of empty projectId)
-		_c1.setCompanyTitle("CTITLE");
-		_response = webclient.replacePath("/").post(_c1);
+		// create(_wrm1).setCompanyTitle("CTITLE") -> BAD_REQUEST (because of empty projectId)
+		_wrm1.setCompanyTitle("CTITLE");
+		_response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		
-		// create(_c1).setProjectId("PID") -> BAD_REQUEST (because of empty projectTitle)
-		_c1.setProjectId("PID");
-		_response = webclient.replacePath("/").post(_c1);
+		// create(_wrm1).setProjectId("PID") -> BAD_REQUEST (because of empty projectTitle)
+		_wrm1.setProjectId("PID");
+		_response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
-		// create(_c1).setProjectTitle("PTITLE") -> BAD_REQUEST (because of empty resourceId)
-		_c1.setProjectTitle("PTITLE");
-		_response = webclient.replacePath("/").post(_c1);
+		// create(_wrm1).setProjectTitle("PTITLE") -> BAD_REQUEST (because of empty resourceId)
+		_wrm1.setProjectTitle("PTITLE");
+		_response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
-		// create(_c1).setResourceId("RID") -> BAD_REQUEST (because of empty startAt)
-		_c1.setResourceId("RID");
-		_response = webclient.replacePath("/").post(_c1);
+		// create(_wrm1).setResourceId("RID") -> BAD_REQUEST (because of empty startAt)
+		_wrm1.setResourceId("RID");
+		_response = webclient.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
-		// create(_c1).setStartAt(new Date()) -> _c2
+		// create(_wrm1).setStartAt(new Date()) -> _wrm2
 		Date _date = new Date();
-		_c1.setStartAt(_date);
-		_response = webclient.replacePath("/").post(_c1);		
+		_wrm1.setStartAt(_date);
+		_response = webclient.replacePath("/").post(_wrm1);		
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c2 = _response.readEntity(WorkRecordModel.class);
+		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 		
-		// validate _c1
-		assertNull("create() should not change the id of the local object", _c1.getId());
-		assertEquals("create() should not change the companyId of the local object", "CID", _c1.getCompanyId());
-		assertEquals("create() should not change the companyTitle of the local object", "CTITLE", _c1.getCompanyTitle());
-		assertEquals("create() should not change the projectId of the local object", "PID", _c1.getProjectId());
-		assertEquals("create() should not change the projectTitle of the local object", "PTITLE", _c1.getProjectTitle());
-		assertEquals("create() should not change the resourceId of the local object", "RID", _c1.getResourceId());
-		assertNull("create() should not change the rateId of the local object", _c1.getRateId());
-		assertEquals("create() should not change the startAt Date of the local object", _date.toString(), _c1.getStartAt().toString());
-		assertEquals("create() should not change durationHours on the local object", 1, _c1.getDurationHours());
-		assertEquals("create() should not change durationMinutes on the local object", 30, _c1.getDurationMinutes());
-		assertNull("create() should not change comment on the local object", _c1.getComment());
-		assertEquals("create() should not change isBillable on the local object", true, _c1.isBillable());
+		// validate _wrm1
+		assertNull("create() should not change the id of the local object", _wrm1.getId());
+		assertEquals("create() should not change the companyId of the local object", "CID", _wrm1.getCompanyId());
+		assertEquals("create() should not change the companyTitle of the local object", "CTITLE", _wrm1.getCompanyTitle());
+		assertEquals("create() should not change the projectId of the local object", "PID", _wrm1.getProjectId());
+		assertEquals("create() should not change the projectTitle of the local object", "PTITLE", _wrm1.getProjectTitle());
+		assertEquals("create() should not change the resourceId of the local object", "RID", _wrm1.getResourceId());
+		assertNull("create() should not change the rateId of the local object", _wrm1.getRateId());
+		assertEquals("create() should not change the startAt Date of the local object", _date.toString(), _wrm1.getStartAt().toString());
+		assertEquals("create() should not change durationHours on the local object", 1, _wrm1.getDurationHours());
+		assertEquals("create() should not change durationMinutes on the local object", 30, _wrm1.getDurationMinutes());
+		assertNull("create() should not change comment on the local object", _wrm1.getComment());
+		assertEquals("create() should not change isBillable on the local object", true, _wrm1.isBillable());
 		
-		// validate _c2
-		assertNotNull("create() should set a valid id on the remote object returned", _c2.getId());
-		assertEquals("create() should not change the companyId", "CID", _c2.getCompanyId());
-		assertEquals("create() should not change the companyTitle", "CTITLE", _c2.getCompanyTitle());
-		assertEquals("create() should not change the projectId", "PID", _c2.getProjectId());
-		assertEquals("create() should not change the projectTitle", "PTITLE", _c2.getProjectTitle());
-		assertEquals("create() should not change the resourceId", "RID", _c2.getResourceId());
-		assertNull("create() should not change the rateId", _c2.getRateId());
-		assertEquals("create() should not change the startAt Date", _date.toString(), _c2.getStartAt().toString());
-		assertEquals("create() should not change durationHours", 1, _c2.getDurationHours());
-		assertEquals("create() should not change durationMinutes", 30, _c2.getDurationMinutes());
-		assertNull("create() should not change comment", _c2.getComment());
-		assertEquals("create() should not change isBillable", true, _c2.isBillable());
+		// validate _wrm2
+		assertNotNull("create() should set a valid id on the remote object returned", _wrm2.getId());
+		assertEquals("create() should not change the companyId", "CID", _wrm2.getCompanyId());
+		assertEquals("create() should not change the companyTitle", "CTITLE", _wrm2.getCompanyTitle());
+		assertEquals("create() should not change the projectId", "PID", _wrm2.getProjectId());
+		assertEquals("create() should not change the projectTitle", "PTITLE", _wrm2.getProjectTitle());
+		assertEquals("create() should not change the resourceId", "RID", _wrm2.getResourceId());
+		assertNull("create() should not change the rateId", _wrm2.getRateId());
+		assertEquals("create() should not change the startAt Date", _date.toString(), _wrm2.getStartAt().toString());
+		assertEquals("create() should not change durationHours", 1, _wrm2.getDurationHours());
+		assertEquals("create() should not change durationMinutes", 30, _wrm2.getDurationMinutes());
+		assertNull("create() should not change comment", _wrm2.getComment());
+		assertEquals("create() should not change isBillable", true, _wrm2.isBillable());
 
-		// read(_c2) -> _c3
-		_response = webclient.replacePath("/").path(_c2.getId()).get();
-		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		WorkRecordModel _c3 = _response.readEntity(WorkRecordModel.class);
-		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
-		assertEquals("companyId of returned object should be unchanged after remote create", _c2.getCompanyId(), _c3.getCompanyId());
-		assertEquals("companyTitle of returned object should be unchanged after remote create", _c2.getCompanyTitle(), _c3.getCompanyTitle());
-		assertEquals("projectId of returned object should be unchanged after remote create", _c2.getProjectId(), _c3.getProjectId());
-		assertEquals("projectTitle of returned object should be unchanged after remote create", _c2.getProjectTitle(), _c3.getProjectTitle());
-		assertEquals("resourceId of returned object should be unchanged after remote create", _c2.getResourceId(), _c3.getResourceId());
-		assertEquals("rateId of returned object should be unchanged after remote create", _c2.getRateId(), _c3.getRateId());
-		assertEquals("startAt of returned object should be unchanged after remote create", _c2.getStartAt(), _c3.getStartAt());
-		assertEquals("durationHours of returned object should be unchanged after remote create", _c2.getDurationHours(), _c3.getDurationHours());
-		assertEquals("durationMinutes of returned object should be unchanged after remote create", _c2.getDurationMinutes(), _c3.getDurationMinutes());
-		assertEquals("comment of returned object should be unchanged after remote create", _c2.getComment(), _c3.getComment());
-		assertEquals("isBillable of returned object should be unchanged after remote create", _c2.isBillable(), _c3.isBillable());
+		// read(_wrm2) -> _wrm3
+		_response = webclient.replacePath("/").path(_wrm2.getId()).get();
+		assertEquals("read(" + _wrm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
+		assertEquals("id of returned object should be the same", _wrm2.getId(), _wrm3.getId());
+		assertEquals("companyId of returned object should be unchanged after remote create", _wrm2.getCompanyId(), _wrm3.getCompanyId());
+		assertEquals("companyTitle of returned object should be unchanged after remote create", _wrm2.getCompanyTitle(), _wrm3.getCompanyTitle());
+		assertEquals("projectId of returned object should be unchanged after remote create", _wrm2.getProjectId(), _wrm3.getProjectId());
+		assertEquals("projectTitle of returned object should be unchanged after remote create", _wrm2.getProjectTitle(), _wrm3.getProjectTitle());
+		assertEquals("resourceId of returned object should be unchanged after remote create", _wrm2.getResourceId(), _wrm3.getResourceId());
+		assertEquals("rateId of returned object should be unchanged after remote create", _wrm2.getRateId(), _wrm3.getRateId());
+		assertEquals("startAt of returned object should be unchanged after remote create", _wrm2.getStartAt(), _wrm3.getStartAt());
+		assertEquals("durationHours of returned object should be unchanged after remote create", _wrm2.getDurationHours(), _wrm3.getDurationHours());
+		assertEquals("durationMinutes of returned object should be unchanged after remote create", _wrm2.getDurationMinutes(), _wrm3.getDurationMinutes());
+		assertEquals("comment of returned object should be unchanged after remote create", _wrm2.getComment(), _wrm3.getComment());
+		assertEquals("isBillable of returned object should be unchanged after remote create", _wrm2.isBillable(), _wrm3.isBillable());
 
-		// delete(_c3)
-		_response = webclient.replacePath("/").path(_c3.getId()).delete();
-		assertEquals("delete(" + _c3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		// delete(_wrm3)
+		_response = webclient.replacePath("/").path(_wrm3.getId()).delete();
+		assertEquals("delete(" + _wrm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
@@ -843,7 +849,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	}
 	
 	/********************************** helper methods *********************************/	
-	private WorkRecordModel createWorkRecord(int suffix, Date d, int hours, int mins, boolean isBillable) {
+	public static WorkRecordModel createWorkRecord(int suffix, Date d, int hours, int mins, boolean isBillable) {
 		String _buf = new Integer(suffix).toString();
 		return new WorkRecordModel(
 			"CID" + _buf,

@@ -53,10 +53,12 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 	public void initializeTest(
 	) {
 		initializeTest(API, AddressbooksService.class);
-		Response _response = webclient.replacePath("/").post(new AddressbookModel());
+		Response _response = webclient.replacePath("/").post(new AddressbookModel("AddressBatchedListTest"));
 		adb = _response.readEntity(AddressbookModel.class);
 		System.out.println("AddressTest posted AddressbookModel " + adb.getId());
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(new ContactModel());
+		ContactModel _cm = new ContactModel();
+		_cm.setFn("AddressBatchedListTest");
+		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 		contact = _response.readEntity(ContactModel.class);
 		System.out.println("AddressTest posted ContactModel " + contact.getId());
 	}
@@ -81,7 +83,7 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_response = webclient.post(new AddressModel());
+			_response = webclient.post(AddressTest.createAddress("testAddressBatchedList" + i, "test" + i, "VALUE" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(AddressModel.class));
 		}

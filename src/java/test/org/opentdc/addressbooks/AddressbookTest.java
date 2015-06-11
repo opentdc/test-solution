@@ -127,14 +127,21 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 	@Test
 	public void testAddressbookCreateReadDeleteWithEmptyConstructor() {
 		// new() -> _abm1
-		AddressbookModel _abm1 = new AddressbookModel("testAddressbookCreateReadDeleteWithEmptyConstructor");
+		AddressbookModel _abm1 = new AddressbookModel();
 		assertNull("id should not be set by empty constructor", _abm1.getId());
-		assertEquals("name should not be set by empty constructor", "testAddressbookCreateReadDeleteWithEmptyConstructor", _abm1.getName());
+		assertNull("name should not be set by empty constructor", _abm1.getName());
 
-		// create(_abm1) -> _abm2
+		// create(_abm1) -> BAD_REQUEST (because of empty name)
 		Response _response = webclient.replacePath("/").post(_abm1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+
+		// _abm1.setName() -> create(_abm1) -> _abm2
+		_abm1.setName("testAddressbookCreateReadDeleteWithEmptyConstructor");
+		_response = webclient.replacePath("/").post(_abm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
+		
+		// validate _abm1
 		assertNull("create() should not change the id of the local object", _abm1.getId());
 		assertEquals("create() should not change the name of the local object", "testAddressbookCreateReadDeleteWithEmptyConstructor", _abm1.getName());
 		assertNotNull("create() should set a valid id on the remote object returned", _abm2.getId());

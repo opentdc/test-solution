@@ -26,6 +26,7 @@ package test.org.opentdc.workrecords;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
@@ -59,9 +60,10 @@ public class WorkRecordBatchedListTest extends AbstractTestClient<WorkRecordsSer
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
 		WorkRecordModel _res = null;
+		Date _d = new Date();
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_res = new WorkRecordModel();
+			_res = WorkRecordsTest.createWorkRecord(i, _d, i, 10 * i, true);
 			_res.setComment(String.format("%2d", i));
 			_response = webclient.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
