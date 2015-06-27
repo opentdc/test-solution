@@ -507,24 +507,6 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
 		// assertThat(_abm2.getModifiedBy(), not(equalTo(_abm2.getCreatedBy())));
 
-		// update(_abm2) with createdBy set on client side -> error
-		String _createdBy = _abm1.getCreatedBy();
-		_abm1.setCreatedBy("MYSELF");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_abm1.getId()).put(_abm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_abm1.setCreatedBy(_createdBy);
-
-		// update(_abm1) with createdAt set on client side -> error
-		Date _d = _abm1.getCreatedAt();
-		_abm1.setCreatedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_abm1.getId()).put(_abm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_abm1.setCreatedAt(_d);
-
 		// update(o) with modifiedBy/At set on client side -> ignored by server
 		_abm1.setModifiedBy("MYSELF");
 		_abm1.setModifiedAt(new Date(1000));

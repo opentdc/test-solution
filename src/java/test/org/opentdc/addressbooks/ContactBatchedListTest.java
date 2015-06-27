@@ -75,7 +75,8 @@ public class ContactBatchedListTest extends AbstractTestClient<AddressbooksServi
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
 			_res = new ContactModel();
-			_res.setFn(String.format("%2d", i));
+			_res.setFirstName(String.format("%2d", i));
+			_res.setLastName("Test");
 			_response = webclient.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ContactModel.class));

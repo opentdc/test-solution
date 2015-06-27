@@ -59,7 +59,7 @@ public class ContactAllListTest extends AbstractTestClient<AddressbooksService> 
 			_abm = createAddressbook("ContactAllListTest" + i);
 			addressbooks.add(_abm);
 			for (int j = 0; j < nrContacts; j++) {
-				createContact(_abm.getId(), "addressbook" + i + "_contact" + j);
+				createContact(_abm.getId(), "addressbook" + i + "_contact" + j, "Test");
 			}
 		}
 	}
@@ -146,9 +146,10 @@ public class ContactAllListTest extends AbstractTestClient<AddressbooksService> 
 		System.out.println("deleted AddressbookModel " + id);
 	}
 
-	private ContactModel createContact(String aid, String name) {
+	private ContactModel createContact(String aid, String firstName, String lastName) {
 		ContactModel _cm = new ContactModel();
-		_cm.setFn(name);
+		_cm.setFirstName(firstName);
+		_cm.setLastName(lastName);
 		Response _response = webclient.replacePath("/").path(aid).path(PATH_EL_CONTACT).post(_cm);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("posted ContactModel " + _cm.getFn() + " in addressbook " + aid);

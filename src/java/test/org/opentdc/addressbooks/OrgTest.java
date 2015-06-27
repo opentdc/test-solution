@@ -662,7 +662,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
 			assertNotNull("create() should set modifiedAt", _om1.getModifiedAt());
 			assertNotNull("create() should set modifiedBy", _om1.getModifiedBy());
-			assertEquals("createdAt and modifiedAt should be identical after create()", _om1.getCreatedAt(), _om1.getModifiedAt());
+			assertTrue("createdAt should be less than or equal to modifiedAt after create()", _om1.getCreatedAt().compareTo(_om1.getModifiedAt()) <= 0);
 			assertEquals("createdBy and modifiedBy should be identical after create()", _om1.getCreatedBy(), _om1.getModifiedBy());
 			
 			// update(_om1)  -> _om2
@@ -680,24 +680,6 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertThat(_om2.getModifiedAt(), not(equalTo(_om2.getCreatedAt())));
 			// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
 			// assertThat(_om2.getModifiedBy(), not(equalTo(_om2.getCreatedBy())));
-
-			// update(_om2) with createdBy set on client side -> error
-			String _createdBy = _om1.getCreatedBy();
-			_om1.setCreatedBy("MYSELF");
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
-			assertEquals("update() should return with status BAD_REQUEST", 
-					Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-			_om1.setCreatedBy(_createdBy);
-
-			// update(_om1) with createdAt set on client side -> error
-			Date _d = _om1.getCreatedAt();
-			_om1.setCreatedAt(new Date(1000));
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
-			assertEquals("update() should return with status BAD_REQUEST", 
-					Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-			_om1.setCreatedAt(_d);
 
 			// update(_om1) with modifiedBy/At set on client side -> ignored by server
 			_om1.setModifiedBy("MYSELF");

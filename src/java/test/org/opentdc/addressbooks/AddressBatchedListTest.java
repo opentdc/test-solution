@@ -35,6 +35,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressModel;
+import org.opentdc.addressbooks.AddressType;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
@@ -57,7 +58,8 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 		adb = _response.readEntity(AddressbookModel.class);
 		System.out.println("AddressTest posted AddressbookModel " + adb.getId());
 		ContactModel _cm = new ContactModel();
-		_cm.setFn("AddressBatchedListTest");
+		_cm.setFirstName("AddressBatchedList");
+		_cm.setLastName("Test");
 		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 		contact = _response.readEntity(ContactModel.class);
 		System.out.println("AddressTest posted ContactModel " + contact.getId());
@@ -83,7 +85,7 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_response = webclient.post(AddressTest.createAddress("testAddressBatchedList" + i, "test" + i, "VALUE" + i));
+			_response = webclient.post(AddressTest.createUrlAddress("testAddressBatchedList" + i, AddressType.OTHER, "VALUE" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(AddressModel.class));
 		}

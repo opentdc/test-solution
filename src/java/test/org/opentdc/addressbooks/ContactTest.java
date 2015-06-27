@@ -136,16 +136,6 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("firstName should have changed:", "MY_FNAME", _cm.getFirstName());
 		}
 		
-		// Fn
-		@Test
-		public void testContactFnAttributeChange() {
-			// new() -> _cm -> _cm.setFn()
-			ContactModel _cm = new ContactModel();
-			assertNull("fn should not be set by empty constructor", _cm.getFn());
-			_cm.setFn("MY_FN");
-			assertEquals("fn should have changed:", "MY_FN", _cm.getFn());
-		}
-		
 		// JobTitle
 		@Test
 		public void testContactJobTitleAttributeChange() {
@@ -294,13 +284,13 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertNull("prefix should not be set by empty constructor", _cm1.getPrefix());
 			assertNull("suffix should not be set by empty constructor", _cm1.getSuffix());
 			
-			// create(_cm1) -> BAD_REQUEST (because of empty fn)
+			// create(_cm1) -> BAD_REQUEST (because of empty firstName / lastName)
 			Response _response = webclient.replacePath("/").post(_cm1);
 			assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
-			// _cm1.setFn() -> create(_cm1) -> _cm2
-			_cm1.setFn("testContactCreateReadDeleteWithEmptyConstructor");
-			assertEquals("fn should be set", "testContactCreateReadDeleteWithEmptyConstructor", _cm1.getFn());
+			// _cm1.setFirstName() -> create(_cm1) -> _cm2
+			_cm1.setFirstName("testContactCreateReadDeleteWithEmptyConstructor");
+			_cm1.setLastName("Test");
 			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm2 = _response.readEntity(ContactModel.class);
@@ -310,10 +300,10 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertNull("create() should not change the birthday of the local object", _cm1.getBirthday());
 			assertNull("create() should not change the company of the local object", _cm1.getCompany());
 			assertNull("create() should not change the department of the local object", _cm1.getDepartment());
-			assertNull("create() should not change the firstName of the local object", _cm1.getFirstName());
-			assertEquals("create() should not change the fn of the local object", "testContactCreateReadDeleteWithEmptyConstructor", _cm1.getFn());
+			assertNotNull("create() should not change the firstName of the local object", _cm1.getFirstName());
+			assertNotNull("create() should not change the lastName of the local object", _cm1.getLastName());
+			assertNull("create() should not change the fn of the local object", _cm1.getFn());
 			assertNull("create() should not change the jobTitle of the local object", _cm1.getJobTitle());
-			assertNull("create() should not change the lastName of the local object", _cm1.getLastName());
 			assertNull("create() should not change the maidenName of the local object", _cm1.getMaidenName());
 			assertNull("create() should not change the middleName of the local object", _cm1.getMiddleName());
 			assertNull("create() should not change the nickName of the local object", _cm1.getNickName());
@@ -327,10 +317,10 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertNull("birthday of returned object should be null after remote create", _cm2.getBirthday());   // what is the correct value of a date?
 			assertNull("company of returned object should still be null after remote create", _cm2.getCompany());
 			assertNull("department of returned object should still be null after remote create", _cm2.getDepartment());
-			assertNull("firstName of returned object should still be null after remote create", _cm2.getFirstName());
-			assertEquals("fn of returned object should be unchanged", "testContactCreateReadDeleteWithEmptyConstructor", _cm1.getFn());
+			assertNotNull("firstName of returned object should still be null after remote create", _cm2.getFirstName());
+			assertNotNull("lastName of returned object should still be null after remote create", _cm2.getLastName());
+			assertNotNull("fn of returned object should be unchanged", _cm2.getFn());
 			assertNull("jobTitle of returned object should still be null after remote create", _cm2.getJobTitle());
-			assertNull("lastName of returned object should still be null after remote create", _cm2.getLastName());
 			assertNull("maidenName of returned object should still be null after remote create", _cm2.getMaidenName());
 			assertNull("middleName of returned object should still be null after remote create", _cm2.getMiddleName());
 			assertNull("nickName of returned object should still be null after remote create", _cm2.getNickName());
@@ -368,13 +358,11 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			// new(with custom attributes) -> _cm1
 			Date _bdate = new Date();
 			ContactModel _cm1 = setDefaultValues(new ContactModel(), _bdate, "");
-			_cm1.setFn("testContactCreateReadDelete");
 			assertNull("id should not be set by constructor", _cm1.getId());
 			assertEquals("birthday should be set correctly", _bdate, _cm1.getBirthday());
 			assertEquals("company should be set correctly", "MY_COMPANY", _cm1.getCompany());
 			assertEquals("department should be set correctly", "MY_DEPT", _cm1.getDepartment());
 			assertEquals("firstName should be set correctly", "MY_FNAME", _cm1.getFirstName());
-			assertEquals("fn should be set correctly", "testContactCreateReadDelete", _cm1.getFn());
 			assertEquals("jobTitle should be set correctly", "MY_JOBTITLE", _cm1.getJobTitle());
 			assertEquals("lastName should be set correctly", "MY_LNAME", _cm1.getLastName());
 			assertEquals("maidenName should be set correctly", "MY_MNAME", _cm1.getMaidenName());
@@ -396,7 +384,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("company should be unchanged", "MY_COMPANY", _cm1.getCompany());
 			assertEquals("department should be unchanged", "MY_DEPT", _cm1.getDepartment());
 			assertEquals("firstName should be unchanged", "MY_FNAME", _cm1.getFirstName());
-			assertEquals("fn should be unchanged", "testContactCreateReadDelete", _cm1.getFn());
+			assertNull("fn should be empty", _cm1.getFn());
 			assertEquals("jobTitle should be unchanged", "MY_JOBTITLE", _cm1.getJobTitle());
 			assertEquals("lastName should be unchanged", "MY_LNAME", _cm1.getLastName());
 			assertEquals("maidenName should be unchanged", "MY_MNAME", _cm1.getMaidenName());
@@ -413,7 +401,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("company should be unchanged", "MY_COMPANY", _cm2.getCompany());
 			assertEquals("department should be unchanged", "MY_DEPT", _cm2.getDepartment());
 			assertEquals("firstName should be unchanged", "MY_FNAME", _cm2.getFirstName());
-			assertEquals("fn should be unchanged", "testContactCreateReadDelete", _cm2.getFn());
+			assertNotNull("fn should be set", _cm2.getFn());
 			assertEquals("jobTitle should be unchanged", "MY_JOBTITLE", _cm2.getJobTitle());
 			assertEquals("lastName should be unchanged", "MY_LNAME", _cm2.getLastName());
 			assertEquals("maidenName should be unchanged", "MY_MNAME", _cm2.getMaidenName());
@@ -452,7 +440,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		public void testContactProjectWithClientSideId() {
 			// new() -> _cm1 -> _cm1.setId()
 			ContactModel _cm1 = new ContactModel();
-			_cm1.setFn("testContactProjectWithClientSideId");
+			_cm1.setFirstName("testContactProjectWithClientSideId");
+			_cm1.setLastName("Test");
 			_cm1.setId("LOCAL_ID");
 			assertEquals("id should have changed", "LOCAL_ID", _cm1.getId());
 			// create(_cm1) -> BAD_REQUEST
@@ -464,14 +453,16 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		public void testContactProjectWithDuplicateId() {
 			// create(new()) -> _cm1
 			ContactModel _cm = new ContactModel();
-			_cm.setFn("testContactProjectWithDuplicateId");
+			_cm.setFirstName("testContactProjectWithDuplicateId");
+			_cm.setLastName("Test");
 			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
 
 			// new() -> _cm2 -> _cm2.setId(_cm1.getId())
 			ContactModel _cm2 = new ContactModel();
-			_cm2.setFn("testContactProjectWithDuplicateId2");
+			_cm2.setFirstName("testContactProjectWithDuplicateId2");
+			_cm2.setLastName("Test");
 			_cm2.setId(_cm1.getId());		// wrongly create a 2nd ContactModel object with the same ID
 			
 			// create(_cm2) -> CONFLICT
@@ -488,7 +479,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			for (int i = 0; i < LIMIT; i++) {
 				// create(new()) -> _localList
 				_c = new ContactModel();
-				_c.setFn("testContactList" + i);
+				_c.setFirstName("testContactList" + i);
+				_c.setLastName("Test");
 				_response = webclient.post(_c);
 				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_localList.add(_response.readEntity(ContactModel.class));
@@ -528,11 +520,13 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			// new(custom attributes1) -> _cm1
 			Date _bdate1 = new Date(1000);
 			ContactModel _cm1 = setDefaultValues(new ContactModel(), _bdate1, "1");
-			_cm1.setFn("testContactCreate1");
+			_cm1.setFirstName("MY_FNAME1");
+			_cm1.setLastName("MY_LNAME1");
 			// new(custom attributes2) -> _cm2
 			Date _bdate2 = new Date(2000);
 			ContactModel _cm2 = setDefaultValues(new ContactModel(), _bdate2, "2");
-			_cm2.setFn("testContactCreate2");
+			_cm2.setFirstName("MY_FNAME2");
+			_cm2.setLastName("MY_LNAME2");
 			
 			// create(_cm1)  -> _cm3
 			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
@@ -552,7 +546,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("company should be unchanged", "MY_COMPANY1", _cm3.getCompany());
 			assertEquals("department should be unchanged", "MY_DEPT1", _cm3.getDepartment());
 			assertEquals("firstName should be unchanged", "MY_FNAME1", _cm3.getFirstName());
-			assertEquals("fn should be unchanged", "testContactCreate1", _cm3.getFn());
+			assertNotNull("fn should be set", _cm3.getFn());
 			assertEquals("jobTitle should be unchanged", "MY_JOBTITLE1", _cm3.getJobTitle());
 			assertEquals("lastName should be unchanged", "MY_LNAME1", _cm3.getLastName());
 			assertEquals("maidenName should be unchanged", "MY_MNAME1", _cm3.getMaidenName());
@@ -568,7 +562,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("company should be unchanged", "MY_COMPANY2", _cm4.getCompany());
 			assertEquals("department should be unchanged", "MY_DEPT2", _cm4.getDepartment());
 			assertEquals("firstName should be unchanged", "MY_FNAME2", _cm4.getFirstName());
-			assertEquals("fn should be unchanged", "testContactCreate2", _cm4.getFn());
+			assertNotNull("fn should be set", _cm4.getFn());
 			assertEquals("jobTitle should be unchanged", "MY_JOBTITLE2", _cm4.getJobTitle());
 			assertEquals("lastName should be unchanged", "MY_LNAME2", _cm4.getLastName());
 			assertEquals("maidenName should be unchanged", "MY_MNAME2", _cm4.getMaidenName());
@@ -592,7 +586,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		public void testContactCreateDouble() {		
 			// create(new()) -> _cm
 			ContactModel _c = new ContactModel();
-			_c.setFn("testContactCreateDouble");
+			_c.setFirstName("testContactCreateDouble");
+			_c.setLastName("Test");
 			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_c);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm = _response.readEntity(ContactModel.class);
@@ -615,7 +610,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			ContactModel _c = null;
 			for (int i = 0; i < LIMIT; i++) {
 				_c = new ContactModel();
-				_c.setFn("testContactRead" + i);
+				_c.setFirstName("testContactRead" + i);
+				_c.setLastName("Test");
 				_response = webclient.post(_c);
 				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_localList.add(_response.readEntity(ContactModel.class));
@@ -652,7 +648,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			// new() -> _cm1
 			Date _bdate1 = new Date(1000);
 			ContactModel _cm1 = setDefaultValues(new ContactModel(), _bdate1, "1");
-			_cm1.setFn("testContactMultiRead");
+			_cm1.setFirstName("testContactMultiRead");
+			_cm1.setLastName("Test");
 			
 			// create(_cm1) -> _cm2
 			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
@@ -712,7 +709,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		public void testContactUpdate() {			
 			// create() -> _cm1
 			ContactModel _cm = new ContactModel();
-			_cm.setFn("testContactUpdate");
+			_cm.setFirstName("testContactUpdate");
+			_cm.setLastName("Test");
 			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
 			
@@ -730,7 +728,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("company should be set correctly", "MY_COMPANY3", _cm2.getCompany());
 			assertEquals("department should be set correctly", "MY_DEPT3", _cm2.getDepartment());
 			assertEquals("firstName should be set correctly", "MY_FNAME3", _cm2.getFirstName());
-			assertEquals("fn should be set correctly", "MY_FN3", _cm2.getFn());
+			assertNotNull("fn should be set", _cm2.getFn());
 			assertEquals("jobTitle should be set correctly", "MY_JOBTITLE3", _cm2.getJobTitle());
 			assertEquals("lastName should be set correctly", "MY_LNAME3", _cm2.getLastName());
 			assertEquals("maidenName should be set correctly", "MY_MNAME3", _cm2.getMaidenName());
@@ -755,7 +753,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("company should be set correctly", "MY_COMPANY4", _cm3.getCompany());
 			assertEquals("department should be set correctly", "MY_DEPT4", _cm3.getDepartment());
 			assertEquals("firstName should be set correctly", "MY_FNAME4", _cm3.getFirstName());
-			assertEquals("fn should be set correctly", "MY_FN4", _cm3.getFn());
+			assertNotNull("fn should be set", _cm3.getFn());
 			assertEquals("jobTitle should be set correctly", "MY_JOBTITLE4", _cm3.getJobTitle());
 			assertEquals("lastName should be set correctly", "MY_LNAME4", _cm3.getLastName());
 			assertEquals("maidenName should be set correctly", "MY_MNAME4", _cm3.getMaidenName());
@@ -775,7 +773,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		) {
 			// create() -> _cm1
 			ContactModel _cm = new ContactModel();
-			_cm.setFn("testContactDelete");
+			_cm.setFirstName("testContactDelete");
+			_cm.setLastName("Test");
 			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
 			
@@ -808,7 +807,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		@Test
 		public void testContactDoubleDelete() {
 			ContactModel _cm = new ContactModel();
-			_cm.setFn("testContactDoubleDelete");
+			_cm.setFirstName("testContactDoubleDelete");
+			_cm.setLastName("Test");
 			
 			// create() -> _cm1
 			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
@@ -839,7 +839,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		public void testContactModifications() {
 			// create(new ContactModel()) -> _cm1
 			ContactModel _cm = new ContactModel();
-			_cm.setFn("testContactModifications");
+			_cm.setFirstName("testContactModifications");
+			_cm.setLastName("Test");
 
 			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
@@ -854,7 +855,8 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("createdBy and modifiedBy should be identical after create()", _cm1.getCreatedBy(), _cm1.getModifiedBy());
 			
 			// update(_cm1)  -> _cm2
-			_cm1.setFn("MY_NAME2");
+			_cm1.setFirstName("MY_NAME2");
+			_cm1.setLastName("Test");
 			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(_cm1);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -868,24 +870,6 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			assertThat(_cm2.getModifiedAt(), not(equalTo(_cm2.getCreatedAt())));
 			// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
 			// assertThat(_cm2.getModifiedBy(), not(equalTo(_cm2.getCreatedBy())));
-
-			// update(_cm2) with createdBy set on client side -> error
-			String _createdBy = _cm1.getCreatedBy();
-			_cm1.setCreatedBy("MYSELF");
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(_cm1);
-			assertEquals("update() should return with status BAD_REQUEST", 
-					Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-			_cm1.setCreatedBy(_createdBy);
-
-			// update(_cm1) with createdAt set on client side -> error
-			Date _d = _cm1.getCreatedAt();
-			_cm1.setCreatedAt(new Date(1000));
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(_cm1);
-			assertEquals("update() should return with status BAD_REQUEST", 
-					Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-			_cm1.setCreatedAt(_d);
 
 			// update(_cm1) with modifiedBy/At set on client side -> ignored by server
 			_cm1.setModifiedBy("MYSELF");
@@ -909,67 +893,48 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 		public void testFn() {
 			// test 1:   create
 			// _cm1: fn=null, firstName="FirstName", lastName=null -> fn="FirstName"
-			Response _response = createContact(null, "FirstName", null);
+			Response _response = createContact("FirstName", null);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
-			assertEquals("create() should set a valid fn", "FirstName", _cm1.getFn());
+			assertNotNull("create() should set a valid fn", _cm1.getFn());
 			assertEquals("create() should not change the firstName", "FirstName", _cm1.getFirstName());
 			assertNull("create() should not change the lastName", _cm1.getLastName());
 
 			// _cm2: fn=null, firstName=null, lastName="LastName" -> fn="LastName"
-			_response = createContact(null, null, "LastName");
+			_response = createContact(null, "LastName");
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm2 = _response.readEntity(ContactModel.class);
-			assertEquals("create() should set a valid fn", "LastName", _cm2.getFn());
+			assertNotNull("create() should set a valid fn", _cm2.getFn());
 			assertNull("create() should not change the firstName", _cm2.getFirstName());
 			assertEquals("create() should not change the lastName", "LastName", _cm2.getLastName());
 
 			 // _cm3: fn=null, firstName="FirstName", lastName="LastName" -> fn="FirstName LastName"
-			_response = createContact(null, "FirstName", "LastName");
+			_response = createContact("FirstName", "LastName");
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm3 = _response.readEntity(ContactModel.class);
-			assertEquals("create() should set a valid fn", "FirstName LastName", _cm3.getFn());
+			assertNotNull("create() should set a valid fn", _cm3.getFn());
 			assertEquals("create() should not change the firstName", "FirstName", _cm3.getFirstName());
 			assertEquals("create() should not change the lastName", "LastName", _cm3.getLastName());
 			
 			// fn=null, firstName=null, lastName=null -> BAD_REQUEST 
-			_response = createContact(null, null, null);
-			assertEquals("create() should return with status BAD_REQUEST", 
-					Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-			
-			// _cm4: fn="FN", firstName=null, lastName=null -> fn="FN"
-			_response = createContact("FN", null, null);
-			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			ContactModel _cm4 = _response.readEntity(ContactModel.class);
-			assertEquals("create() should set a valid fn", "FN", _cm4.getFn());
-			assertNull("create() should not change the firstName", _cm4.getFirstName());
-			assertNull("create() should not change the lastName", _cm4.getLastName());
-			
+			_response = createContact(null, null);
+			assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+						
 			// _cm5: fn="FN", firstName="FirstName", lastName="LastName" -> fn="FN"
-			_response = createContact("FN", "FirstName", "LastName");
+			_response = createContact("FirstName", "LastName");
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm5 = _response.readEntity(ContactModel.class);
-			assertEquals("create() should not change a valid fn", "FN", _cm5.getFn());
+			assertNotNull("create() should not change a valid fn", _cm5.getFn());
 			assertEquals("create() should not change the firstName", "FirstName", _cm5.getFirstName());
 			assertEquals("create() should not change the lastName", "LastName", _cm5.getLastName());
 			
-			// test 2:  update fn on each contact -> should not change firstName and lastName
-			_cm5.setFn("FN2");
+			// test 3:  update on firstName -> should not change fn and lastName
+			_cm5.setFirstName("FirstName2");
 			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm5.getId()).put(_cm5);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			ContactModel _cm6 = _response.readEntity(ContactModel.class);
-			assertEquals("create() should change the fn", "FN2", _cm6.getFn());
-			assertEquals("create() should not change the firstName", "FirstName", _cm6.getFirstName());
-			assertEquals("create() should not change the lastName", "LastName", _cm6.getLastName());
-			
-			// test 3:  update on firstName -> should not change fn and lastName
-			_cm6.setFirstName("FirstName2");
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm6.getId()).put(_cm6);
-			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm7 = _response.readEntity(ContactModel.class);
-			assertEquals("create() should not change the fn", "FN2", _cm7.getFn());
+			assertNotNull("create() should not change the fn", _cm7.getFn());
 			assertEquals("create() should  change the firstName", "FirstName2", _cm7.getFirstName());
 			assertEquals("create() should not change the lastName", "LastName", _cm7.getLastName());
 			
@@ -979,7 +944,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm7.getId()).put(_cm7);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm8 = _response.readEntity(ContactModel.class);
-			assertEquals("create() should not change the fn", "FN2", _cm8.getFn());
+			assertNotNull("create() should not change the fn", _cm8.getFn());
 			assertEquals("create() should not change the firstName", "FirstName2", _cm8.getFirstName());
 			assertEquals("create() should change the lastName", "LastName2", _cm8.getLastName());
 			
@@ -992,7 +957,7 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 
 			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();		
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		}		
+		}
 
 		/********************************** helper methods *********************************/			
 		private ContactModel setDefaultValues(ContactModel cm, Date bdate, String suffix) {
@@ -1000,7 +965,6 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			cm.setCompany("MY_COMPANY" + suffix);
 			cm.setDepartment("MY_DEPT" + suffix);
 			cm.setFirstName("MY_FNAME" + suffix);
-			cm.setFn("MY_FN" + suffix);
 			cm.setJobTitle("MY_JOBTITLE" + suffix);
 			cm.setLastName("MY_LNAME" + suffix);
 			cm.setMaidenName("MY_MNAME" + suffix);
@@ -1013,12 +977,10 @@ public class ContactTest extends AbstractTestClient<AddressbooksService> {
 			return cm;
 		}
 		
-		private Response createContact(String fn, String fName, String lName) {
+		private Response createContact(String fName, String lName) {
 			ContactModel _cm = new ContactModel();
-			_cm.setFn(fn);
 			_cm.setFirstName(fName);
 			_cm.setLastName(lName);
-			return webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT)
-					.post(_cm);
+			return webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 		}
 }
