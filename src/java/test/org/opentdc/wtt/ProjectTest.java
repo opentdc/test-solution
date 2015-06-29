@@ -547,27 +547,9 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertEquals("update() should not change createdBy", _pm1.getCreatedBy(), _pm2.getCreatedBy());
 		
 		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
-		assertThat(_pm2.getModifiedAt(), not(equalTo(_pm2.getCreatedAt())));
+		assertTrue(_pm2.getModifiedAt().compareTo(_pm2.getCreatedAt()) >= 0);
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
 		// assertThat(_pm2.getModifiedBy(), not(equalTo(_pm2.getCreatedBy())));
-
-		// update(_pm1) with createdBy set on client side -> error
-		String _createdBy = _pm1.getCreatedBy();
-		_pm1.setCreatedBy("MYSELF");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_pm1.setCreatedBy(_createdBy);
-
-		// update(_pm1) with createdAt set on client side -> error
-		Date _d = _pm1.getCreatedAt();
-		_pm1.setCreatedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_pm1.setCreatedAt(_d);
 
 		// update(_pm1) with modifiedBy/At set on client side -> ignored by server
 		_pm1.setModifiedBy("MYSELF");
