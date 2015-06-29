@@ -304,7 +304,7 @@ public class ResourcesTest extends AbstractTestClient<ResourcesService> {
 		}
 		
 		// list(/) -> _remoteList
-		_response = webclient.replacePath("/").get();
+		_response = webclient.replacePath("/").query("size", Integer.toString(Integer.MAX_VALUE)).get();
 		List<ResourceModel> _remoteList = new ArrayList<ResourceModel>(webclient.getCollection(ResourceModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
@@ -606,24 +606,6 @@ public class ResourcesTest extends AbstractTestClient<ResourcesService> {
 		assertThat(_rm2.getModifiedAt(), not(equalTo(_rm2.getCreatedAt())));
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
 		// assertThat(_rm2.getModifiedBy(), not(equalTo(_rm2.getCreatedBy())));
-
-		// update(_rm1) with createdBy set on client side -> error
-		String _createdBy = _rm1.getCreatedBy();
-		_rm1.setCreatedBy("MYSELF");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_rm1.setCreatedBy(_createdBy);
-
-		// update(_rm1) with createdAt set on client side -> error
-		Date _d = _rm1.getCreatedAt();
-		_rm1.setCreatedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_rm1.setCreatedAt(_d);
 
 		// update(_rm1) with modifiedBy/At set on client side -> ignored by server
 		_rm1.setModifiedBy("MYSELF");
