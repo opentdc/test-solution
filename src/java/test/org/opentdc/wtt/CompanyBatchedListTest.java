@@ -56,13 +56,13 @@ public class CompanyBatchedListTest extends AbstractTestClient {
 	public void initializeTests() {
 		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		adb = AddressbookTest.createAddressbook(addressbookWC, "CompanyTest");
-		org = OrgTest.createOrg(addressbookWC, adb.getId(), "CompanyTest", OrgType.CLUB);
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		org = OrgTest.createOrg(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
 	}
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), "CompanyTest");
+		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
 		wttWC.close();
 	}
 

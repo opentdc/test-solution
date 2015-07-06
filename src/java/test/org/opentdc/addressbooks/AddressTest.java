@@ -56,13 +56,13 @@ public class AddressTest extends AbstractTestClient {
 	@Before
 	public void initializeTests() {
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		adb = AddressbookTest.createAddressbook(addressbookWC, "AddressTest");
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		contact = ContactTest.createContact(addressbookWC, adb.getId(), "Address", "Test");
 	}
 	
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), "AddressTest");
+		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
 	}
 	
 	/********************************** address attributes tests *********************************/			

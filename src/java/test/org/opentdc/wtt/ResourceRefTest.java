@@ -41,11 +41,9 @@ import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
-import org.opentdc.resources.ResourcesService;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
 import org.opentdc.wtt.ResourceRefModel;
-import org.opentdc.wtt.WttService;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
@@ -65,22 +63,22 @@ public class ResourceRefTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTest() {
-		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
-		resourceWC = initializeTest(ResourcesTest.API_URL, ResourcesService.class);
+		wttWC = CompanyTest.createWttWebClient();
+		resourceWC = ResourcesTest.createResourcesWebClient();
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, "ResourceRefTest");
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "ResourceRefTest", "MY_DESC");
-		parentProject = ProjectTest.createProject(wttWC, company.getId(), "ResourceRefTest", "MY_DESC");
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
+		parentProject = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
 		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
 		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
-				"ResourceRefTest", "FNAME", "LNAME", addressbook.getId(), contact.getId());
+				this.getClass().getName(), "FNAME", "LNAME", addressbook.getId(), contact.getId());
 	}
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "ResourceRefTest");
-		ResourcesTest.cleanup(resourceWC, resource.getId(), "ResourceRefTest");
-		CompanyTest.cleanup(wttWC, company.getId(), "ResourceRefTest");
+		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
 	}
 	
 	/********************************** resourceRef attribute tests *********************************/

@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
-import org.opentdc.resources.ResourcesService;
 import org.opentdc.wtt.*;
 
 import test.org.opentdc.AbstractTestClient;
@@ -31,21 +30,21 @@ public class ProjectTreeTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
-		resourceWC = initializeTest(ResourcesTest.API_URL, ResourcesService.class);
+		wttWC = CompanyTest.createWttWebClient();
+		resourceWC = ResourcesTest.createResourcesWebClient();
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, "ProjectTreeTest");
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "ProjectTreeTest", "MY_DESC");
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
 		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
-				"ProjectTreeTest", "FNAME", "LNAME", addressbook.getId(), contact.getId());
+				this.getClass().getName(), "FNAME", "LNAME", addressbook.getId(), contact.getId());
 	}
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "ProjectTreeTest");
-		ResourcesTest.cleanup(resourceWC, resource.getId(), "ProjectTreeTest");
-		CompanyTest.cleanup(wttWC, company.getId(), "ProjectTreeTest");
+		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
 	}
 	
 	private ProjectModel createProject(String title) {

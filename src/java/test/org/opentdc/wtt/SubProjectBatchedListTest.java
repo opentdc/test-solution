@@ -37,7 +37,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
-import org.opentdc.wtt.WttService;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.service.GenericService;
 
@@ -53,17 +52,17 @@ public class SubProjectBatchedListTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTest() {
-		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
+		wttWC = CompanyTest.createWttWebClient();
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, "SubProjectBatchedListTest");
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "SubProjectBatchedListTest", "MY_DESC");
-		parentProject = ProjectTest.createProject(wttWC, company.getId(), "SubProjectBatchedListTest", "MY_DESC");
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
+		parentProject = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
 	}
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "SubProjectBatchedListTest");
-		CompanyTest.cleanup(wttWC, company.getId(), "SubProjectBatchedListTest");
+		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
 	}
 	
 	@Test

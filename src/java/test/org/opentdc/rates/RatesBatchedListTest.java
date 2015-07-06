@@ -36,7 +36,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.rates.RatesModel;
-import org.opentdc.rates.RatesService;
 import org.opentdc.service.GenericService;
 
 import test.org.opentdc.AbstractTestClient;
@@ -46,7 +45,7 @@ public class RatesBatchedListTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		rateWC = initializeTest(RatesTest.API_URL, RatesService.class);
+		rateWC = RatesTest.createRatesWebClient();
 	}
 
 	@After

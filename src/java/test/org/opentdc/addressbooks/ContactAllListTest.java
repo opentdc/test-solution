@@ -56,10 +56,10 @@ public class ContactAllListTest extends AbstractTestClient {
 		addressbooks = new ArrayList<AddressbookModel>();
 		AddressbookModel _abm = null;
 		for (int i = 0; i < nrAddressbooks; i++) {
-			_abm = createAddressbook("ContactAllListTest" + i);
+			_abm = createAddressbook(this.getClass().getName() + i);
 			addressbooks.add(_abm);
 			for (int j = 0; j < nrContacts; j++) {
-				createContact(_abm.getId(), "addressbook" + i + "_contact" + j, "Test");
+				createContact(_abm.getId(), "addressbook" + i + "_contact" + j, this.getClass().getName());
 			}
 		}
 	}

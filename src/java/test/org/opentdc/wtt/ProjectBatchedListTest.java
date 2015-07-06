@@ -54,14 +54,14 @@ public class ProjectBatchedListTest extends AbstractTestClient {
 	public void initializeTests() {
 		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, "ProjectBatchedListTest");
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "ProjectBatchedListTest", "MY_DESC");
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 	}
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "ProjectBatchedListTest");
-		wttWC.close();
+		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
 	}
 
 	@Test

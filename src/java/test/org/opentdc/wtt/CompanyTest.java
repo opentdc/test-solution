@@ -60,13 +60,13 @@ public class CompanyTest extends AbstractTestClient {
 	public void initializeTests() {
 		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		adb = AddressbookTest.createAddressbook(addressbookWC, "CompanyTest");
-		org = OrgTest.createOrg(addressbookWC, adb.getId(), "CompanyTest", OrgType.CLUB);
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		org = OrgTest.createOrg(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
 	}
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), "CompanyTest");
+		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
 		wttWC.close();
 	}
 
@@ -591,6 +591,10 @@ public class CompanyTest extends AbstractTestClient {
 	}
 	
 	/********************************* helper methods *********************************/	
+	public static WebClient createWttWebClient() {
+		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), WttService.class);
+	}
+	
 	public static CompanyModel createCompany(
 			WebClient wttWC, 
 			WebClient addressbookWC,
@@ -610,8 +614,18 @@ public class CompanyTest extends AbstractTestClient {
 			WebClient wttWC,
 			String companyId,
 			String testName) {
+		cleanup(wttWC, companyId, testName, true);
+	}
+	
+	public static void cleanup(
+			WebClient wttWC,
+			String companyId,
+			String testName,
+			boolean closeWC) {
 		wttWC.replacePath("/").path(companyId).delete();
 		System.out.println(testName + " deleted company <" + companyId + ">.");
-		wttWC.close();
+		if (closeWC) {
+			wttWC.close();
+		}
 	}	
 }

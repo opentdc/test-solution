@@ -36,7 +36,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
-import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.service.GenericService;
 
 import test.org.opentdc.AbstractTestClient;
@@ -47,7 +46,7 @@ public class AddressbookBatchedListTest extends AbstractTestClient {
 	@Before
 	public void initializeTests(
 	) {
-		addressbookWC = initializeTest(AddressbookTest.API_URL, AddressbooksService.class);
+		addressbookWC = AddressbookTest.createAddressbookWebClient();
 	}
 
 	@After

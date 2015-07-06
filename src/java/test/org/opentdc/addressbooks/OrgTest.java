@@ -52,12 +52,12 @@ public class OrgTest extends AbstractTestClient {
 		@Before
 		public void initializeTests() {
 			addressbookWC = AddressbookTest.createAddressbookWebClient();
-			adb = AddressbookTest.createAddressbook(addressbookWC, "OrgTest");
+			adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		}
 		
 		@After
 		public void cleanupTest() {
-			AddressbookTest.cleanup(addressbookWC, adb.getId(), "OrgTest");
+			AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
 		}
 
 		/********************************** org attribute tests *********************************/	

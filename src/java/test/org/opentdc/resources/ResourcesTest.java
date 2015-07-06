@@ -59,13 +59,13 @@ public class ResourcesTest extends AbstractTestClient {
 	public void initializeTests() {
 		resourceWC = initializeTest(API_URL, ResourcesService.class);
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		adb = AddressbookTest.createAddressbook(addressbookWC, "ResourcesTest");
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		contact = ContactTest.createContact(addressbookWC, adb.getId(), "FNAME", "LNAME");
 	}
 	
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), "ResourcesTest");
+		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
 		resourceWC.close();
 	}
 	
@@ -645,6 +645,10 @@ public class ResourcesTest extends AbstractTestClient {
 	}
 	
 	/********************************* helper methods *********************************/	
+	public static WebClient createResourcesWebClient() {
+		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), ResourcesService.class);
+	}
+	
 	public ResourceModel createResource(
 			String name, 
 			int suffix) {
@@ -669,13 +673,23 @@ public class ResourcesTest extends AbstractTestClient {
 		Response _response = resourceWC.replacePath("/").post(_rm);
 		return _response.readEntity(ResourceModel.class);
 	}
-	
+
 	public static void cleanup(
 			WebClient resourceWC,
 			String resourceId,
 			String testName) {
+		cleanup(resourceWC, resourceId, testName, true);
+	}
+
+	public static void cleanup(
+			WebClient resourceWC,
+			String resourceId,
+			String testName,
+			boolean closeWC) {
 		resourceWC.replacePath("/").path(resourceId).delete();		
 		System.out.println(testName + " deleted resource <" + resourceId + ">.");
-		resourceWC.close();
+		if (closeWC) {
+			resourceWC.close();
+		}
 	}	
 }

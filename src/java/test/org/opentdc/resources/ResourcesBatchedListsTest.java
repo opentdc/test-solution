@@ -38,7 +38,6 @@ import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
-import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.GenericService;
 
 import test.org.opentdc.AbstractTestClient;
@@ -52,14 +51,14 @@ public class ResourcesBatchedListsTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		resourceWC = initializeTest(ResourcesTest.API_URL, ResourcesService.class);
+		resourceWC = ResourcesTest.createResourcesWebClient();
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		adb = AddressbookTest.createAddressbook(addressbookWC, "ResourcesBatchedListsTest");
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 	}
 	
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), "ResourcesBatchedListsTest");
+		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
 		resourceWC.close();
 	}
 

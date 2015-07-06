@@ -640,4 +640,44 @@ public class RatesTest extends AbstractTestClient {
 		System.out.println("deleted RatesModel " + _rm1.getId());
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
+	
+	/********************************* helper methods *********************************/	
+	public static WebClient createRatesWebClient() {
+		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), RatesService.class);
+	}
+	
+	public static RatesModel createRate(
+			WebClient rateWC, 
+			String title, 
+			int rate,
+			Currency currency,
+			String description) 
+	{
+		RatesModel _rm = new RatesModel();
+		_rm.setTitle(title);
+		_rm.setRate(rate);
+		_rm.setCurrency(currency);
+		_rm.setDescription(description);
+		Response _response = rateWC.replacePath("/").post(_rm);
+		return _response.readEntity(RatesModel.class);
+	}
+	
+	public static void cleanup(
+			WebClient rateWC,
+			String rateId,
+			String testName) {
+		cleanup(rateWC, rateId, testName, true);
+	}
+		
+	public static void cleanup(
+			WebClient rateWC,
+			String rateId,
+			String testName,
+			boolean closeWC) {
+		rateWC.replacePath("/").path(rateId).delete();
+		System.out.println(testName + " deleted rate <" + rateId + ">.");
+		if (closeWC) {
+			rateWC.close();
+		}
+	}	
 }

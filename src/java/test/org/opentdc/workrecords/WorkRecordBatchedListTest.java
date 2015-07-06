@@ -37,21 +37,59 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.workrecords.WorkRecordModel;
-import org.opentdc.workrecords.WorkRecordsService;
+import org.opentdc.wtt.CompanyModel;
+import org.opentdc.wtt.ProjectModel;
+import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.rates.Currency;
+import org.opentdc.rates.RatesModel;
+import org.opentdc.resources.ResourceModel;
 import org.opentdc.service.GenericService;
 
 import test.org.opentdc.AbstractTestClient;
+import test.org.opentdc.addressbooks.AddressbookTest;
+import test.org.opentdc.addressbooks.ContactTest;
+import test.org.opentdc.rates.RatesTest;
+import test.org.opentdc.resources.ResourcesTest;
+import test.org.opentdc.wtt.CompanyTest;
+import test.org.opentdc.wtt.ProjectTest;
 
 public class WorkRecordBatchedListTest extends AbstractTestClient {
 	private WebClient workRecordWC = null;
+	private WebClient wttWC = null;
+	private WebClient addressbookWC = null;
+	private WebClient resourceWC = null;
+	private WebClient rateWC = null;
+	private CompanyModel company = null;
+	private ProjectModel project = null;
+	private AddressbookModel addressbook = null;
+	private ResourceModel resource = null;
+	private RatesModel rate = null;
+	private ContactModel contact = null;
 
 	@Before
 	public void initializeTests() {
-		workRecordWC = initializeTest(WorkRecordsTest.API_URL, WorkRecordsService.class);
+		workRecordWC = WorkRecordsTest.createWorkRecordsWebClient();
+		wttWC = CompanyTest.createWttWebClient();
+		resourceWC = ResourcesTest.createResourcesWebClient();
+		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		rateWC = RatesTest.createRatesWebClient();
+
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
+		project = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
+		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
+		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
+				this.getClass().getName(), "FNAME", "LNAME", addressbook.getId(), contact.getId());
+		rate = RatesTest.createRate(rateWC, this.getClass().getName(), 100, Currency.CHF, "MY_DESC");
 	}
 
 	@After
 	public void cleanupTest() {
+		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
+		RatesTest.cleanup(rateWC, rate.getId(), this.getClass().getName());
 		workRecordWC.close();
 	}
 
@@ -69,7 +107,8 @@ public class WorkRecordBatchedListTest extends AbstractTestClient {
 		Date _d = new Date();
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_res = WorkRecordsTest.createWorkRecord(i, _d, i, 10 * i, true);
+			_res = WorkRecordsTest.createWorkRecord(
+					company.getId(), project.getId(), resource.getId(), rate.getId(), i, _d, i, 10 * i, true);
 			_res.setComment(String.format("%2d", i));
 			_response = workRecordWC.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
