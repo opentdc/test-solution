@@ -40,10 +40,15 @@ import org.opentdc.wtt.ProjectModel;
 import org.opentdc.wtt.ResourceRefModel;
 import org.opentdc.wtt.WttService;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.resources.ResourceModel;
+import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.GenericService;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
+import test.org.opentdc.addressbooks.ContactTest;
+import test.org.opentdc.resources.ResourcesTest;
 
 public class ResourceRefBatchedListTest extends AbstractTestClient {
 	private WebClient wttWC = null;
@@ -51,46 +56,45 @@ public class ResourceRefBatchedListTest extends AbstractTestClient {
 	private CompanyModel company = null;
 	private ProjectModel parentProject = null;
 	private AddressbookModel addressbook = null;
+	private WebClient resourceWC = null;
+	private ResourceModel resource = null;
+	private ContactModel contact = null;
 
 	@Before
 	public void initializeTest() {
 		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		resourceWC = initializeTest(ResourcesTest.API_URL, ResourcesService.class);
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, "ResourceRefBatchedListTest");
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "ResourceRefBatchedListTest", "MY_DESC");
 		parentProject = ProjectTest.createProject(wttWC, company.getId(), "ResourceRefBatchedListTest", "MY_DESC");
+		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
+		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
+				"ResourceRefTest", "FNAME", "LNAME", addressbook.getId(), contact.getId());
 	}
 
 	@After
 	public void cleanupTest() {
 		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "ResourceRefBatchedListTest");
+		ResourcesTest.cleanup(resourceWC, resource.getId(), "ResourceRefTest");
 		CompanyTest.cleanup(wttWC, company.getId(), "ResourceRefBatchedListTest");
 	}
 
 	@Test
 	public void testResourceRefBatchedList() {
 		ArrayList<ResourceRefModel> _localList = new ArrayList<ResourceRefModel>();		
-		Response _response = null;
-		System.out.println("***** testResourceRefBatchedList:");
-		wttWC.replacePath("/").path(company.getId()).
-			path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
-			path(ResourceRefTest.PATH_EL_RESOURCE);
+		System.out.println("***** testResourceRefBatchedList:");		
 		// we want to allocate more than double the amount of default list size objects
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		ResourceRefModel _res = null;
+		ResourceRefModel _resourceRefModel = null;
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_res = new ResourceRefModel();
-			_res.setResourceId(String.format("%2d", i));
-			_res.setResourceId("RID" + i);
-			_res.setFirstName("MY_FNAME" + i);
-			_res.setLastName("MY_LNAME" + i);
-			_response = wttWC.post(_res);
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(ResourceRefModel.class));
-			System.out.println("posted ResourceRefModel " + _res.getResourceId());
+			_resourceRefModel = ResourceRefTest.createResourceRef(
+					wttWC, company.getId(), parentProject.getId(), resource.getId());
+			_localList.add(_resourceRefModel);
+			System.out.println("posted ResourceRefModel " + _resourceRefModel.getResourceId());
 		}
 		System.out.println("****** locallist:");
 		for (ResourceRefModel _rm : _localList) {
@@ -100,7 +104,7 @@ public class ResourceRefBatchedListTest extends AbstractTestClient {
 		// get first batch
 		// list(position=0, size=25) -> elements 0 .. 24
 		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(ResourceRefTest.PATH_EL_RESOURCE).get();
 		List<ResourceRefModel> _remoteList1 = new ArrayList<ResourceRefModel>(wttWC.getCollection(ResourceRefModel.class));

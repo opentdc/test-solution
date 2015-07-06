@@ -637,4 +637,22 @@ public class SubProjectTest  extends AbstractTestClient {
 				path(ProjectTest.PATH_EL_PROJECT).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
+	
+	/********************************* helper methods *********************************/	
+	public static ProjectModel createSubProject(
+			WebClient wttWC, 
+			String companyId,
+			String parentProjectId,
+			String title, 
+			String description) 
+	{
+		ProjectModel _pm = new ProjectModel();
+		_pm.setTitle(title);
+		_pm.setDescription(description);
+		Response _response = wttWC.replacePath("/").path(companyId).
+				path(ProjectTest.PATH_EL_PROJECT).path(parentProjectId).
+				path(ProjectTest.PATH_EL_PROJECT).post(_pm);
+		assertEquals("post() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		return _response.readEntity(ProjectModel.class);
+	}
 }

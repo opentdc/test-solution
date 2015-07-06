@@ -645,8 +645,37 @@ public class ResourcesTest extends AbstractTestClient {
 	}
 	
 	/********************************* helper methods *********************************/	
-	public ResourceModel createResource(String name, int suffix) {
+	public ResourceModel createResource(
+			String name, 
+			int suffix) {
 		ContactModel _cm = ContactTest.createContact(addressbookWC, adb.getId(), "MY_FNAME" + suffix, "MY_LNAME" + suffix);
 		return new ResourceModel(name + suffix, _cm.getFirstName(), _cm.getLastName(), _cm.getId());
+	}	
+	
+	public static ResourceModel createResource(
+			WebClient resourceWC, 
+			WebClient addressbookWC, 
+			String name, 
+			String fName, 
+			String lName, 
+			String aid, 
+			String contactId) {
+		ContactModel _cm = ContactTest.createContact(addressbookWC, aid, fName, lName);
+		ResourceModel _rm = new ResourceModel();
+		_rm.setName(name);
+		_rm.setFirstName(fName);
+		_rm.setLastName(lName);
+		_rm.setContactId(_cm.getId());
+		Response _response = resourceWC.replacePath("/").post(_rm);
+		return _response.readEntity(ResourceModel.class);
+	}
+	
+	public static void cleanup(
+			WebClient resourceWC,
+			String resourceId,
+			String testName) {
+		resourceWC.replacePath("/").path(resourceId).delete();		
+		System.out.println(testName + " deleted resource <" + resourceId + ">.");
+		resourceWC.close();
 	}	
 }

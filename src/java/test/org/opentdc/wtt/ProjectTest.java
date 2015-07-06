@@ -574,6 +574,7 @@ public class ProjectTest extends AbstractTestClient {
 		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
+	
 	/********************************* helper methods *********************************/	
 	public static ProjectModel createProject(
 			WebClient wttWC, 
@@ -585,6 +586,7 @@ public class ProjectTest extends AbstractTestClient {
 		_pm.setTitle(title);
 		_pm.setDescription(description);
 		Response _response = wttWC.replacePath("/").path(companyId).path(PATH_EL_PROJECT).post(_pm);
+		assertEquals("post() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		return _response.readEntity(ProjectModel.class);
 	}
 }

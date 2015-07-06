@@ -7,10 +7,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.resources.ResourceModel;
+import org.opentdc.resources.ResourcesService;
 import org.opentdc.wtt.*;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
+import test.org.opentdc.addressbooks.ContactTest;
+import test.org.opentdc.resources.ResourcesTest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -20,77 +25,73 @@ public class ProjectTreeTest extends AbstractTestClient {
 	private WebClient addressbookWC = null;
 	private CompanyModel company = null;
 	private AddressbookModel addressbook = null;
+	private WebClient resourceWC = null;
+	private ResourceModel resource = null;
+	private ContactModel contact = null;
 
 	@Before
 	public void initializeTests() {
 		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
+		resourceWC = initializeTest(ResourcesTest.API_URL, ResourcesService.class);
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, "ProjectTreeTest");
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "ProjectTreeTest", "MY_DESC");
+		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
+		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
+				"ProjectTreeTest", "FNAME", "LNAME", addressbook.getId(), contact.getId());
 	}
 
 	@After
 	public void cleanupTest() {
 		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "ProjectTreeTest");
-		wttWC.close();
+		ResourcesTest.cleanup(resourceWC, resource.getId(), "ProjectTreeTest");
+		CompanyTest.cleanup(wttWC, company.getId(), "ProjectTreeTest");
 	}
 	
 	private ProjectModel createProject(String title) {
-		Response _response = wttWC.replacePath("/").path(company.getId()).
-				path(ProjectTest.PATH_EL_PROJECT).post(new ProjectModel(title, "MY_DESC"));
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		return _response.readEntity(ProjectModel.class);
+		return ProjectTest.createProject(wttWC, company.getId(), title, "MY_DESC");
+	}
+
+	private ProjectModel createSubProject(String parentProjectId, String title) {
+		return SubProjectTest.createSubProject(wttWC, company.getId(), parentProjectId, title, "MY_DESC");
 	}
 	
-	private ProjectModel createSubProject(String pid, String title) {
-		Response _response = wttWC.replacePath("/").path(company.getId()).
-				path(ProjectTest.PATH_EL_PROJECT).path(pid).
-				path(ProjectTest.PATH_EL_PROJECT).post(new ProjectModel(title, "MY_DESC"));
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		return _response.readEntity(ProjectModel.class);	
+	private void createResourceRef(String projectId) {
+		ResourceRefTest.createResourceRef(wttWC, company.getId(), projectId, resource.getId());
 	}
-	
-	private ResourceRefModel createResource(String pid) {
-		Response _response = wttWC.replacePath("/").path(company.getId()).
-				path(ProjectTest.PATH_EL_PROJECT).path(pid).
-				path(ResourceRefTest.PATH_EL_RESOURCE)
-				.post(ResourceRefTest.createResourceRef("createResource", 1));
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		return _response.readEntity(ResourceRefModel.class);	
-	}
-	
+		
 	@Test
 	public void testTree() {
 		// generate a tree:   1 company - 2 projects with each 3 subprojects and 3 resources
 		// generate 2 top level projects -> _p1, _p2,  each with 3 resources
 		ProjectModel _p1 = createProject("p1");
-		createResource(_p1.getId());
-		createResource(_p1.getId());
-		createResource(_p1.getId());
+		createResourceRef(_p1.getId());
+		createResourceRef(_p1.getId());
+		createResourceRef(_p1.getId());
 		ProjectModel _p2 = createProject("p2");
-		createResource(_p2.getId());
-		createResource(_p2.getId());
-		createResource(_p2.getId());
+		createResourceRef(_p2.getId());
+		createResourceRef(_p2.getId());
+		createResourceRef(_p2.getId());
 		
 		// generate 3 subprojects on _p1 -> _p1p1, _p1p2, _p1p3, each with 1 resource
 		ProjectModel _p1p1 = createSubProject(_p1.getId(), "p1p1");
-		createResource(_p1p1.getId());
+		createResourceRef(_p1p1.getId());
 		createSubProject(_p1p1.getId(), "p1p1p1");
 		ProjectModel _p1p2 = createSubProject(_p1.getId(), "p1p2");
-		createResource(_p1p2.getId());
+		createResourceRef(_p1p2.getId());
 		ProjectModel _p1p3 = createSubProject(_p1.getId(), "p1p3");
-		createResource(_p1p3.getId());
+		createResourceRef(_p1p3.getId());
 
 		// generate 3 subprojects on _p2 -> _p2p1, _p2p2, _p2p3, each with 2 resources
 		ProjectModel _p2p1 = createSubProject(_p2.getId(), "p2p1");
-		createResource(_p2p1.getId());
-		createResource(_p2p1.getId());
+		createResourceRef(_p2p1.getId());
+		createResourceRef(_p2p1.getId());
 		ProjectModel _p2p2 = createSubProject(_p2.getId(), "p2p2");
-		createResource(_p2p2.getId());
-		createResource(_p2p2.getId());
+		createResourceRef(_p2p2.getId());
+		createResourceRef(_p2p2.getId());
 		ProjectModel _p2p3 = createSubProject(_p2.getId(), "p2p3");
-		createResource(_p2p3.getId());
-		createResource(_p2p3.getId());
+		createResourceRef(_p2p3.getId());
+		createResourceRef(_p2p3.getId());
 				
 		// get the tree
 		Response _response = wttWC.replacePath("/").path(company.getId()).path("astree").get();
@@ -124,7 +125,7 @@ public class ProjectTreeTest extends AbstractTestClient {
 		}
 		
 		
-		// TODO: test resources
+		// TODO: test resourceRefs
 		
 	}
 

@@ -39,6 +39,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.resources.ResourceModel;
+import org.opentdc.resources.ResourcesService;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
 import org.opentdc.wtt.ResourceRefModel;
@@ -46,27 +49,37 @@ import org.opentdc.wtt.WttService;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
+import test.org.opentdc.addressbooks.ContactTest;
+import test.org.opentdc.resources.ResourcesTest;
 
 public class ResourceRefTest extends AbstractTestClient {
 	public static final String PATH_EL_RESOURCE = "resource";
 	private WebClient wttWC = null;
 	private WebClient addressbookWC = null;
+	private WebClient resourceWC = null;
 	private CompanyModel company = null;
 	private ProjectModel parentProject = null;
 	private AddressbookModel addressbook = null;
+	private ResourceModel resource = null;
+	private ContactModel contact = null;
 
 	@Before
 	public void initializeTest() {
 		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
+		resourceWC = initializeTest(ResourcesTest.API_URL, ResourcesService.class);
 		addressbookWC = AddressbookTest.createAddressbookWebClient();
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, "ResourceRefTest");
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "ResourceRefTest", "MY_DESC");
 		parentProject = ProjectTest.createProject(wttWC, company.getId(), "ResourceRefTest", "MY_DESC");
+		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
+		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
+				"ResourceRefTest", "FNAME", "LNAME", addressbook.getId(), contact.getId());
 	}
 
 	@After
 	public void cleanupTest() {
 		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "ResourceRefTest");
+		ResourcesTest.cleanup(resourceWC, resource.getId(), "ResourceRefTest");
 		CompanyTest.cleanup(wttWC, company.getId(), "ResourceRefTest");
 	}
 	
@@ -179,7 +192,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		// create(_rrm1) -> BAD_REQUEST (because of empty resourceId)
 		Response _response = wttWC.replacePath("/").post(_rrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_rrm1.setResourceId("testResourceRefCreateDeleteWithEmptyConstructor");
+		_rrm1.setResourceId(resource.getId());
 
 		// create(_rrm1) -> BAD_REQUEST (because of empty firstName)
 		_response = wttWC.replacePath("/").post(_rrm1);
@@ -200,13 +213,13 @@ public class ResourceRefTest extends AbstractTestClient {
 		
 		// validate _rrm1 (local object)
 		assertNull("id should still be null", _rrm1.getId());
-		assertEquals("resourceId should be set by constructor", "testResourceRefCreateDeleteWithEmptyConstructor", _rrm1.getResourceId());
+		assertEquals("resourceId should be set by constructor", resource.getId(), _rrm1.getResourceId());
 		assertEquals("firstname should be set by constructor", "MY_FNAME", _rrm1.getFirstName());
 		assertEquals("lastname should be set by constructor", "MY_LNAME", _rrm1.getLastName());
 		
 		// validate _rrm2 (created object)
 		assertNotNull("create() should set a valid id on the remote object returned", _rrm2.getId());		
-		assertEquals("create() should not change resourceId", "testResourceRefCreateDeleteWithEmptyConstructor", _rrm2.getResourceId());
+		assertEquals("create() should not change resourceId", resource.getId(), _rrm2.getResourceId());
 		assertEquals("create() should not change firstname", "MY_FNAME", _rrm2.getFirstName());
 		assertEquals("create() should not change lastname", "MY_LNAME", _rrm2.getLastName());
 
@@ -222,7 +235,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		// new("MY_RESID", "MY_FNAME", "MY_LNAME")  -> _rrm1
 		ResourceRefModel _rrm1 = createResourceRef("testResourceRefCreateDelete", 1);
 		assertNull("id should be null", _rrm1.getId());
-		assertEquals("resourceId should be set by constructor", "testResourceRefCreateDelete1", _rrm1.getResourceId());
+		assertEquals("resourceId should be set by constructor", resource.getId(), _rrm1.getResourceId());
 		assertEquals("firstname should be set by constructor", "MY_FNAME1", _rrm1.getFirstName());
 		assertEquals("lastname should be set by constructor", "MY_LNAME1", _rrm1.getLastName());
 		// create(_rrm1) -> _rrm2
@@ -233,12 +246,12 @@ public class ResourceRefTest extends AbstractTestClient {
 		ResourceRefModel _rrm2 = _response.readEntity(ResourceRefModel.class);
 		
 		assertNull("id should still be null", _rrm1.getId());
-		assertEquals("resourceId should be unchanged after remote create", "testResourceRefCreateDelete1", _rrm1.getResourceId());
+		assertEquals("resourceId should be unchanged after remote create", resource.getId(), _rrm1.getResourceId());
 		assertEquals("firstname should be unchanged after remote create", "MY_FNAME1", _rrm1.getFirstName());
 		assertEquals("lastname should be unchanged after remote create", "MY_LNAME1", _rrm1.getLastName());
 		
 		assertNotNull("create() should set a valid id on the remote object returned", _rrm2.getId());		
-		assertEquals("resourceId of returned object should be unchanged after remote create", "testResourceRefCreateDelete1", _rrm2.getResourceId());
+		assertEquals("resourceId of returned object should be unchanged after remote create", resource.getId(), _rrm2.getResourceId());
 		assertEquals("firstname of returned object should be unchanged after remote create", "MY_FNAME1", _rrm2.getFirstName());
 		assertEquals("lastname of returned object should be unchanged after remote create", "MY_LNAME1", _rrm2.getLastName());
 		
@@ -262,7 +275,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		// new ResourceRefModel(1) -> _rrm1
 		ResourceRefModel _rrm1 = createResourceRef("testResourceRefOnSubProject", 1);
 		assertNull("id should not be set by empty constructor", _rrm1.getId());
-		assertEquals("resourceId should be set by constructor", "testResourceRefOnSubProject1", _rrm1.getResourceId());
+		assertEquals("resourceId should be set by constructor", resource.getId(), _rrm1.getResourceId());
 		assertEquals("firstname should be set by constructor", "MY_FNAME1", _rrm1.getFirstName());
 		assertEquals("lastname should be set by constructor", "MY_LNAME1", _rrm1.getLastName());
 		
@@ -275,13 +288,13 @@ public class ResourceRefTest extends AbstractTestClient {
 		
 		// validate _rrm1 (local object)
 		assertNull("create() should not change the id of the local object", _rrm1.getId());
-		assertEquals("create() should not change the resourceId", "testResourceRefOnSubProject1", _rrm1.getResourceId());
+		assertEquals("create() should not change the resourceId", resource.getId(), _rrm1.getResourceId());
 		assertEquals("create() should not change the firstname", "MY_FNAME1", _rrm1.getFirstName());
 		assertEquals("create() should not change the lastname", "MY_LNAME1", _rrm1.getLastName());
 		
 		// validate _rrm2 (remote object returned)
 		assertNotNull("create() should set a valid id on the remote object returned", _rrm2.getId());
-		assertEquals("resourceId should not change the resourceId", "testResourceRefOnSubProject1", _rrm2.getResourceId());
+		assertEquals("resourceId should not change the resourceId", resource.getId(), _rrm2.getResourceId());
 		assertEquals("firstname should not change the firstname", "MY_FNAME1", _rrm2.getFirstName());
 		assertEquals("lastname should not change the lastname", "MY_LNAME1", _rrm2.getLastName());
 		
@@ -385,11 +398,11 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertNotNull("ID should be set", _rrm3.getId());
 		assertNotNull("ID should be set", _rrm4.getId());
 		assertThat(_rrm4.getId(), not(equalTo(_rrm3.getId())));
-		assertEquals("resourceId should be set correctly", "testResourceRefCreate1", _rrm3.getResourceId());
+		assertEquals("resourceId should be set correctly", resource.getId(), _rrm3.getResourceId());
 		assertEquals("firstname should be set correctly", "MY_FNAME1", _rrm3.getFirstName());
 		assertEquals("lastname should be set correctly", "MY_LNAME1", _rrm3.getLastName());
 		
-		assertEquals("resourceId should be set correctly", "testResourceRefCreate2", _rrm4.getResourceId());
+		assertEquals("resourceId should be set correctly", resource.getId(), _rrm4.getResourceId());
 		assertEquals("firstname should be set correctly", "MY_FNAME2", _rrm4.getFirstName());
 		assertEquals("lastname should be set correctly", "MY_LNAME2", _rrm4.getLastName());
 
@@ -415,7 +428,7 @@ public class ResourceRefTest extends AbstractTestClient {
 				path(PATH_EL_RESOURCE).post(createResourceRef("testResourceRefDoubleCreate", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceRefModel _rrm = _response.readEntity(ResourceRefModel.class);
-		assertEquals("ID should be unchanged", "testResourceRefDoubleCreate1", _rrm.getResourceId());		
+		assertEquals("ID should be unchanged", resource.getId(), _rrm.getResourceId());		
 		
 		// create(_rrm) -> CONFLICT			// double create
 		_response = wttWC.replacePath("/").path(company.getId()).
@@ -479,7 +492,21 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 
 	/********************************* helper methods *********************************/	
-	public static ResourceRefModel createResourceRef(String id, int suffix) {
-		return new ResourceRefModel(id + suffix, "MY_FNAME" + suffix, "MY_LNAME" + suffix);
+	public ResourceRefModel createResourceRef(
+			String id, 
+			int suffix) {
+		return new ResourceRefModel(resource.getId(), "MY_FNAME" + suffix, "MY_LNAME" + suffix);
+	}
+		
+	public static ResourceRefModel createResourceRef(
+				WebClient wttWC,
+				String companyId,
+				String projectId,
+				String resourceId) {
+		Response _response = wttWC.replacePath("/").path(companyId).
+				path(ProjectTest.PATH_EL_PROJECT).path(projectId).
+				path(PATH_EL_RESOURCE).post(new ResourceRefModel(resourceId, "MY_FNAME", "MY_LNAME"));
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		return _response.readEntity(ResourceRefModel.class);	
 	}
 }
