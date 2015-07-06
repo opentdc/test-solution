@@ -35,6 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.workrecords.WorkRecordModel;
@@ -42,18 +44,22 @@ import org.opentdc.workrecords.WorkRecordsService;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
-
-	private static final String API = "api/workrecord/";
+public class WorkRecordsTest extends AbstractTestClient {
+	public static final String API_URL = "api/workrecord/";
 	private Date date;
+	private WebClient workRecordWC = null;
 
 	@Before
-	public void initializeTests(
-	) {
-		initializeTest(API, WorkRecordsService.class);
+	public void initializeTests() {
+		workRecordWC = initializeTest(API_URL, WorkRecordsService.class);
 		date = new Date();
 	}
 	
+	@After
+	public void cleanupTest() {
+		workRecordWC.close();
+	}
+
 	/********************************** workrecord attributes tests *********************************/	
 	@Test
 	public void testWorkRecordModelEmptyConstructor() {
@@ -253,38 +259,38 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable should be set on default initial value", true, _wrm1.isBillable());
 		
 		// create(_wrm1) -> BAD_REQUEST (because of empty companyId)
-		Response _response = webclient.replacePath("/").post(_wrm1);
+		Response _response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
 		// create(_wrm1).setCompanyId("CID") -> BAD_REQUEST (because of empty companyTitle)
 		_wrm1.setCompanyId("CID");
-		_response = webclient.replacePath("/").post(_wrm1);
+		_response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
 		// create(_wrm1).setCompanyTitle("CTITLE") -> BAD_REQUEST (because of empty projectId)
 		_wrm1.setCompanyTitle("CTITLE");
-		_response = webclient.replacePath("/").post(_wrm1);
+		_response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		
 		// create(_wrm1).setProjectId("PID") -> BAD_REQUEST (because of empty projectTitle)
 		_wrm1.setProjectId("PID");
-		_response = webclient.replacePath("/").post(_wrm1);
+		_response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
 		// create(_wrm1).setProjectTitle("PTITLE") -> BAD_REQUEST (because of empty resourceId)
 		_wrm1.setProjectTitle("PTITLE");
-		_response = webclient.replacePath("/").post(_wrm1);
+		_response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
 		// create(_wrm1).setResourceId("RID") -> BAD_REQUEST (because of empty startAt)
 		_wrm1.setResourceId("RID");
-		_response = webclient.replacePath("/").post(_wrm1);
+		_response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
 		// create(_wrm1).setStartAt(new Date()) -> _wrm2
 		Date _date = new Date();
 		_wrm1.setStartAt(_date);
-		_response = webclient.replacePath("/").post(_wrm1);		
+		_response = workRecordWC.replacePath("/").post(_wrm1);		
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 		
@@ -317,7 +323,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("create() should not change isBillable", true, _wrm2.isBillable());
 
 		// read(_wrm2) -> _wrm3
-		_response = webclient.replacePath("/").path(_wrm2.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).get();
 		assertEquals("read(" + _wrm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
 		assertEquals("id of returned object should be the same", _wrm2.getId(), _wrm3.getId());
@@ -334,7 +340,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable of returned object should be unchanged after remote create", _wrm2.isBillable(), _wrm3.isBillable());
 
 		// delete(_wrm3)
-		_response = webclient.replacePath("/").path(_wrm3.getId()).delete();
+		_response = workRecordWC.replacePath("/").path(_wrm3.getId()).delete();
 		assertEquals("delete(" + _wrm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -358,7 +364,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable should be set by constructor", true, _wrm1.isBillable());
 		
 		// create(_wrm1) -> _wrm2
-		Response _response = webclient.replacePath("/").post(_wrm1);
+		Response _response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 		
@@ -391,7 +397,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("create() should not change isBillable", true, _wrm2.isBillable());
 
 		// read(_wrm2)  -> _wrm3
-		_response = webclient.replacePath("/").path(_wrm2.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).get();
 		assertEquals("read(" + _wrm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
 		assertEquals("id of returned object should be the same", _wrm2.getId(), _wrm3.getId());
@@ -408,7 +414,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable should be the same", _wrm2.isBillable(), _wrm3.isBillable());		
 
 		// delete(_wrm3)
-		_response = webclient.replacePath("/").path(_wrm3.getId()).delete();
+		_response = workRecordWC.replacePath("/").path(_wrm3.getId()).delete();
 		assertEquals("delete(" + _wrm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -419,7 +425,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		_wrm1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _wrm1.getId());
 		// create(_c1) -> BAD_REQUEST
-		Response _response = webclient.replacePath("/").post(_wrm1);
+		Response _response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
@@ -427,7 +433,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testCreateWorkRecordWithDuplicateId() {
 		// create(new(1)) -> _wrm2
 		WorkRecordModel _wrm1 = createWorkRecord(1, date, 4, 20, true);
-		Response _response = webclient.replacePath("/").post(_wrm1);
+		Response _response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 
@@ -436,11 +442,11 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		_wrm3.setId(_wrm2.getId());		// wrongly create a 2nd WorkRecordModel object with the same ID
 		
 		// create(_wrm3) -> CONFLICT
-		_response = webclient.replacePath("/").post(_wrm3);
+		_response = workRecordWC.replacePath("/").post(_wrm3);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_wrm2)
-		_response = webclient.replacePath("/").path(_wrm2.getId()).delete();
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).delete();
 		assertEquals("delete(" + _wrm2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -451,14 +457,14 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new(i)) -> _localList
-			_response = webclient.replacePath("/").post(createWorkRecord(i, date, i, i, true));
+			_response = workRecordWC.replacePath("/").post(createWorkRecord(i, date, i, i, true));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(WorkRecordModel.class));
 		}
 		
 		// list(/) -> _remoteList
-		_response = webclient.replacePath("/").get();
-		List<WorkRecordModel> _remoteList = new ArrayList<WorkRecordModel>(webclient.getCollection(WorkRecordModel.class));
+		_response = workRecordWC.replacePath("/").get();
+		List<WorkRecordModel> _remoteList = new ArrayList<WorkRecordModel>(workRecordWC.getCollection(WorkRecordModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -470,12 +476,12 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 			assertTrue("workrecord <" + _c.getId() + "> should be listed", _remoteListIds.contains(_c.getId()));
 		}
 		for (WorkRecordModel _c : _localList) {
-			_response = webclient.replacePath("/").path(_c.getId()).get();
+			_response = workRecordWC.replacePath("/").path(_c.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(WorkRecordModel.class);
 		}
 		for (WorkRecordModel _c : _localList) {
-			_response = webclient.replacePath("/").path(_c.getId()).delete();
+			_response = workRecordWC.replacePath("/").path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -490,12 +496,12 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		WorkRecordModel _wrm2 = createWorkRecord(2, _date2, 2, 20, false);
 		
 		// create(_wrm1)  -> _wrm3
-		Response _response = webclient.replacePath("/").post(_wrm1);
+		Response _response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
 
 		// create(_wrm2) -> _wrm4
-		_response = webclient.replacePath("/").post(_wrm2);
+		_response = workRecordWC.replacePath("/").post(_wrm2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm4 = _response.readEntity(WorkRecordModel.class);		
 		assertNotNull("ID should be set", _wrm3.getId());
@@ -529,11 +535,11 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable should be set correctly", false, _wrm4.isBillable());			
 		
 		// delete(_c3) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_wrm3.getId()).delete();
+		_response = workRecordWC.replacePath("/").path(_wrm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_c4) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_wrm4.getId()).delete();
+		_response = workRecordWC.replacePath("/").path(_wrm4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -541,17 +547,17 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testWorkRecordDoubleCreate(
 	) {
 		// create(new()) -> _wrm1
-		Response _response = webclient.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
+		Response _response = workRecordWC.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm1 = _response.readEntity(WorkRecordModel.class);
 		assertNotNull("ID should be set:", _wrm1.getId());		
 		
 		// create(_wrm1) -> CONFLICT
-		_response = webclient.replacePath("/").post(_wrm1);
+		_response = workRecordWC.replacePath("/").post(_wrm1);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_wrm1) -> NO_CONTENT
-		_response = webclient.replacePath(_wrm1.getId()).delete();
+		_response = workRecordWC.replacePath(_wrm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
@@ -561,33 +567,33 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		ArrayList<WorkRecordModel> _localList = new ArrayList<WorkRecordModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.replacePath("/").post(createWorkRecord(i, date, i, i*10, true));
+			_response = workRecordWC.replacePath("/").post(createWorkRecord(i, date, i, i*10, true));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(WorkRecordModel.class));
 		}
 	
 		// test read on each local element
 		for (WorkRecordModel _c : _localList) {
-			_response = webclient.replacePath("/").path(_c.getId()).get();
+			_response = workRecordWC.replacePath("/").path(_c.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(WorkRecordModel.class);
 		}
 
 		// test read on each listed element
-		_response = webclient.replacePath("/").get();
-		List<WorkRecordModel> _remoteList = new ArrayList<WorkRecordModel>(webclient.getCollection(WorkRecordModel.class));
+		_response = workRecordWC.replacePath("/").get();
+		List<WorkRecordModel> _remoteList = new ArrayList<WorkRecordModel>(workRecordWC.getCollection(WorkRecordModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		WorkRecordModel _tmpObj = null;
 		for (WorkRecordModel _c : _remoteList) {
-			_response = webclient.replacePath("/").path(_c.getId()).get();
+			_response = workRecordWC.replacePath("/").path(_c.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(WorkRecordModel.class);
 			assertEquals("ID should be unchanged when reading a workrecord", _c.getId(), _tmpObj.getId());						
 		}
 
 		for (WorkRecordModel _c : _localList) {
-			_response = webclient.replacePath("/").path(_c.getId()).delete();
+			_response = workRecordWC.replacePath("/").path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}	
@@ -599,17 +605,17 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		WorkRecordModel _wrm1 = createWorkRecord(1, date, 1, 10, true);
 		
 		// create(_wrm1) -> _wrm2
-		Response _response = webclient.replacePath("/").post(_wrm1);
+		Response _response = workRecordWC.replacePath("/").post(_wrm1);
 		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 
 		// read(_wrm2) -> _wrm3
-		_response = webclient.replacePath("/").path(_wrm2.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
 		assertEquals("ID should be unchanged after read", _wrm2.getId(), _wrm3.getId());		
 
 		// read(_wrm2) -> _wrm4
-		_response = webclient.replacePath("/").path(_wrm2.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm4 = _response.readEntity(WorkRecordModel.class);
 		
@@ -641,7 +647,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("isBillable should be the same", _wrm2.isBillable(), _wrm3.isBillable());		
 		
 		// delete(_wrm2)
-		_response = webclient.replacePath("/").path(_wrm2.getId()).delete();
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -651,7 +657,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		WorkRecordModel _wrm1 = createWorkRecord(1, date, 1, 10, true);
 		
 		// create(_wrm1) -> _wrm2
-		Response _response = webclient.replacePath("/").post(_wrm1);
+		Response _response = workRecordWC.replacePath("/").post(_wrm1);
 		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 		
 		// change the attributes
@@ -669,8 +675,8 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		_wrm2.setComment("MY_COMMENT2");
 		_wrm2.setBillable(false);
 		
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_wrm2.getId()).put(_wrm2);
+		workRecordWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).put(_wrm2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm3 = _response.readEntity(WorkRecordModel.class);
 
@@ -703,8 +709,8 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		_wrm2.setComment("MY_COMMENT4");
 		_wrm2.setBillable(true);
 
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_wrm2.getId()).put(_wrm2);
+		workRecordWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).put(_wrm2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm4 = _response.readEntity(WorkRecordModel.class);
 
@@ -722,7 +728,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertEquals("comment should be set correctly", "MY_COMMENT4", _wrm4.getComment());
 		assertEquals("isBillable should be set correctly", true, _wrm4.isBillable());			
 		
-		_response = webclient.replacePath("/").path(_wrm2.getId()).delete();
+		_response = workRecordWC.replacePath("/").path(_wrm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -730,26 +736,26 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testWorkRecordDelete(
 	) {
 		// create(1) -> _wrm1
-		Response _response = webclient.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
+		Response _response = workRecordWC.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
 		WorkRecordModel _wrm1 = _response.readEntity(WorkRecordModel.class);
 		
 		// read(_wrm1) -> _wrm2
-		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 		assertEquals("ID should be unchanged when reading a workrecord (remote):", _wrm1.getId(), _wrm2.getId());						
 		
 		// delete(_wrm1) -> OK
-		_response = webclient.replacePath("/").path(_wrm1.getId()).delete();
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
 		// read(_wrm1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read(_wrm1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
@@ -757,34 +763,34 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 	public void testWorkRecordDoubleDelete(
 	) {
 		// create(1) -> _wrm1
-		Response _response = webclient.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
+		Response _response = workRecordWC.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
 		WorkRecordModel _wrm1 = _response.readEntity(WorkRecordModel.class);
 
 		// read(_wrm1) -> OK
-		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
 		// delete(_wrm1) -> OK
-		_response = webclient.replacePath("/").path(_wrm1.getId()).delete();		
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 		// read(_wrm1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// delete _wrm1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_wrm1.getId()).delete();		
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read _wrm1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_wrm1.getId()).get();
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testWorkRecordModifications() {
 		// create(1) -> _wrm1
-		Response _response = webclient.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
+		Response _response = workRecordWC.replacePath("/").post(createWorkRecord(1, date, 1, 10, true));
 		WorkRecordModel _wrm1 = _response.readEntity(WorkRecordModel.class);
 		
 		// test createdAt and createdBy
@@ -798,8 +804,8 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		
 		// update(_wrm1)  -> _wrm2
 		_wrm1.setProjectId("NEW_PROJECTID");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_wrm1.getId()).put(_wrm1);
+		workRecordWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).put(_wrm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _wrm2 = _response.readEntity(WorkRecordModel.class);
 
@@ -812,29 +818,29 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
 		// assertThat(_o2.getModifiedBy(), not(equalTo(_o2.getCreatedBy())));
 
-		// update(o2) with createdBy set on client side -> error
+		// update(o2) with createdBy set on client side -> ignore
 		String _createdBy = _wrm1.getCreatedBy();
 		_wrm1.setCreatedBy("MYSELF");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_wrm1.getId()).put(_wrm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		workRecordWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).put(_wrm1);
+		assertEquals("update() should ignore client-side generated createdBy", 
+				Status.OK.getStatusCode(), _response.getStatus());
 		_wrm1.setCreatedBy(_createdBy);
 
-		// update(_wrm1) with createdAt set on client side -> error
+		// update(_wrm1) with createdAt set on client side -> ignore
 		Date _d = _wrm1.getCreatedAt();
 		_wrm1.setCreatedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_wrm1.getId()).put(_wrm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		workRecordWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).put(_wrm1);
+		assertEquals("update() should ignore client-side generated createdAt", 
+				Status.OK.getStatusCode(), _response.getStatus());
 		_wrm1.setCreatedAt(_d);
 
 		// update(_wrm1) with modifiedBy/At set on client side -> ignored by server
 		_wrm1.setModifiedBy("MYSELF");
 		_wrm1.setModifiedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_wrm1.getId()).put(_wrm1);
+		workRecordWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).put(_wrm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		WorkRecordModel _o3 = _response.readEntity(WorkRecordModel.class);
 		
@@ -844,7 +850,7 @@ public class WorkRecordsTest extends AbstractTestClient<WorkRecordsService> {
 		assertThat(_wrm1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
 		// delete(_wrm1) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_wrm1.getId()).delete();		
+		_response = workRecordWC.replacePath("/").path(_wrm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	

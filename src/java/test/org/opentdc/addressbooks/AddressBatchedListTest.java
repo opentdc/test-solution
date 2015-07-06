@@ -31,46 +31,33 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressModel;
-import org.opentdc.addressbooks.AddressType;
 import org.opentdc.addressbooks.AddressbookModel;
-import org.opentdc.addressbooks.AddressbooksService;
+import org.opentdc.addressbooks.AttributeType;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.service.GenericService;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class AddressBatchedListTest extends AbstractTestClient<AddressbooksService> {
-	public static final String API = "api/addressbooks/";
-	public static final String PATH_EL_CONTACT = "contact";
-	public static final String PATH_EL_ADDRESS = "address";
+public class AddressBatchedListTest extends AbstractTestClient {
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
-	
+	private WebClient addressbookWC = null;
+		
 	@Before
-	public void initializeTest(
-	) {
-		initializeTest(API, AddressbooksService.class);
-		Response _response = webclient.replacePath("/").post(new AddressbookModel("AddressBatchedListTest"));
-		adb = _response.readEntity(AddressbookModel.class);
-		System.out.println("AddressTest posted AddressbookModel " + adb.getId());
-		ContactModel _cm = new ContactModel();
-		_cm.setFirstName("AddressBatchedList");
-		_cm.setLastName("Test");
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
-		contact = _response.readEntity(ContactModel.class);
-		System.out.println("AddressTest posted ContactModel " + contact.getId());
+	public void initializeTests() {
+		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		adb = AddressbookTest.createAddressbook(addressbookWC, "AddressBatchedListTest");
+		contact = ContactTest.createContact(addressbookWC, adb.getId(), "AddressBatchedList", "Test");
 	}
 	
 	@After
 	public void cleanupTest() {
-		webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).delete();
-		System.out.println("AddressTest deleted ContactModel " + contact.getId());
-		webclient.replacePath("/").path(adb.getId()).delete();
-		System.out.println("AddressTest deleted AddressbookModel " + adb.getId());
+		AddressbookTest.cleanup(addressbookWC, adb.getId(), "AddressBatchedListTest");
 	}
 
 	@Test
@@ -78,23 +65,27 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 		ArrayList<AddressModel> _localList = new ArrayList<AddressModel>();		
 		System.out.println("***** testAddressBatchedList:");
 		Response _response = null;
-		webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS);
+		addressbookWC.replacePath("/").path(adb.getId()).path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).path(AddressTest.PATH_EL_ADDRESS);
 		// we want to allocate more than double the amount of default list size objects
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_response = webclient.post(AddressTest.createUrlAddress("testAddressBatchedList" + i, AddressType.OTHER, "VALUE" + i));
+			_response = addressbookWC.post(
+					AddressTest.createUrlAddress(
+							AttributeType.HOME, "testAddressBatchedList" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(AddressModel.class));
 		}
 
 		// get first batch
 		// list(position=0, size=25) -> elements 0 .. 24
-		webclient.resetQuery();
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).get();
-		List<AddressModel> _remoteList1 = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+		addressbookWC.resetQuery();
+		_response = addressbookWC.replacePath("/").
+				path(adb.getId()).path(ContactTest.PATH_EL_CONTACT).
+				path(contact.getId()).path(AddressTest.PATH_EL_ADDRESS).get();
+		List<AddressModel> _remoteList1 = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 1st Batch:");
 		for (AddressModel _am : _remoteList1) {
@@ -104,9 +95,11 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 		
 		// get second batch
 		// list(position=25, size=25) -> elements 25 .. 49
-		webclient.resetQuery();
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).query("position", 25).get();
-		List<AddressModel> _remoteList2 = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+		addressbookWC.resetQuery();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(AddressTest.PATH_EL_ADDRESS).query("position", 25).get();
+		List<AddressModel> _remoteList2 = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
@@ -116,9 +109,11 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 		
 		// get rest 
 		// list(position=50, size=25) ->   elements 50 .. 54
-		webclient.resetQuery();
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).query("position", 50).get();
-		List<AddressModel> _remoteList3 = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+		addressbookWC.resetQuery();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(AddressTest.PATH_EL_ADDRESS).query("position", 50).get();
+		List<AddressModel> _remoteList3 = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 3rd Batch:");
 		for (AddressModel _am : _remoteList3) {
@@ -133,9 +128,11 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 		List<AddressModel> _remoteList = null;
 		while(true) {
 			_numberOfBatches++;
-			webclient.resetQuery();
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).query("position", _position).get();
-			_remoteList = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+			addressbookWC.resetQuery();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).
+					path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+					path(AddressTest.PATH_EL_ADDRESS).query("position", _position).get();
+			_remoteList = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_numberOfReturnedObjects += _remoteList.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
@@ -150,30 +147,38 @@ public class AddressBatchedListTest extends AbstractTestClient<AddressbooksServi
 		assertEquals("last batch size should be as expected", _increment, _remoteList.size());
 	
 		// testing some explicit positions and sizes
-		webclient.resetQuery();
+		addressbookWC.resetQuery();
 		// get next 5 elements from position 5
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(AddressTest.PATH_EL_ADDRESS).query("position", 5).query("size", 5).get();
+		_remoteList = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// get last 4 elements 
-		webclient.resetQuery();
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+		addressbookWC.resetQuery();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(AddressTest.PATH_EL_ADDRESS).query("position", _limit2-4).query("size", 4).get();
+		_remoteList = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
 		
 		// read over end of list
-		webclient.resetQuery();
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).query("position", _limit2-5).query("size", 10).get();
-		_remoteList = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+		addressbookWC.resetQuery();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(AddressTest.PATH_EL_ADDRESS).query("position", _limit2-5).query("size", 10).get();
+		_remoteList = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// removing all test objects
 		for (AddressModel _c : _localList) {
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_c.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).
+					path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+					path(AddressTest.PATH_EL_ADDRESS).path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
 	}

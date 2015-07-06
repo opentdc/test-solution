@@ -35,6 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.rates.Currency;
@@ -43,16 +45,20 @@ import org.opentdc.rates.RatesService;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class RatesTest extends AbstractTestClient<RatesService> {
-
-	private static final String API = "api/rate/";
+public class RatesTest extends AbstractTestClient {
+	public static final String API_URL = "api/rate/";
+	private WebClient rateWC = null;
 
 	@Before
-	public void initializeTest(
-	) {
-		initializeTest(API, RatesService.class);
+	public void initializeTest() {
+		rateWC = initializeTest(API_URL, RatesService.class);
 	}
 	
+	@After
+	public void cleanupTest() {
+		rateWC.close();
+	}
+
 	/********************************** rates attributes tests *********************************/	
 	@Test
 	public void testRatesModelEmptyConstructor() {
@@ -186,12 +192,12 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertNull("description should not be set by empty constructor", _rm1.getDescription());
 		
 		// create(_rm1) -> BAD_REQUEST (because of empty title)
-		Response _response = webclient.replacePath("/").post(_rm1);
+		Response _response = rateWC.replacePath("/").post(_rm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		_rm1.setTitle("testRateCreateReadDeleteWithEmptyConstructor");
 
 		// create(_rm1) -> _rm2
-		_response = webclient.replacePath("/").post(_rm1);
+		_response = rateWC.replacePath("/").post(_rm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm2 = _response.readEntity(RatesModel.class);
 		
@@ -210,7 +216,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertNull("create() should not change the description", _rm2.getDescription());
 		
 		// read(_rm2) -> _rm3
-		_response = webclient.replacePath("/").path(_rm2.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm2.getId()).get();
 		assertEquals("read(" + _rm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm3 = _response.readEntity(RatesModel.class);
 		assertEquals("id of returned object should be the same", _rm2.getId(), _rm3.getId());
@@ -219,7 +225,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertEquals("currency of returned object should be unchanged", _rm2.getCurrency(), _rm3.getCurrency());
 		assertEquals("description of returned object should be unchanged", _rm2.getDescription(), _rm3.getDescription());
 		// delete(_c3)
-		_response = webclient.replacePath("/").path(_rm3.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm3.getId()).delete();
 		assertEquals("delete(" + _rm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -231,7 +237,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertEquals("title should be set by constructor", "testRateCreateReadDelete", _rm1.getTitle());
 		assertEquals("description should be set by constructor", "MY_DESC", _rm1.getDescription());
 		// create(MY_DESC) -> _rm2
-		Response _response = webclient.replacePath("/").post(_rm1);
+		Response _response = rateWC.replacePath("/").post(_rm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm2 = _response.readEntity(RatesModel.class);
 		assertNull("id should be still null after remote create", _rm1.getId());
@@ -245,7 +251,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertEquals("currency should be unchanged after remote create", Currency.getDefaultCurrency(), _rm1.getCurrency());
 		assertEquals("description of returned object should be unchanged after remote create", "MY_DESC", _rm2.getDescription());
 		// read(_rm2)  -> _rm3
-		_response = webclient.replacePath("/").path(_rm2.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm2.getId()).get();
 		assertEquals("read(" + _rm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm3 = _response.readEntity(RatesModel.class);
 		assertEquals("id of returned object should be the same", _rm2.getId(), _rm3.getId());
@@ -254,7 +260,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertEquals("currency should be unchanged after remote create", _rm2.getCurrency(), _rm3.getCurrency());
 		assertEquals("description of returned object should be unchanged after remote create", _rm2.getDescription(), _rm3.getDescription());
 		// delete(_c3)
-		_response = webclient.replacePath("/").path(_rm3.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm3.getId()).delete();
 		assertEquals("delete(" + _rm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -265,14 +271,14 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		_rm.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _rm.getId());
 		// create(_rm) -> BAD_REQUEST
-		Response _response = webclient.replacePath("/").post(_rm);
+		Response _response = rateWC.replacePath("/").post(_rm);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateRateWithDuplicateId() {
 		// create(new()) -> _rm1
-		Response _response = webclient.replacePath("/").post(new RatesModel("testCreateRateWithDuplicateId", 100, "MY_DESC"));
+		Response _response = rateWC.replacePath("/").post(new RatesModel("testCreateRateWithDuplicateId", 100, "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm1 = _response.readEntity(RatesModel.class);
 
@@ -281,11 +287,11 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		_rm2.setId(_rm1.getId());		// wrongly create a 2nd RatesModel object with the same ID
 		
 		// create(_rm2) -> CONFLICT
-		_response = webclient.replacePath("/").post(_rm2);
+		_response = rateWC.replacePath("/").post(_rm2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_rm1)
-		_response = webclient.replacePath("/").path(_rm1.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).delete();
 		assertEquals("delete(" + _rm1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 	}
@@ -297,14 +303,14 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = webclient.replacePath("/").post(new RatesModel("testRateList" + i, 100 + i, "MY_DESC"));
+			_response = rateWC.replacePath("/").post(new RatesModel("testRateList" + i, 100 + i, "MY_DESC"));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(RatesModel.class));
 		}
 		
 		// list(/) -> _remoteList
-		_response = webclient.replacePath("/").get();
-		List<RatesModel> _remoteList = new ArrayList<RatesModel>(webclient.getCollection(RatesModel.class));
+		_response = rateWC.replacePath("/").get();
+		List<RatesModel> _remoteList = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -316,12 +322,12 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 			assertTrue("rate <" + _rm.getId() + "> should be listed", _remoteListIds.contains(_rm.getId()));
 		}
 		for (RatesModel _rm : _localList) {
-			_response = webclient.replacePath("/").path(_rm.getId()).get();
+			_response = rateWC.replacePath("/").path(_rm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(RatesModel.class);
 		}
 		for (RatesModel _rm : _localList) {
-			_response = webclient.replacePath("/").path(_rm.getId()).delete();
+			_response = rateWC.replacePath("/").path(_rm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -334,12 +340,12 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		RatesModel _rm2 = new RatesModel("testRateCreate2", 200, "MY_DESC2");
 		
 		// create(_rm1)  -> _rm3
-		Response _response = webclient.replacePath("/").post(_rm1);
+		Response _response = rateWC.replacePath("/").post(_rm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm3 = _response.readEntity(RatesModel.class);
 
 		// create(_rm2) -> _rm4
-		_response = webclient.replacePath("/").post(_rm2);
+		_response = rateWC.replacePath("/").post(_rm2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm4 = _response.readEntity(RatesModel.class);		
 		assertNotNull("ID should be set", _rm3.getId());
@@ -357,11 +363,11 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 				Currency.getDefaultCurrency(), _rm4.getCurrency());
 
 		// delete(_rm3) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_rm3.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_rm4) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_rm4.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -369,17 +375,17 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 	public void testRateDoubleCreate(
 	) {
 		// create() -> _rm
-		Response _response = webclient.replacePath("/").post(new RatesModel("testRateDoubleCreate", 100, "MY_DESC"));
+		Response _response = rateWC.replacePath("/").post(new RatesModel("testRateDoubleCreate", 100, "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm = _response.readEntity(RatesModel.class);
 		assertNotNull("ID should be set:", _rm.getId());		
 		
 		// create(_rm) -> CONFLICT
-		_response = webclient.replacePath("/").post(_rm);
+		_response = rateWC.replacePath("/").post(_rm);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_rm) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_rm.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
@@ -389,33 +395,33 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		ArrayList<RatesModel> _localList = new ArrayList<RatesModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.replacePath("/").post(new RatesModel("testRateRead" + i, 100 + i, "MY_DESC"));
+			_response = rateWC.replacePath("/").post(new RatesModel("testRateRead" + i, 100 + i, "MY_DESC"));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(RatesModel.class));
 		}
 	
 		// test read on each local element
 		for (RatesModel _rm : _localList) {
-			_response = webclient.replacePath("/").path(_rm.getId()).get();
+			_response = rateWC.replacePath("/").path(_rm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(RatesModel.class);
 		}
 
 		// test read on each listed element
-		_response = webclient.replacePath("/").get();
-		List<RatesModel> _remoteList = new ArrayList<RatesModel>(webclient.getCollection(RatesModel.class));
+		_response = rateWC.replacePath("/").get();
+		List<RatesModel> _remoteList = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		RatesModel _tmpObj = null;
 		for (RatesModel _rm : _remoteList) {
-			_response = webclient.replacePath("/").path(_rm.getId()).get();
+			_response = rateWC.replacePath("/").path(_rm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(RatesModel.class);
 			assertEquals("ID should be unchanged when reading a rate", _rm.getId(), _tmpObj.getId());						
 		}
 
 		for (RatesModel _rm : _localList) {
-			_response = webclient.replacePath("/").path(_rm.getId()).delete();
+			_response = rateWC.replacePath("/").path(_rm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}	
@@ -424,17 +430,17 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 	public void testRateMultiRead(
 	) {
 		// create() -> _rm1
-		Response _response = webclient.replacePath("/").post(new RatesModel("testRateMultiRead", 100, "MY_DESC"));
+		Response _response = rateWC.replacePath("/").post(new RatesModel("testRateMultiRead", 100, "MY_DESC"));
 		RatesModel _rm1 = _response.readEntity(RatesModel.class);
 
 		// read(_rm1) -> _rm2
-		_response = webclient.replacePath("/").path(_rm1.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm2 = _response.readEntity(RatesModel.class);
 		assertEquals("ID should be unchanged after read:", _rm1.getId(), _rm2.getId());		
 
 		// read(_rm1) -> _rm4
-		_response = webclient.replacePath("/").path(_rm1.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm4 = _response.readEntity(RatesModel.class);
 		
@@ -448,7 +454,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertEquals("description should be the same:", _rm2.getDescription(), _rm1.getDescription());
 		
 		// delete(_rm1)
-		_response = webclient.replacePath("/").path(_rm1.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -456,7 +462,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 	public void testRateUpdate(
 	) {
 		// create() -> _rm1		
-		Response _response = webclient.replacePath("/").post(new RatesModel("testRateUpdate", 100, "MY_DESC"));
+		Response _response = rateWC.replacePath("/").post(new RatesModel("testRateUpdate", 100, "MY_DESC"));
 		RatesModel _rm1 = _response.readEntity(RatesModel.class);
 		
 		// change the attributes
@@ -465,8 +471,8 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		_rm1.setRate(300);
 		_rm1.setCurrency(Currency.USD);
 		_rm1.setDescription("testRateUpdate1");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_rm1.getId()).put(_rm1);
+		rateWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = rateWC.replacePath("/").path(_rm1.getId()).put(_rm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm2 = _response.readEntity(RatesModel.class);
 
@@ -483,8 +489,8 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		_rm1.setRate(400);
 		_rm1.setCurrency(Currency.EUR);
 		_rm1.setDescription("testRateUpdate3");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_rm1.getId()).put(_rm1);
+		rateWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = rateWC.replacePath("/").path(_rm1.getId()).put(_rm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm3 = _response.readEntity(RatesModel.class);
 
@@ -495,7 +501,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertEquals("currency should have changed", Currency.EUR, _rm3.getCurrency());
 		assertEquals("description should have changed", "testRateUpdate3", _rm3.getDescription());
 		
-		_response = webclient.replacePath("/").path(_rm1.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -503,26 +509,26 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 	public void testRateDelete(
 	) {
 		// create() -> _rm1
-		Response _response = webclient.replacePath("/").post(new RatesModel("testRateDelete", 100, "MY_DESC"));
+		Response _response = rateWC.replacePath("/").post(new RatesModel("testRateDelete", 100, "MY_DESC"));
 		RatesModel _rm1 = _response.readEntity(RatesModel.class);
 		
 		// read(_rm1) -> _tmpObj
-		_response = webclient.replacePath("/").path(_rm1.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _tmpObj = _response.readEntity(RatesModel.class);
 		assertEquals("ID should be unchanged when reading a rate (remote):", _rm1.getId(), _tmpObj.getId());						
 
 		// delete(_rm1) -> OK
-		_response = webclient.replacePath("/").path(_rm1.getId()).delete();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
 		// read(_rm1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_rm1.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read(_rm1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_rm1.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
@@ -533,34 +539,34 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		RatesModel _rm1 = new RatesModel("testRateDoubleDelete", 100, "MY_DESC");
 		
 		// create(_rm1) -> _rm2
-		Response _response = webclient.replacePath("/").post(_rm1);
+		Response _response = rateWC.replacePath("/").post(_rm1);
 		RatesModel _rm2 = _response.readEntity(RatesModel.class);
 
 		// read(_rm2) -> OK
-		_response = webclient.replacePath("/").path(_rm2.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
 		// delete(_rm2) -> OK
-		_response = webclient.replacePath("/").path(_rm2.getId()).delete();		
+		_response = rateWC.replacePath("/").path(_rm2.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 		// read(_rm2) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_rm2.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// delete _rm2 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_rm2.getId()).delete();		
+		_response = rateWC.replacePath("/").path(_rm2.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read _rm2 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_rm2.getId()).get();
+		_response = rateWC.replacePath("/").path(_rm2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testRatesModifications() {
 		// create(new RatesModel()) -> _rm1
-		Response _response = webclient.replacePath("/").post(new RatesModel("testRatesModifications", 100, "MY_DESC"));
+		Response _response = rateWC.replacePath("/").post(new RatesModel("testRatesModifications", 100, "MY_DESC"));
 		RatesModel _rm1 = _response.readEntity(RatesModel.class);
 		System.out.println("created RatesModel " + _rm1.getId());
 		
@@ -581,8 +587,8 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		}
 		// update(_rm1)  -> _rm2
 		_rm1.setTitle("testRatesModifications1");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_rm1.getId()).put(_rm1);
+		rateWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = rateWC.replacePath("/").path(_rm1.getId()).put(_rm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _rm2 = _response.readEntity(RatesModel.class);
 		System.out.println("updated RatesModel " + _rm2.getId());
@@ -597,29 +603,29 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
 		// assertThat(_rm2.getModifiedBy(), not(equalTo(_rm2.getCreatedBy())));
 
-		// update(_rm2) with createdBy set on client side -> error
+		// update(_rm2) with createdBy set on client side -> ignored
 		String _createdBy = _rm1.getCreatedBy();
 		_rm1.setCreatedBy("testRatesModifications2");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		rateWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = rateWC.replacePath("/").path(_rm1.getId()).put(_rm1);
+		assertEquals("update() should ignore client-side generated createdBy", 
+				Status.OK.getStatusCode(), _response.getStatus());
 		_rm1.setCreatedBy(_createdBy);
 
-		// update(_rm1) with createdAt set on client side -> error
+		// update(_rm1) with createdAt set on client side -> ignored
 		Date _d = _rm1.getCreatedAt();
 		_rm1.setCreatedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should return with status BAD_REQUEST", 
-				Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		rateWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = rateWC.replacePath("/").path(_rm1.getId()).put(_rm1);
+		assertEquals("update() should ignore client-side generated createdAt", 
+				Status.OK.getStatusCode(), _response.getStatus());
 		_rm1.setCreatedAt(_d);
 
 		// update(_rm1) with modifiedBy/At set on client side -> ignored by server
 		_rm1.setModifiedBy("testRatesModifications3");
 		_rm1.setModifiedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_rm1.getId()).put(_rm1);
+		rateWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = rateWC.replacePath("/").path(_rm1.getId()).put(_rm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		RatesModel _o3 = _response.readEntity(RatesModel.class);
 		System.out.println("updated RatesModel " + _o3.getId());
@@ -630,7 +636,7 @@ public class RatesTest extends AbstractTestClient<RatesService> {
 		assertThat(_rm1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
 		// delete(_rm1) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_rm1.getId()).delete();		
+		_response = rateWC.replacePath("/").path(_rm1.getId()).delete();		
 		System.out.println("deleted RatesModel " + _rm1.getId());
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}

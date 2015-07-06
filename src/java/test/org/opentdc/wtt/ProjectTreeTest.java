@@ -2,49 +2,58 @@ package test.org.opentdc.wtt;
 
 import static org.junit.Assert.*;
 
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.wtt.*;
 
 import test.org.opentdc.AbstractTestClient;
+import test.org.opentdc.addressbooks.AddressbookTest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-public class ProjectTreeTest extends AbstractTestClient<WttService> {
-		
-public static final String API = "api/company/";	
-	public static final String PATH_EL_PROJECT = "project";
-	public static final String PATH_EL_RESOURCE = "resource";
-	private static CompanyModel company = null;
+public class ProjectTreeTest extends AbstractTestClient {
+	private WebClient wttWC = null;
+	private WebClient addressbookWC = null;
+	private CompanyModel company = null;
+	private AddressbookModel addressbook = null;
 
 	@Before
-	public void initializeTest() {
-		initializeTest(API, WttService.class);
-		Response _response = webclient.replacePath("/").post(new CompanyModel("ProjectTreeTest", "MY_DESC"));
-		company = _response.readEntity(CompanyModel.class);
+	public void initializeTests() {
+		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
+		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, "ProjectTreeTest");
+		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "ProjectTreeTest", "MY_DESC");
 	}
-		
+
 	@After
 	public void cleanupTest() {
-		webclient.replacePath("/").path(company.getId()).delete();
+		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "ProjectTreeTest");
+		wttWC.close();
 	}
 	
 	private ProjectModel createProject(String title) {
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(new ProjectModel(title, "MY_DESC"));
+		Response _response = wttWC.replacePath("/").path(company.getId()).
+				path(ProjectTest.PATH_EL_PROJECT).post(new ProjectModel(title, "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		return _response.readEntity(ProjectModel.class);
 	}
 	
 	private ProjectModel createSubProject(String pid, String title) {
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(pid).path(PATH_EL_PROJECT).post(new ProjectModel(title, "MY_DESC"));
+		Response _response = wttWC.replacePath("/").path(company.getId()).
+				path(ProjectTest.PATH_EL_PROJECT).path(pid).
+				path(ProjectTest.PATH_EL_PROJECT).post(new ProjectModel(title, "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		return _response.readEntity(ProjectModel.class);	
 	}
 	
 	private ResourceRefModel createResource(String pid) {
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(pid).path(PATH_EL_RESOURCE)
+		Response _response = wttWC.replacePath("/").path(company.getId()).
+				path(ProjectTest.PATH_EL_PROJECT).path(pid).
+				path(ResourceRefTest.PATH_EL_RESOURCE)
 				.post(ResourceRefTest.createResourceRef("createResource", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		return _response.readEntity(ResourceRefModel.class);	
@@ -84,7 +93,7 @@ public static final String API = "api/company/";
 		createResource(_p2p3.getId());
 				
 		// get the tree
-		Response _response = webclient.replacePath("/").path(company.getId()).path("astree").get();
+		Response _response = wttWC.replacePath("/").path(company.getId()).path("astree").get();
 		assertEquals("astree() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectTreeNodeModel _tree = _response.readEntity(ProjectTreeNodeModel.class);
 		

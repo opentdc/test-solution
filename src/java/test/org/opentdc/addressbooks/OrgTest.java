@@ -34,37 +34,32 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
-import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.OrgModel;
 import org.opentdc.addressbooks.OrgType;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class OrgTest extends AbstractTestClient<AddressbooksService> {
-		
-		private static final String API = "api/addressbooks/";
+public class OrgTest extends AbstractTestClient {
 		public static final String PATH_EL_ORG = "org";
 		private static AddressbookModel adb = null;
+		private WebClient addressbookWC = null;
 
 		@Before
-		public void initializeTest(
-		) {
-			initializeTest(API, AddressbooksService.class);
-			Response _response = webclient.replacePath("/").post(new AddressbookModel("OrgTest"));
-			adb = _response.readEntity(AddressbookModel.class);
-			System.out.println("OrgTest posted AddressbookModel " + adb.getId());
+		public void initializeTests() {
+			addressbookWC = AddressbookTest.createAddressbookWebClient();
+			adb = AddressbookTest.createAddressbook(addressbookWC, "OrgTest");
 		}
 		
 		@After
 		public void cleanupTest() {
-			webclient.replacePath("/").path(adb.getId()).delete();
-			System.out.println("OrgTest deleted AddressbookModel " + adb.getId());
+			AddressbookTest.cleanup(addressbookWC, adb.getId(), "OrgTest");
 		}
-		
+
 		/********************************** org attribute tests *********************************/	
 		@Test
 		public void testOrgModelEmptyConstructor() {
@@ -216,12 +211,12 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertNull("logoUrl should not be set by empty constructor", _om1.getLogoUrl());
 			
 			// create(_om1) -> BAD_REQUEST (because of empty name)
-			Response _response = webclient.replacePath("/").post(_om1);
+			Response _response = addressbookWC.replacePath("/").post(_om1);
 			assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 			_om1.setName("testOrgCreateReadDeleteWithEmptyConstructor");
 
 			// create(_om1) -> _om2
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om1);
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om1);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om2 = _response.readEntity(OrgModel.class);
 			
@@ -246,7 +241,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertNull("create() should not change the logoUrl", _om2.getLogoUrl());
 
 			// read(_om2) -> _om3
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om2.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om2.getId()).get();
 			assertEquals("read(" + _om2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om3 = _response.readEntity(OrgModel.class);
 			
@@ -261,7 +256,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("logoUrls should be equal", _om2.getLogoUrl(), _om3.getLogoUrl());
 			
 			// delete(_p3)
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om3.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om3.getId()).delete();
 			assertEquals("delete(" + _om3.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -281,7 +276,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("constructor should set the logoUrl correctly", "MY_LOGO_URL1", _om1.getLogoUrl());
 						
 			// create(_om1) -> _om2
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om1);
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om1);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om2 = _response.readEntity(OrgModel.class);
 			
@@ -306,7 +301,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("create() should not change the logoUrl", "MY_LOGO_URL1", _om2.getLogoUrl());
 						
 			// read(_om2)  -> _om3
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om2.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om2.getId()).get();
 			assertEquals("read(" + _om2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om3 = _response.readEntity(OrgModel.class);
 			
@@ -321,7 +316,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("logoUrls should be the same", _om2.getLogoUrl(), _om3.getLogoUrl());
 
 			// delete(_om3)
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om3.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om3.getId()).delete();
 			assertEquals("delete(" + _om3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -332,14 +327,14 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			_om1.setId("LOCAL_ID");
 			assertEquals("id should have changed", "LOCAL_ID", _om1.getId());
 			// create(_om1) -> BAD_REQUEST
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om1);
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om1);
 			assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		}
 		
 		@Test
 		public void testOrgWithDuplicateId() {
 			// create(new()) -> _om1
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgWithDuplicateId", OrgType.ASSOC, 1));
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgWithDuplicateId", OrgType.ASSOC, 1));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om1 = _response.readEntity(OrgModel.class);
 
@@ -348,7 +343,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			_om2.setId(_om1.getId());		// wrongly create a 2nd OrgModel object with the same ID
 			
 			// create(_om2) -> CONFLICT
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om2);
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om2);
 			assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -356,18 +351,18 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 		public void testOrgList() {
 			ArrayList<OrgModel> _localList = new ArrayList<OrgModel>();		
 			Response _response = null;
-			webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG);
+			addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG);
 			for (int i = 0; i < LIMIT; i++) {
 				// create(new()) -> _localList
-				_response = webclient.post(createOrg("testOrgList", OrgType.ASSOC, i));
+				_response = addressbookWC.post(createOrg("testOrgList", OrgType.ASSOC, i));
 				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_localList.add(_response.readEntity(OrgModel.class));
 			}
 			assertEquals("size of lists should be the same", LIMIT, _localList.size());
 			
 			// list(/) -> _remoteList
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).get();
-			List<OrgModel> _remoteList = new ArrayList<OrgModel>(webclient.getCollection(OrgModel.class));
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).get();
+			List<OrgModel> _remoteList = new ArrayList<OrgModel>(addressbookWC.getCollection(OrgModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			assertEquals("size of lists should be the same", LIMIT, _remoteList.size());
 			// implicit proof: _localList.size() = _remoteList.size = LIMIT
@@ -382,13 +377,13 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			}
 			
 			for (OrgModel _om : _localList) {
-				_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).get();
+				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).get();
 				assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_response.readEntity(OrgModel.class);
 			}
 			
 			for (OrgModel _om : _localList) {
-				_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).delete();
+				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).delete();
 				assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			}
 		}
@@ -396,12 +391,12 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 		@Test
 		public void testOrgCreate() {				
 			// create()  -> _om1
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgCreate", OrgType.ASSOC, 1));
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgCreate", OrgType.ASSOC, 1));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om1 = _response.readEntity(OrgModel.class);
 
 			// create() -> _om2
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgCreate", OrgType.CLUB, 2));
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgCreate", OrgType.CLUB, 2));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om2 = _response.readEntity(OrgModel.class);		
 			
@@ -428,28 +423,28 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertThat(_om2.getId(), not(equalTo(_om1.getId())));
 
 			// delete(_om1) -> NO_CONTENT
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 			// delete(_om2) -> NO_CONTENT
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om2.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om2.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
 		@Test
 		public void testOrgCreateDouble() {		
 			// create(new()) -> _om
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgCreateDouble", OrgType.ASSOC, 1));
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgCreateDouble", OrgType.ASSOC, 1));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om = _response.readEntity(OrgModel.class);
 			assertNotNull("ID should be set:", _om.getId());		
 			
 			// create(_om) -> CONFLICT
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om);
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(_om);
 			assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 			// delete(_om) -> NO_CONTENT
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -457,35 +452,35 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 		public void testOrgRead() {
 			ArrayList<OrgModel> _localList = new ArrayList<OrgModel>();
 			Response _response = null;
-			webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG);
+			addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG);
 			for (int i = 0; i < LIMIT; i++) {
-				_response = webclient.post(createOrg("testOrgRead", OrgType.ASSOC, i));
+				_response = addressbookWC.post(createOrg("testOrgRead", OrgType.ASSOC, i));
 				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_localList.add(_response.readEntity(OrgModel.class));
 			}
 		
 			// test read on each local element
 			for (OrgModel _om : _localList) {
-				_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).get();
+				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).get();
 				assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_response.readEntity(OrgModel.class);
 			}
 
 			// test read on each listed element
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).get();
-			List<OrgModel> _remoteList = new ArrayList<OrgModel>(webclient.getCollection(OrgModel.class));
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).get();
+			List<OrgModel> _remoteList = new ArrayList<OrgModel>(addressbookWC.getCollection(OrgModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 			OrgModel _tmpObj = null;
 			for (OrgModel _om : _remoteList) {
-				_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).get();
+				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).get();
 				assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_tmpObj = _response.readEntity(OrgModel.class);
 				assertEquals("ID should be unchanged when reading a project", _om.getId(), _tmpObj.getId());						
 			}
 
 			for (OrgModel _om : _localList) {
-				_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).delete();
+				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om.getId()).delete();
 				assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			}
 		}
@@ -493,17 +488,17 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 		@Test
 		public void testOrgMultiRead() {
 			// create() -> _om1
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgMultiRead", OrgType.ASSOC, 1));
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgMultiRead", OrgType.ASSOC, 1));
 			OrgModel _om1 = _response.readEntity(OrgModel.class);
 
 			// read(_om1) -> _om2
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om2 = _response.readEntity(OrgModel.class);
 			assertEquals("ID should be unchanged after read:", _om1.getId(), _om2.getId());		
 
 			// read(_om1) -> _om3
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om3 = _response.readEntity(OrgModel.class);
 			
@@ -528,14 +523,14 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("logoUrls should be the same", _om2.getLogoUrl(), _om1.getLogoUrl());
 			
 			// delete(_p2)
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
 		@Test
 		public void testOrgUpdate() {			
 			// create() -> _om1
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgUpdate", OrgType.ASSOC, 1));
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgUpdate", OrgType.ASSOC, 1));
 			OrgModel _om1 = _response.readEntity(OrgModel.class);
 			
 			// change the attributes
@@ -547,8 +542,8 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			_om1.setTickerSymbol("MY_TICKER_SYMBOL2");
 			_om1.setOrgType(OrgType.CLUB);
 			_om1.setLogoUrl("MY_LOGO_URL2");
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
+			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om2 = _response.readEntity(OrgModel.class);
 
@@ -571,8 +566,8 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			_om1.setTickerSymbol("MY_TICKER_SYMBOL3");
 			_om1.setOrgType(OrgType.COMP);
 			_om1.setLogoUrl("MY_LOGO_URL3");
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
+			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om3 = _response.readEntity(OrgModel.class);
 
@@ -586,7 +581,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertEquals("orgType should be set correctly", OrgType.COMP, _om3.getOrgType());
 			assertEquals("logoUrl should be set correctly", "MY_LOGO_URL3", _om3.getLogoUrl());
 			
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 
@@ -594,66 +589,66 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 		public void testOrgDelete(
 		) {
 			// create() -> _om1
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgDelete", OrgType.ASSOC, 1));
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgDelete", OrgType.ASSOC, 1));
 			OrgModel _om1 = _response.readEntity(OrgModel.class);
 			
 			// read(_om1) -> _tmpObj
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _tmpObj = _response.readEntity(OrgModel.class);
 			assertEquals("ID should be unchanged when reading a project (remote):", _om1.getId(), _tmpObj.getId());						
 
 			// read(_om1) -> _tmpObj
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(OrgModel.class);
 			assertEquals("ID should be unchanged when reading a project (remote):", _om1.getId(), _tmpObj.getId());						
 			
 			// delete(_om1) -> OK
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 			// read the deleted object twice
 			// read(_om1) -> NOT_FOUND
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 			
 			// read(_om1) -> NOT_FOUND
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		}
 		
 		@Test
 		public void testOrgDoubleDelete() {
 			// create() -> _om1
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgDoubleDelete", OrgType.ASSOC, 1));
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgDoubleDelete", OrgType.ASSOC, 1));
 			OrgModel _om1 = _response.readEntity(OrgModel.class);
 
 			// read(_om1) -> OK
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			
 			// delete(_om1) -> OK
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();		
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();		
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			
 			// read(_om1) -> NOT_FOUND
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 			
 			// delete _om1 -> NOT_FOUND
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();		
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();		
 			assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 			
 			// read _om1 -> NOT_FOUND
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		}
 		
 		@Test
 		public void testOrgModifications() {
 			// create() -> _om1
-			Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgModifications", OrgType.ASSOC, 1));
+			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).post(createOrg("testOrgModifications", OrgType.ASSOC, 1));
 			OrgModel _om1 = _response.readEntity(OrgModel.class);
 			
 			// test createdAt and createdBy
@@ -667,8 +662,8 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			
 			// update(_om1)  -> _om2
 			_om1.setName("MY_NAME2");
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
+			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _om2 = _response.readEntity(OrgModel.class);
 
@@ -684,8 +679,8 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			// update(_om1) with modifiedBy/At set on client side -> ignored by server
 			_om1.setModifiedBy("MYSELF");
 			_om1.setModifiedAt(new Date(1000));
-			webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
+			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).put(_om1);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			OrgModel _o3 = _response.readEntity(OrgModel.class);
 			
@@ -695,7 +690,7 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			assertThat(_om1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 			
 			// delete(_om1) -> NO_CONTENT
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();		
+			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_ORG).path(_om1.getId()).delete();		
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 
@@ -710,5 +705,13 @@ public class OrgTest extends AbstractTestClient<AddressbooksService> {
 			_om.setOrgType(orgType);
 			_om.setLogoUrl("MY_LOGO_URL" + suffix);
 			return _om;
+		}
+		
+		public static OrgModel createOrg(WebClient abWC, String aid, String name, OrgType orgType) {
+			OrgModel _om = new OrgModel();
+			_om.setName(name);
+			_om.setOrgType(orgType);
+			Response _response = abWC.replacePath("/").path(aid).path(OrgTest.PATH_EL_ORG).post(_om);
+			return _response.readEntity(OrgModel.class);
 		}
 }

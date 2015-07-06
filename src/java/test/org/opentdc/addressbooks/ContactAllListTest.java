@@ -31,6 +31,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,18 +42,17 @@ import org.opentdc.service.GenericService;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class ContactAllListTest extends AbstractTestClient<AddressbooksService> {
-	private static final String API = "api/addressbooks/";
-	public static final String PATH_EL_CONTACT = "contact";
+public class ContactAllListTest extends AbstractTestClient {
 	ArrayList<AddressbookModel> addressbooks = null;
 	private static final int nrAddressbooks = 3;
 	private static final int nrContacts = 10;
 	private static int totalContacts = nrAddressbooks * nrContacts;
+	private WebClient addressbookWC = null;
 
 	@Before
 	public void initializeTest(
 	) {
-		initializeTest(API, AddressbooksService.class);
+		addressbookWC = initializeTest(AddressbookTest.API_URL, AddressbooksService.class);
 		addressbooks = new ArrayList<AddressbookModel>();
 		AddressbookModel _abm = null;
 		for (int i = 0; i < nrAddressbooks; i++) {
@@ -69,12 +69,13 @@ public class ContactAllListTest extends AbstractTestClient<AddressbooksService> 
 		for (AddressbookModel _am : addressbooks) {
 			deleteAddressbook(_am.getId());
 		}
+		addressbookWC.close();
 	}
 	
 	@Test
 	public void testContactAllList() {
-		Response _response = webclient.replacePath("/").path("allContacts").query("size", totalContacts + 1).get();
-		List<ContactModel> _remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+		Response _response = addressbookWC.replacePath("/").path("allContacts").query("size", totalContacts + 1).get();
+		List<ContactModel> _remoteList = new ArrayList<ContactModel>(addressbookWC.getCollection(ContactModel.class));
 		assertEquals("listAllContacts() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("should have returned all objects", totalContacts, _remoteList.size());		
 	}
@@ -88,9 +89,9 @@ public class ContactAllListTest extends AbstractTestClient<AddressbooksService> 
 		Response _response = null;
 		while(true) {
 			_numberOfBatches++;
-			webclient.resetQuery();
-			_response = webclient.replacePath("/").path("allContacts").query("position", _position).get();
-			_remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+			addressbookWC.resetQuery();
+			_response = addressbookWC.replacePath("/").path("allContacts").query("position", _position).get();
+			_remoteList = new ArrayList<ContactModel>(addressbookWC.getCollection(ContactModel.class));
 			assertEquals("listAllContacts() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_numberOfReturnedObjects += _remoteList.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
@@ -111,38 +112,38 @@ public class ContactAllListTest extends AbstractTestClient<AddressbooksService> 
 	@Test
 	public void testContactAllListExplicitQueries() {
 		// testing some explicit positions and sizes
-		webclient.resetQuery();
+		addressbookWC.resetQuery();
 		// get next _nrElements elements from position _nrElements
 		int _nrElements = 7;
-		Response _response = webclient.replacePath("/").path("allContacts").query("position", _nrElements).query("size", _nrElements).get();
-		List<ContactModel> _remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+		Response _response = addressbookWC.replacePath("/").path("allContacts").query("position", _nrElements).query("size", _nrElements).get();
+		List<ContactModel> _remoteList = new ArrayList<ContactModel>(addressbookWC.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", _nrElements, _remoteList.size());
 		
 		// get last _nrElements elements 
-		webclient.resetQuery();
-		_response = webclient.replacePath("/").path("allContacts").query("position", totalContacts - _nrElements).query("size", _nrElements).get();
-		_remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+		addressbookWC.resetQuery();
+		_response = addressbookWC.replacePath("/").path("allContacts").query("position", totalContacts - _nrElements).query("size", _nrElements).get();
+		_remoteList = new ArrayList<ContactModel>(addressbookWC.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", _nrElements, _remoteList.size());
 		
 		// read over end of list
-		webclient.resetQuery();
-		_response = webclient.replacePath("/").path("allContacts").query("position", totalContacts - _nrElements).query("size", 2 * _nrElements).get();
-		_remoteList = new ArrayList<ContactModel>(webclient.getCollection(ContactModel.class));
+		addressbookWC.resetQuery();
+		_response = addressbookWC.replacePath("/").path("allContacts").query("position", totalContacts - _nrElements).query("size", 2 * _nrElements).get();
+		_remoteList = new ArrayList<ContactModel>(addressbookWC.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", _nrElements, _remoteList.size());		
 	}
 	
 	private AddressbookModel createAddressbook(String name) {
-		Response _response = webclient.replacePath("/").post(new AddressbookModel(name));
+		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel(name));
 		AddressbookModel _adb = _response.readEntity(AddressbookModel.class);
 		System.out.println("posted AddressbookModel " + name + ": " + _adb.getId());
 		return _adb;
 	}
 	
 	private void deleteAddressbook(String id) {
-		webclient.replacePath("/").path(id).delete();
+		addressbookWC.replacePath("/").path(id).delete();
 		System.out.println("deleted AddressbookModel " + id);
 	}
 
@@ -150,7 +151,8 @@ public class ContactAllListTest extends AbstractTestClient<AddressbooksService> 
 		ContactModel _cm = new ContactModel();
 		_cm.setFirstName(firstName);
 		_cm.setLastName(lastName);
-		Response _response = webclient.replacePath("/").path(aid).path(PATH_EL_CONTACT).post(_cm);
+		Response _response = addressbookWC.replacePath("/").path(aid).
+				path(ContactTest.PATH_EL_CONTACT).post(_cm);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("posted ContactModel " + _cm.getFn() + " in addressbook " + aid);
 		return _cm;

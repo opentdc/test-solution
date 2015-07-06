@@ -35,31 +35,37 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
 import org.opentdc.wtt.WttService;
 
 import test.org.opentdc.AbstractTestClient;
+import test.org.opentdc.addressbooks.AddressbookTest;
 
-public class ProjectTest extends AbstractTestClient<WttService> {
-		
-	public static final String API = "api/company/";	
+public class ProjectTest extends AbstractTestClient {
 	public static final String PATH_EL_PROJECT = "project";
-	private static CompanyModel company = null;
+	private WebClient wttWC = null;
+	private WebClient addressbookWC = null;
+	private CompanyModel company = null;
+	private AddressbookModel addressbook = null;
 
 	@Before
-	public void initializeTest() {
-		initializeTest(API, WttService.class);
-		Response _response = webclient.replacePath("/").post(new CompanyModel("ProjectTest", "MY_DESC"));
-		company = _response.readEntity(CompanyModel.class);
+	public void initializeTests() {
+		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
+		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, "ProjectTest");
+		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, "ProjectTest", "MY_DESC");
 	}
-	
+
 	@After
 	public void cleanupTest() {
-		webclient.replacePath("/").path(company.getId()).delete();
+		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), "ProjectTest");
+		wttWC.close();
 	}
 	
 	/********************************** project attributes tests *********************************/			
@@ -154,12 +160,12 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertNull("description should not be set by empty constructor", _pm1.getDescription());
 		
 		// create(_pm1) -> BAD_REQUEST (because of empty title)
-		Response _response = webclient.replacePath("/").post(_pm1);
+		Response _response = wttWC.replacePath("/").post(_pm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		_pm1.setTitle("testProjectCreateReadDeleteWithEmptyConstructor");
 
 		// create(_pm1) -> _pm2
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 		
@@ -174,7 +180,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertNull("create() should not change the description", _pm2.getDescription());
 		
 		// read(_pm2) -> _pm3
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read(" + _pm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
 		
@@ -184,7 +190,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertEquals("description of returned object should be unchanged after remote create", _pm2.getDescription(), _pm3.getDescription());
 
 		// delete(_pm3)
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
 		assertEquals("delete(" + _pm3.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -197,7 +203,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertEquals("description should be set by constructor", "MY_DESC", _pm1.getDescription());
 		
 		// create(_pm1) -> _pm2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 		
@@ -212,7 +218,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertEquals("create() should not change the description", "MY_DESC", _pm2.getDescription());
 		
 		// read(_pm2)  -> _pm3
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read(" + _pm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
 		
@@ -222,7 +228,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertEquals("read() should not change the description", _pm2.getDescription(), _pm3.getDescription());
 		
 		// delete(_pm3)
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
 		assertEquals("delete(" + _pm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -233,14 +239,14 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		_pm1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _pm1.getId());
 		// create(_pm1) -> BAD_REQUEST
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateProjectWithDuplicateId() {
 		// create(new()) -> _pm1
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
 				.post(new ProjectModel("testCreateProjectWithDuplicateId1", "MY_DESC1"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
@@ -250,7 +256,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		_pm2.setId(_pm1.getId());		// wrongly create a 2nd ProjectModel object with the same ID
 		
 		// create(_pm2) -> CONFLICT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm2);
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -260,16 +266,16 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
+			_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
 					.post(new ProjectModel("testProjectList" + i, "MY_DESC" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ProjectModel.class));
 		}
 		
 		// list(/) -> _remoteList
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).get();
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(webclient.getCollection(ProjectModel.class));
+		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (ProjectModel _pm : _remoteList) {
@@ -281,13 +287,13 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		}
 		
 		for (ProjectModel _pm : _localList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
+			_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(ProjectModel.class);
 		}
 		
 		for (ProjectModel _pm : _localList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).delete();
+			_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -300,12 +306,12 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		ProjectModel _pm2 = new ProjectModel("testProjectCreate2", "MY_DESC2");
 		
 		// create(_pm1)  -> _pm3
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
 
 		// create(_pm2) -> _pm4
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm2);
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm4 = _response.readEntity(ProjectModel.class);
 		
@@ -322,29 +328,29 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertThat(_pm4.getId(), not(equalTo(_pm3.getId())));
 
 		// delete(_pm3) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_pm4) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm4.getId()).delete();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testProjectCreateDouble() {		
 		// create(new()) -> _pm
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
 				.post(new ProjectModel("testProjectCreateDouble", "MY_DESC"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm = _response.readEntity(ProjectModel.class);
 		assertNotNull("ID should be set:", _pm.getId());		
 		
 		// create(_pm) -> CONFLICT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm);
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_pm) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).delete();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -352,35 +358,35 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 	public void testProjectRead() {
 		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();
 		Response _response = null;
-		webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT);
+		wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT);
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.post(new ProjectModel("testProjectRead" + i, "MY_DESC" + i));
+			_response = wttWC.post(new ProjectModel("testProjectRead" + i, "MY_DESC" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ProjectModel.class));
 		}
 	
 		// test read on each local element
 		for (ProjectModel _pm : _localList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
+			_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(ProjectModel.class);
 		}
 
 		// test read on each listed element
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).get();
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(webclient.getCollection(ProjectModel.class));
+		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
 
 		ProjectModel _tmpObj = null;
 		for (ProjectModel _pm : _remoteList) {
-			_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
+			_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(ProjectModel.class);
 			assertEquals("ID should be unchanged when reading a project", _pm.getId(), _tmpObj.getId());						
 		}
 
 		for (ProjectModel _pm : _localList) {
-			_response = webclient.replacePath(_pm.getId()).delete();
+			_response = wttWC.replacePath(_pm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -391,17 +397,17 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		ProjectModel _pm1 = new ProjectModel("testProjectMultiRead", "MY_DESC");
 		
 		// create(_pm1) -> _p2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 
 		// read(_pm2) -> _pm3
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
 		assertEquals("ID should be unchanged after read:", _pm2.getId(), _pm3.getId());		
 
 		// read(_pm2) -> _pm4
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm4 = _response.readEntity(ProjectModel.class);
 		
@@ -415,7 +421,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertEquals("description should be the same:", _pm3.getDescription(), _pm2.getDescription());
 		
 		// delete(_pm2)
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -425,15 +431,15 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		ProjectModel _pm1 = new ProjectModel("testProjectUpdate", "MY_DESC");
 		
 		// create(_pm1) -> _pm2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 		
 		// change the attributes
 		// update(_pm2) -> _pm3
 		_pm2.setTitle("MY_TITLE");
 		_pm2.setDescription("MY_DESC");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).put(_pm2);
+		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).put(_pm2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
 
@@ -446,8 +452,8 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		// update(_pm2) -> _pm4
 		_pm2.setTitle("MY_TITLE2");
 		_pm2.setDescription("MY_DESC2");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).put(_pm2);
+		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).put(_pm2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm4 = _response.readEntity(ProjectModel.class);
 
@@ -456,7 +462,7 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertEquals("title should have changed", "MY_TITLE2", _pm4.getTitle());
 		assertEquals("description should have changed", "MY_DESC2", _pm4.getDescription());
 		
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
@@ -466,26 +472,26 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		// new() -> _pm1
 		ProjectModel _pm1 = new ProjectModel("testProjectDelete", "MY_DESC");
 		// create(_pm1) -> _pm2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 		
 		// read(_pm2) -> _pm3
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
 		assertEquals("ID should be unchanged when reading a project (remote):", _pm2.getId(), _pm3.getId());						
 		
 		// delete(_pm2) -> OK
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
 		// read(_pm2) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read(_pm2) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
@@ -495,34 +501,34 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		ProjectModel _pm1 = new ProjectModel("testProjectDoubleDelete", "MY_DESC");
 		
 		// create(_pm1) -> _pm2
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).post(_pm1);
 		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 
 		// read(_pm2) -> OK
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
 		// delete(_pm2) -> OK
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();		
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 		// read(_pm2) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// delete _pm2 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();		
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read _pm2 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testProjectModifications() {
 		// create(new ProjectModel()) -> _pm1
-		Response _response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
+		Response _response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT)
 				.post(new ProjectModel("testProjectModifications", "MY_DESC"));
 		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
 		
@@ -537,8 +543,8 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		
 		// update(_pm1)  -> _pm2
 		_pm1.setTitle("NEW_TITLE");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
+		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 
@@ -554,8 +560,8 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		// update(_pm1) with modifiedBy/At set on client side -> ignored by server
 		_pm1.setModifiedBy("MYSELF");
 		_pm1.setModifiedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
+		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
 		
@@ -565,7 +571,20 @@ public class ProjectTest extends AbstractTestClient<WttService> {
 		assertThat(_pm1.getModifiedAt(), not(equalTo(_pm3.getModifiedAt())));
 		
 		// delete(_o) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();		
+		_response = wttWC.replacePath("/").path(company.getId()).path(PATH_EL_PROJECT).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	/********************************* helper methods *********************************/	
+	public static ProjectModel createProject(
+			WebClient wttWC, 
+			String companyId,
+			String title, 
+			String description) 
+	{
+		ProjectModel _pm = new ProjectModel();
+		_pm.setTitle(title);
+		_pm.setDescription(description);
+		Response _response = wttWC.replacePath("/").path(companyId).path(PATH_EL_PROJECT).post(_pm);
+		return _response.readEntity(ProjectModel.class);
 	}
 }

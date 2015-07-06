@@ -29,20 +29,19 @@ import org.apache.cxf.binding.BindingFactoryManager;
 import org.apache.cxf.jaxrs.JAXRSBindingFactory;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.After;
 import org.opentdc.service.GenericService;
 
-public abstract class AbstractTestClient<T> {
-	private static final String DEFAULT_URL = "http://localhost:8080/opentdc-services-test/";
+public abstract class AbstractTestClient {
+	protected static final String DEFAULT_BASE_URL = "http://localhost:8080/opentdc-services-test/";
 	protected static int LIMIT;			// when testing lists, this defined the number of elements in a list
 
-	protected WebClient webclient = null;
 	protected int status;
-	protected String apiUrl = "";
 
-	protected String createUrl(
-		String api) {
-		String _serviceUrl = DEFAULT_URL;
+	protected static String createUrl(
+		String defaultBaseUrl,
+		String apiUrl) 
+	{
+		String _serviceUrl = defaultBaseUrl;
 		if(System.getProperty("service.url") != null && 
 			System.getProperty("service.url").startsWith("http://")) {
 			_serviceUrl = System.getProperty("service.url");
@@ -50,11 +49,13 @@ public abstract class AbstractTestClient<T> {
 		if (!_serviceUrl.endsWith("/")) {
 			_serviceUrl = _serviceUrl + "/";
 		}
-		return _serviceUrl + api;
+		return _serviceUrl + apiUrl;
 	}
 	
-	protected WebClient createWebClient(
-		Class<T> serviceClass) {
+	protected static WebClient createWebClient(
+		String apiUrl,
+		Class<?> serviceClass) 
+	{
 		JAXRSClientFactoryBean _sf = new JAXRSClientFactoryBean();
 		_sf.setResourceClass(serviceClass);
 		_sf.setAddress(apiUrl);
@@ -62,17 +63,16 @@ public abstract class AbstractTestClient<T> {
 		JAXRSBindingFactory _factory = new JAXRSBindingFactory();
 		_factory.setBus(_sf.getBus());
 		_manager.registerBindingFactory(JAXRSBindingFactory.JAXRS_BINDING_ID, _factory);
-		WebClient webclient = _sf.createWebClient();
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		return webclient;
+		WebClient _webclient = _sf.createWebClient();
+		_webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		return _webclient;
 	}
 	
-	protected void initializeTest(
-		String api,
-		Class<T> serviceClass
-	) {
-		apiUrl = createUrl(api);
-		webclient = createWebClient(serviceClass);
+	protected WebClient initializeTest(
+		String apiUrl,
+		Class<?> serviceClass)
+	{
+		WebClient _webclient = createWebClient(createUrl(DEFAULT_BASE_URL, apiUrl), serviceClass);
 		
 		// ensure that LIMIT < GenericeService.DEF_SIZE (for testing purposes)
 		if (GenericService.DEF_SIZE > 10) {
@@ -83,11 +83,6 @@ public abstract class AbstractTestClient<T> {
 			throw new Exception("AbstractTestClient.LIMIT needs to be set smaller than GenericService.DEF_SIZE");
 		}
 		*/
-	}
-	
-	@After
-	public void reset() {
-		// webclient.reset();
-		webclient.close();
+		return _webclient;
 	}
 }

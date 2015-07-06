@@ -34,67 +34,55 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressModel;
 import org.opentdc.addressbooks.AddressType;
 import org.opentdc.addressbooks.AddressbookModel;
-import org.opentdc.addressbooks.AddressbooksService;
+import org.opentdc.addressbooks.AttributeType;
 import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.addressbooks.MessageType;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class AddressTest extends AbstractTestClient<AddressbooksService> {
-	
-	private static final String API = "api/addressbooks/";
-	public static final String PATH_EL_CONTACT = "contact";
+public class AddressTest extends AbstractTestClient {
 	public static final String PATH_EL_ADDRESS = "address";
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
-	private static final boolean TEST_HYBRID_ADDRESSES = false;
-	
+	private WebClient addressbookWC = null;
+		
 	@Before
-	public void initializeTest(
-	) {
-		initializeTest(API, AddressbooksService.class);
-		Response _response = webclient.replacePath("/").post(new AddressbookModel("AddressTest"));
-		adb = _response.readEntity(AddressbookModel.class);
-		System.out.println("AddressTest posted AddressbookModel " + adb.getId());
-		ContactModel _cm = new ContactModel();
-		_cm.setFirstName("Address");
-		_cm.setLastName("Test");
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
-		contact = _response.readEntity(ContactModel.class);
-		System.out.println("AddressTest posted ContactModel " + contact.getId());
+	public void initializeTests() {
+		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		adb = AddressbookTest.createAddressbook(addressbookWC, "AddressTest");
+		contact = ContactTest.createContact(addressbookWC, adb.getId(), "Address", "Test");
 	}
 	
 	@After
 	public void cleanupTest() {
-		webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).delete();
-		System.out.println("AddressTest deleted ContactModel " + contact.getId());
-		webclient.replacePath("/").path(adb.getId()).delete();
-		System.out.println("AddressTest deleted AddressbookModel " + adb.getId());
+		AddressbookTest.cleanup(addressbookWC, adb.getId(), "AddressTest");
 	}
-
+	
 	/********************************** address attributes tests *********************************/			
 	@Test
 	public void testAddressModelEmptyConstructor() {
 		// new() -> _am
 		AddressModel _am = new AddressModel();
 		assertNull("id should not be set by empty constructor", _am.getId());
+		assertNull("addressType should not be set by empty constructor", _am.getAddressType());
 		assertNull("attributeType should not be set by empty constructor", _am.getAttributeType());
-		assertNull("type should not be set by empty constructor", _am.getType());
 		assertNull("msgType should not be set by empty constructor", _am.getMsgType());
 		assertNull("value should not be set by empty constructor", _am.getValue());
 		assertNull("street should not be set by empty constructor", _am.getStreet());
 		assertNull("postalCode should not be set by empty constructor", _am.getPostalCode());
 		assertNull("city should not be set by empty constructor", _am.getCity());
-		assertNull("country should not be set by empty constructor", _am.getCountry());
+		assertEquals("countryCode should be set to zero by empty constructor", 0, _am.getCountryCode());
 	}
 			
 	@Test
-	public void testAddressIdAttributeChange() {
+	public void testIdChange() {
 		// new() -> _am -> _am.setId()
 		AddressModel _am = new AddressModel();
 		assertNull("id should not be set by constructor", _am.getId());
@@ -102,39 +90,39 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 		assertEquals("id should have changed:", "MY_ID", _am.getId());
 	}
 
-	// AttributeType
+	// addressType
 	@Test
-	public void testAddressAttributeTypeChange() {
-		// new() -> _am -> _am.setAttributeType()
+	public void testAddressTypeChange() {
+		// new() -> _am -> _am.setAddressType()
 		AddressModel _am = new AddressModel();
-		assertNull("attributeType should not be set by empty constructor", _am.getAttributeType());
-		_am.setAttributeType("MY_ATTR_TYPE");
-		assertEquals("attributeType should have changed:", "MY_ATTR_TYPE", _am.getAttributeType());
+		assertNull("addressType should not be set by empty constructor", _am.getAddressType());
+		_am.setAddressType(AddressType.PHONE);
+		assertEquals("addressType should have changed", AddressType.PHONE, _am.getAddressType());
 	}
 	
 	// Type
 	@Test
-	public void testAddressTypeAttributeChange() {
+	public void testAttributeTypeChange() {
 		// new() -> _am -> _am.setType()
 		AddressModel _am = new AddressModel();
-		assertNull("type should not be set by empty constructor", _am.getType());
-		_am.setType(AddressType.OTHER);
-		assertEquals("type should have changed:", AddressType.OTHER, _am.getType());
+		assertNull("attributeType should not be set by empty constructor", _am.getAttributeType());
+		_am.setAttributeType(AttributeType.OTHER);
+		assertEquals("attributeType should have changed:", AttributeType.OTHER, _am.getAttributeType());
 	}
 
 	// MsgType
 	@Test
-	public void testAddressMsgTypeAttributeChange() {
+	public void testMsgTypeChange() {
 		// new() -> _am -> _am.setMsgType()
 		AddressModel _am = new AddressModel();
 		assertNull("msgType should not be set by empty constructor", _am.getMsgType());
-		_am.setMsgType("MY_MSG_TYPE");
-		assertEquals("msgType should have changed:", "MY_MSG_TYPE", _am.getMsgType());
+		_am.setMsgType(MessageType.FACEBOOK);
+		assertEquals("msgType should have changed:", MessageType.FACEBOOK, _am.getMsgType());
 	}
 	
 	// Value
 	@Test
-	public void testAddressValueAttributeChange() {
+	public void testValueChange() {
 		// new() -> _am -> _am.setValue()
 		AddressModel _am = new AddressModel();
 		assertNull("value should not be set by empty constructor", _am.getValue());
@@ -144,7 +132,7 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 	
 	// Street
 	@Test
-	public void testAddressStreetAttributeChange() {
+	public void testStreetChange() {
 		// new() -> _am -> _am.setStreet()
 		AddressModel _am = new AddressModel();
 		assertNull("street should not be set by empty constructor", _am.getStreet());
@@ -154,7 +142,7 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 	
 	// PostalCode
 	@Test
-	public void testAddressPostalCodeAttributeChange() {
+	public void testPostalCodeChange() {
 		// new() -> _am -> _am.setPostalCode()
 		AddressModel _am = new AddressModel();
 		assertNull("postalCode should not be set by empty constructor", _am.getPostalCode());
@@ -164,7 +152,7 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 	
 	// City
 	@Test
-	public void testAddressCityAttributeChange() {
+	public void testCityChange() {
 		// new() -> _am -> _am.setCity()
 		AddressModel _am = new AddressModel();
 		assertNull("city should not be set by empty constructor", _am.getCity());
@@ -174,12 +162,12 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 
 	// Country
 	@Test
-	public void testAddressCountryAttributeChange() {
+	public void testCountryChange() {
 		// new() -> _am -> _am.setCountry()
 		AddressModel _am = new AddressModel();
-		assertNull("country should not be set by empty constructor", _am.getCountry());
-		_am.setCountry("MY_COUNTRY");
-		assertEquals("country should have changed:", "MY_COUNTRY", _am.getCountry());
+		assertEquals("countryCode should be set to 0 by empty constructor", 0, _am.getCountryCode());
+		_am.setCountryCode((short) 100);
+		assertEquals("countryCode should have changed:", 100, _am.getCountryCode());
 	}
 	
 	@Test
@@ -231,176 +219,190 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 		// new() -> _am1
 		AddressModel _am1 = new AddressModel();
 		assertNull("id should not be set by empty constructor", _am1.getId());
+		assertNull("addressType should not be set by empty constructor", _am1.getAddressType());
 		assertNull("attributeType should not be set by empty constructor", _am1.getAttributeType());
-		assertNull("type should not be set by empty constructor", _am1.getType());
 		assertNull("msgType should not be set by empty constructor", _am1.getMsgType());
 		assertNull("value should not be set by empty constructor", _am1.getValue());
 		assertNull("street should not be set by empty constructor", _am1.getStreet());
 		assertNull("postalCode should not be set by empty constructor", _am1.getPostalCode());
 		assertNull("city should not be set by empty constructor", _am1.getCity());
-		assertNull("country should not be set by empty constructor", _am1.getCountry());
+		assertEquals("countryCode should be set to zero by empty constructor", 0, _am1.getCountryCode());
+		
+		// create(_am1) -> BAD_REQUEST (because of empty addressType)
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAddressType(AddressType.EMAIL);
 		
 		// create(_am1) -> BAD_REQUEST (because of empty attributeType)
-		Response _response = webclient.replacePath("/").post(_am1);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_am1.setAttributeType("testAddressCreateReadDeleteWithEmptyConstructor");
-		
-		// create(_am1) -> BAD_REQUEST (because of empty type)
-		_response = webclient.replacePath("/").post(_am1);
-		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_am1.setType(AddressType.OTHER);
-		
+		_am1.setAttributeType(AttributeType.OTHER);
+
 		// create(_am1) -> BAD_REQUEST (because of empty value)
-		_response = webclient.replacePath("/").post(_am1);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		_am1.setValue("MY_VALUE");
 		
 		// create(_am1) -> _am2
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am1);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am2 = _response.readEntity(AddressModel.class);
 		
 		// validate _am1
 		assertNull("create() should not change the id of the local object", _am1.getId());
-		assertEquals("create() should not change the attributeType of the local object", "testAddressCreateReadDeleteWithEmptyConstructor", _am1.getAttributeType());
-		assertEquals("create() should not change the type of the local object", AddressType.OTHER, _am1.getType());
+		assertEquals("create() should not change the addressType of the local object", AddressType.EMAIL, _am1.getAddressType());
+		assertEquals("create() should not change the attributeType of the local object", AttributeType.OTHER, _am1.getAttributeType());
 		assertNull("create() should not change the msgType of the local object", _am1.getMsgType());
 		assertEquals("create() should not change the value of the local object", "MY_VALUE", _am1.getValue());
 		assertNull("create() should not change the street of the local object", _am1.getStreet());
 		assertNull("create() should not change the postalCode of the local object", _am1.getPostalCode());
 		assertNull("create() should not change the city of the local object", _am1.getCity());
-		assertNull("create() should not change the country of the local object", _am1.getCountry());
+		assertEquals("create() should not change the countryCode of the local object", 0, _am1.getCountryCode());
 
 		// validate _am2
 		assertNotNull("create() should set a valid id on the remote object returned", _am2.getId());
-		assertEquals("attributeType of returned object should be unchanged after remote create", "testAddressCreateReadDeleteWithEmptyConstructor", _am2.getAttributeType());   // what is the correct value of a date?
-		assertEquals("type of returned object should still be unchanged after remote create", AddressType.OTHER, _am2.getType());
+		assertEquals("addressType of returned object should be unchanged after remote create", AddressType.EMAIL, _am2.getAddressType()); 
+		assertEquals("attributeType of returned object should still be unchanged after remote create", AttributeType.OTHER, _am2.getAttributeType());
 		assertNull("msgType of returned object should still be null after remote create", _am2.getMsgType());
 		assertEquals("value of returned object should still be unchanged after remote create", "MY_VALUE", _am2.getValue());
 		assertNull("street of returned object should still be null after remote create", _am2.getStreet());
 		assertNull("postalCode of returned object should still be null after remote create", _am2.getPostalCode());
 		assertNull("city of returned object should still be null after remote create", _am2.getCity());
-		assertNull("country of returned object should still be null after remote create", _am2.getCountry());
+		assertEquals("countryCode of returned object should still be zero after remote create", 0, _am2.getCountryCode());
 
 		// read(_am2) -> _am3
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am2.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).get();
 		assertEquals("read(" + _am2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am3 = _response.readEntity(AddressModel.class);
 		assertEquals("id of returned object should be the same", _am2.getId(), _am3.getId());
+		assertEquals("addressType of returned object should be unchanged after remote create", _am2.getAddressType(), _am3.getAddressType());
 		assertEquals("attributeType of returned object should be unchanged after remote create", _am2.getAttributeType(), _am3.getAttributeType());
-		assertEquals("type of returned object should be unchanged after remote create", _am2.getType(), _am3.getType());
 		assertEquals("msgType of returned object should be unchanged after remote create", _am2.getMsgType(), _am3.getMsgType());
 		assertEquals("value of returned object should be unchanged after remote create", _am2.getValue(), _am3.getValue());
 		assertEquals("street of returned object should be unchanged after remote create", _am2.getStreet(), _am3.getStreet());
 		assertEquals("postalCode of returned object should be unchanged after remote create", _am2.getPostalCode(), _am3.getPostalCode());
 		assertEquals("city of returned object should be unchanged after remote create", _am2.getCity(), _am3.getCity());
-		assertEquals("country of returned object should be unchanged after remote create", _am2.getCountry(), _am3.getCountry());
+		assertEquals("countryCode of returned object should be unchanged after remote create", _am2.getCountryCode(), _am3.getCountryCode());
 		// delete(_p3)
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am3.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am3.getId()).delete();
 		assertEquals("delete(" + _am3.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
-//	"MY_ATTR_TYPE"		setAttributeType		getAttributeType	attributeType
+//	"MY_ATTR_TYPE"		setAddressType			getAddressType		addressType
 //	"MY_TYPE"			setType					getType				type
 //	"MY_MSG_TYPE"		setMsgType				getMsgType			msgType
 //	"MY_VALUE"			setValue				getValue			value
 //	"MY_STREET"			setStreet				getStreet			street
 //	"MY_POSTAL_CODE"	setPostalCode			getPostalCode		postalCode
 //	"MY_CITY"			setCity					getCity				city
-//	"MY_COUNTRY"		setCountry				getCountry			country
+//	0					setCountryCode			getCountryCode		countryCode
 	
 	@Test
 	public void testAddressCreateReadDelete() {
 		// new(with custom attributes) -> _am1
-		AddressModel _am1 = setPostalAddressDefaultValues(new AddressModel(), "");
+		AddressModel _am1 = setPostalAddressDefaultValues(new AddressModel(), 0);
 		assertNull("id should not be set by constructor", _am1.getId());
-		assertEquals("attributeType should be set correctly", "MY_ATTR_TYPE", _am1.getAttributeType());
-		assertEquals("type should be set correctly", AddressType.OTHER, _am1.getType());
-		if(TEST_HYBRID_ADDRESSES) {
-			assertEquals("msgType should be set correctly", "MY_MSG_TYPE", _am1.getMsgType());
-			assertEquals("value should be set correctly", "MY_VALUE", _am1.getValue());
-		}
-		assertEquals("street should be set correctly", "MY_STREET", _am1.getStreet());
-		assertEquals("postalCode should be set correctly", "MY_POSTAL_CODE", _am1.getPostalCode());
-		assertEquals("city should be set correctly", "MY_CITY", _am1.getCity());
-		assertEquals("country should be set correctly", "MY_COUNTRY", _am1.getCountry());
+		assertEquals("addressType should be set correctly", AddressType.POSTAL, _am1.getAddressType());
+		assertEquals("attributeType should be set correctly", AttributeType.getDefaultAttributeType(), _am1.getAttributeType());
+		assertNull("msgType should not be set", _am1.getMsgType());
+		assertNull("value should be not be set", _am1.getValue());
+		assertEquals("street should be set correctly", "MY_STREET0", _am1.getStreet());
+		assertEquals("postalCode should be set correctly", "MY_POSTAL_CODE0", _am1.getPostalCode());
+		assertEquals("city should be set correctly", "MY_CITY0", _am1.getCity());
+		assertEquals("countryCode should be set correctly", 0, _am1.getCountryCode());
 
 		// create(_am1) -> _am2
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am1);
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am2 = _response.readEntity(AddressModel.class);
 		
 		// validate the local object after the remote create()
 		assertNull("id should not be set by constructor", _am1.getId());
-		assertEquals("attributeType should be unchanged", "MY_ATTR_TYPE", _am1.getAttributeType());
-		assertEquals("type should be unchanged", AddressType.OTHER, _am1.getType());
-		if(TEST_HYBRID_ADDRESSES) {
-			assertEquals("msgType should be unchanged", "MY_MSG_TYPE", _am1.getMsgType());
-			assertEquals("value should be unchanged", "MY_VALUE", _am1.getValue());
-		}
-		assertEquals("street should be unchanged", "MY_STREET", _am1.getStreet());
-		assertEquals("postalCode should be unchanged", "MY_POSTAL_CODE", _am1.getPostalCode());
-		assertEquals("city should be unchanged", "MY_CITY", _am1.getCity());
-		assertEquals("country should be unchanged", "MY_COUNTRY", _am1.getCountry());
+		assertEquals("addressType should be unchanged", AddressType.POSTAL, _am1.getAddressType());
+		assertEquals("attributeType should be unchanged", AttributeType.getDefaultAttributeType(), _am1.getAttributeType());
+		assertNull("msgType should be unchanged", _am1.getMsgType());
+		assertNull("value should be be unchanged", _am1.getValue());
+		assertEquals("street should be unchanged", "MY_STREET0", _am1.getStreet());
+		assertEquals("postalCode should be unchanged", "MY_POSTAL_CODE0", _am1.getPostalCode());
+		assertEquals("city should be unchanged", "MY_CITY0", _am1.getCity());
+		assertEquals("countryCode should be unchanged", 0, _am1.getCountryCode());
 		
 		// validate the returned remote object
 		assertNotNull("id of returned object should be set", _am2.getId());
-		assertEquals("attributeType should be unchanged", "MY_ATTR_TYPE", _am2.getAttributeType());
-		assertEquals("type should be unchanged", AddressType.OTHER, _am2.getType());
-		if(TEST_HYBRID_ADDRESSES) {
-			assertEquals("msgType should be unchanged", "MY_MSG_TYPE", _am2.getMsgType());
-			assertEquals("value should be unchanged", "MY_VALUE", _am2.getValue());
-		}
-		assertEquals("street should be unchanged", "MY_STREET", _am2.getStreet());
-		assertEquals("postalCode should be unchanged", "MY_POSTAL_CODE", _am2.getPostalCode());
-		assertEquals("city should be unchanged", "MY_CITY", _am2.getCity());
-		assertEquals("country should be unchanged", "MY_COUNTRY", _am2.getCountry());
+		assertEquals("addressType should be unchanged", AddressType.POSTAL, _am2.getAddressType());
+		assertEquals("attributeType should be unchanged", AttributeType.getDefaultAttributeType(), _am2.getAttributeType());
+		assertNull("msgType should be unchanged", _am2.getMsgType());
+		assertNull("value should be be unchanged", _am2.getValue());
+		assertEquals("street should be unchanged", "MY_STREET0", _am2.getStreet());
+		assertEquals("postalCode should be unchanged", "MY_POSTAL_CODE0", _am2.getPostalCode());
+		assertEquals("city should be unchanged", "MY_CITY0", _am2.getCity());
+		assertEquals("countryCode should be unchanged", 0, _am2.getCountryCode());
 		
-		// read(_am1)  -> _am3
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am2.getId()).get();
+		// read(_am2)  -> _am3
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).get();
 		assertEquals("read(" + _am2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am3 = _response.readEntity(AddressModel.class);
 		assertEquals("id of returned object should be the same", _am2.getId(), _am3.getId());
+		assertEquals("addressType should be the same", _am2.getAddressType(), _am3.getAddressType());
 		assertEquals("attributeType should be the same", _am2.getAttributeType(), _am3.getAttributeType());
-		assertEquals("type should be the same", _am2.getType(), _am3.getType());
-		if(TEST_HYBRID_ADDRESSES) {
-			assertEquals("msgType should be the same", _am2.getMsgType(), _am3.getMsgType());
-			assertEquals("value should be the same", _am2.getValue(), _am3.getValue());
-		}
+		assertNull("msgType should be the same", _am3.getMsgType());
+		assertNull("value should be be the same", _am3.getValue());
 		assertEquals("street should be the same", _am2.getStreet(), _am3.getStreet());
 		assertEquals("postalCode should be the same", _am2.getPostalCode(), _am3.getPostalCode());
 		assertEquals("city should be the same", _am2.getCity(), _am3.getCity());
-		assertEquals("country should be the same", _am2.getCountry(), _am3.getCountry());
+		assertEquals("countryCode should be the same", _am2.getCountryCode(), _am3.getCountryCode());
 		
 		// delete(_am3)
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am3.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am3.getId()).delete();
 		assertEquals("delete(" + _am3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testAddressProjectWithClientSideId() {
 		// new() -> _am1 -> _am1.setId()
-		AddressModel _am1 = createUrlAddress("testAddressProjectWithClientSideId", AddressType.OTHER, "MY_VALUE");
+		AddressModel _am1 = createUrlAddress(AttributeType.HOME, "testAddressProjectWithClientSideId");
 		_am1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _am1.getId());
 		// create(_am1) -> BAD_REQUEST
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am1);
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testAddressProjectWithDuplicateId() {
 		// create(new()) -> _am1
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(
-				createUrlAddress("testAddressProjectWithDuplicateId", AddressType.OTHER, "MY_VALUE"));
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(
+				createUrlAddress(AttributeType.HOME, "testAddressProjectWithDuplicateId"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am1 = _response.readEntity(AddressModel.class);
 
 		// new() -> _am2 -> _am2.setId(_am1.getId())
-		AddressModel _am2 = createUrlAddress("testAddressProjectWithDuplicateId2", AddressType.OTHER, "MY_VALUE2");
+		AddressModel _am2 = createUrlAddress(AttributeType.HOME, "testAddressProjectWithDuplicateId2");
 		_am2.setId(_am1.getId());		// wrongly create a 2nd AddressModel object with the same ID
 		
 		// create(_am2) -> CONFLICT
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am2);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -408,17 +410,21 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 	public void testAddressList() {
 		ArrayList<AddressModel> _localList = new ArrayList<AddressModel>();		
 		Response _response = null;
-		webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS);
+		addressbookWC.replacePath("/").path(adb.getId()).
+			path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+			path(PATH_EL_ADDRESS);
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = webclient.post(createUrlAddress("testAddressList" + i, AddressType.OTHER, "MY_VALUE" + i));
+			_response = addressbookWC.post(createUrlAddress(AttributeType.HOME, "testAddressList" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(AddressModel.class));
 		}
 		
 		// list(/) -> _remoteList
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).get();
-		List<AddressModel> _remoteList = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).get();
+		List<AddressModel> _remoteList = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -431,13 +437,17 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 		}
 		
 		for (AddressModel _am : _localList) {
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).
+					path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+					path(PATH_EL_ADDRESS).path(_am.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(AddressModel.class);
 		}
 		
 		for (AddressModel _am : _localList) {
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).
+					path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+					path(PATH_EL_ADDRESS).path(_am.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -445,17 +455,21 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 	@Test
 	public void testAddressCreate() {	
 		// new(custom attributes1) -> _am1
-		AddressModel _am1 = setPostalAddressDefaultValues(new AddressModel(), "1");
+		AddressModel _am1 = setPostalAddressDefaultValues(new AddressModel(), 1);
 		// new(custom attributes2) -> _am2
-		AddressModel _am2 = setPostalAddressDefaultValues(new AddressModel(), "2");
+		AddressModel _am2 = setPostalAddressDefaultValues(new AddressModel(), 2);
 		
 		// create(_am1)  -> _am3
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am1);
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am3 = _response.readEntity(AddressModel.class);
 
 		// create(_am2) -> _am4
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am2);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am4 = _response.readEntity(AddressModel.class);		
 		assertNotNull("ID should be set", _am3.getId());
@@ -463,52 +477,58 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 		assertThat(_am4.getId(), not(equalTo(_am3.getId())));
 		
 		// validate attributes of _am3
-		assertEquals("attributeType should be unchanged", "MY_ATTR_TYPE1", _am3.getAttributeType());
-		assertEquals("type should be unchanged", AddressType.OTHER, _am3.getType());
-		if(TEST_HYBRID_ADDRESSES) {
-			assertEquals("msgType should be unchanged", "MY_MSG_TYPE1", _am3.getMsgType());
-			assertEquals("value should be unchanged", "MY_VALUE1", _am3.getValue());
-		}
+		assertEquals("addressType should be unchanged", AddressType.POSTAL, _am3.getAddressType());
+		assertEquals("attributeType should be unchanged", AttributeType.getDefaultAttributeType(), _am3.getAttributeType());
+		assertNull("msgType should be unchanged", _am3.getMsgType());
+		assertNull("value should be unchanged", _am3.getValue());
 		assertEquals("street should be unchanged", "MY_STREET1", _am3.getStreet());
 		assertEquals("postalCode should be unchanged", "MY_POSTAL_CODE1", _am3.getPostalCode());
 		assertEquals("city should be unchanged", "MY_CITY1", _am3.getCity());
-		assertEquals("country should be unchanged", "MY_COUNTRY1", _am3.getCountry());
+		assertEquals("countryCode should be unchanged", 1, _am3.getCountryCode());
 		
 		// validate attributes of _am4
-		assertEquals("attributeType should be unchanged", "MY_ATTR_TYPE2", _am4.getAttributeType());
-		assertEquals("type should be unchanged", AddressType.OTHER, _am4.getType());
-		if(TEST_HYBRID_ADDRESSES) {
-			assertEquals("msgType should be unchanged", "MY_MSG_TYPE2", _am4.getMsgType());
-			assertEquals("value should be unchanged", "MY_VALUE2", _am4.getValue());
-		}
+		assertEquals("addressType should be unchanged", AddressType.POSTAL, _am4.getAddressType());
+		assertEquals("attributeType should be unchanged", AttributeType.getDefaultAttributeType(), _am4.getAttributeType());
+		assertNull("msgType should be unchanged", _am4.getMsgType());
+		assertNull("value should be unchanged", _am4.getValue());
 		assertEquals("street should be unchanged", "MY_STREET2", _am4.getStreet());
 		assertEquals("postalCode should be unchanged", "MY_POSTAL_CODE2", _am4.getPostalCode());
 		assertEquals("city should be unchanged", "MY_CITY2", _am4.getCity());
-		assertEquals("country should be unchanged", "MY_COUNTRY2", _am4.getCountry());
+		assertEquals("countryCode should be unchanged", 2, _am4.getCountryCode());
 		
 		// delete(_am3) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am3.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_am4) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am4.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
 	@Test
 	public void testAddressCreateDouble() {		
 		// create(new()) -> _am
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(createUrlAddress("testAddressCreateDouble", AddressType.OTHER, "MY_VALUE"));
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(createUrlAddress(AttributeType.HOME, "testAddressCreateDouble"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am = _response.readEntity(AddressModel.class);
 		assertNotNull("ID should be set:", _am.getId());		
 		
 		// create(_am) -> CONFLICT
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_am) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -516,35 +536,45 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 	public void testAddressRead() {
 		ArrayList<AddressModel> _localList = new ArrayList<AddressModel>();
 		Response _response = null;
-		webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS);
+		addressbookWC.replacePath("/").path(adb.getId()).
+			path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+			path(PATH_EL_ADDRESS);
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.post(createUrlAddress("testAddressRead" + i, AddressType.OTHER, "MY_VALUE" + i));
+			_response = addressbookWC.post(createUrlAddress(AttributeType.HOME, "testAddressRead" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(AddressModel.class));
 		}
 	
 		// test read on each local element
 		for (AddressModel _am : _localList) {
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(AddressModel.class);
 		}
 
 		// test read on each listed element
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).get();
-		List<AddressModel> _remoteList = new ArrayList<AddressModel>(webclient.getCollection(AddressModel.class));
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).get();
+		List<AddressModel> _remoteList = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		AddressModel _tmpObj = null;
 		for (AddressModel _am : _remoteList) {
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am.getId()).get();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).
+					path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+					path(PATH_EL_ADDRESS).path(_am.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(AddressModel.class);
 			assertEquals("ID should be unchanged when reading a project", _am.getId(), _tmpObj.getId());						
 		}
 
 		for (AddressModel _am : _localList) {
-			_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(adb.getId()).
+					path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+					path(PATH_EL_ADDRESS).path(_am.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -552,166 +582,410 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 	@Test
 	public void testAddressMultiRead() {
 		// new() -> _am1
-		AddressModel _am1 = setPostalAddressDefaultValues(new AddressModel(), "1");
+		AddressModel _am1 = setPostalAddressDefaultValues(new AddressModel(), 1);
 		
 		// create(_am1) -> _am2
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am1);
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
 		AddressModel _am2 = _response.readEntity(AddressModel.class);
 
 		// read(_am2) -> _am3
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am2.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am3 = _response.readEntity(AddressModel.class);
 		assertEquals("ID should be unchanged after read:", _am2.getId(), _am3.getId());		
 
 		// read(_am2) -> _am4
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am2.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am4 = _response.readEntity(AddressModel.class);
 		
 		// but: the two objects are not equal !
 		assertEquals("ID should be the same:", _am3.getId(), _am4.getId());
-		assertEquals("attributeType should be the same", _am3.getAttributeType(), _am4.getAttributeType());
-		assertEquals("type should be the same", _am3.getType(), _am4.getType());
+		assertEquals("addressType should be the same", _am3.getAddressType(), _am4.getAddressType());
+		assertEquals("type should be the same", _am3.getAttributeType(), _am4.getAttributeType());
 		assertEquals("msgType should be the same", _am3.getMsgType(), _am4.getMsgType());
 		assertEquals("value should be the same", _am3.getValue(), _am4.getValue());
 		assertEquals("street should be the same", _am3.getStreet(), _am4.getStreet());
 		assertEquals("postalCode should be the same", _am3.getPostalCode(), _am4.getPostalCode());
 		assertEquals("city should be the same", _am3.getCity(), _am4.getCity());
-		assertEquals("country should be the same", _am3.getCountry(), _am4.getCountry());
+		assertEquals("countryCode should be the same", _am3.getCountryCode(), _am4.getCountryCode());
 		
 		assertEquals("ID should be the same:", _am3.getId(), _am2.getId());
-		assertEquals("attributeType should be the same", _am3.getAttributeType(), _am2.getAttributeType());
-		assertEquals("type should be the same", _am3.getType(), _am2.getType());
+		assertEquals("addressType should be the same", _am3.getAddressType(), _am2.getAddressType());
+		assertEquals("type should be the same", _am3.getAttributeType(), _am2.getAttributeType());
 		assertEquals("msgType should be the same", _am3.getMsgType(), _am2.getMsgType());
 		assertEquals("value should be the same", _am3.getValue(), _am2.getValue());
 		assertEquals("street should be the same", _am3.getStreet(), _am2.getStreet());
 		assertEquals("postalCode should be the same", _am3.getPostalCode(), _am2.getPostalCode());
 		assertEquals("city should be the same", _am3.getCity(), _am2.getCity());
-		assertEquals("country should be the same", _am3.getCountry(), _am2.getCountry());
+		assertEquals("countryCode should be the same", _am3.getCountryCode(), _am2.getCountryCode());
 		
 		// delete(_am2)
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am2.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testAddressUpdate() {
-		// create() -> _am2
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(createPostalAddress("testAddressUpdate", AddressType.OTHER, "MY_STREET"));
-		AddressModel _am2 = _response.readEntity(AddressModel.class);
+		// create() -> _am1
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(
+				createPostalAddress(AttributeType.WORK, "testAddressUpdate2", "MY_POSTALCODE", "MY_CITY", 100));
+		AddressModel _am1 = _response.readEntity(AddressModel.class);
 		
 		// change the attributes
-		// update(_am2) -> _am3
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am2.getId()).put(setPostalAddressDefaultValues(_am2, "3"));
+		// update(_am1) -> _am2
+		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).put(setPostalAddressDefaultValues(_am1, 2));
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressModel _am3 = _response.readEntity(AddressModel.class);
+		AddressModel _am2 = _response.readEntity(AddressModel.class);
 
-		assertNotNull("ID should be set", _am3.getId());
-		assertEquals("ID should be unchanged", _am2.getId(), _am3.getId());
-		assertEquals("attributeType should be set correctly", "MY_ATTR_TYPE3", _am3.getAttributeType());
-		assertEquals("type should be set correctly", AddressType.OTHER, _am3.getType());
-		if(TEST_HYBRID_ADDRESSES) {
-			assertEquals("msgType should be set correctly", "MY_MSG_TYPE3", _am3.getMsgType());
-			assertEquals("value should be set correctly", "MY_VALUE3", _am3.getValue());
-		}
-		assertEquals("street should be set correctly", "MY_STREET3", _am3.getStreet());
-		assertEquals("postalCode should be set correctly", "MY_POSTAL_CODE3", _am3.getPostalCode());
-		assertEquals("city should be set correctly", "MY_CITY3", _am3.getCity());
-		assertEquals("country should be set correctly", "MY_COUNTRY3", _am3.getCountry());
+		assertNotNull("ID should be set", _am2.getId());
+		assertEquals("ID should be unchanged", _am1.getId(), _am2.getId());
+		assertEquals("addressType should be set correctly", AddressType.POSTAL, _am2.getAddressType());
+		assertEquals("attributeType should be set correctly", AttributeType.getDefaultAttributeType(), _am2.getAttributeType());
+		assertNull("msgType should not be set", _am2.getMsgType());
+		assertNull("value should not be set", _am2.getValue());
+		assertEquals("street should be set correctly", "MY_STREET2", _am2.getStreet());
+		assertEquals("postalCode should be set correctly", "MY_POSTAL_CODE2", _am2.getPostalCode());
+		assertEquals("city should be set correctly", "MY_CITY2", _am2.getCity());
+		assertEquals("countryCode should be set correctly", 2, _am2.getCountryCode());
 		
-		// reset the attributes
-		// update(_am2) -> _am4
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am2.getId()).put(setPostalAddressDefaultValues(_am2, "4"));
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressModel _am4 = _response.readEntity(AddressModel.class);
-
-		assertNotNull("ID should be set", _am4.getId());
-		assertEquals("ID should be unchanged", _am2.getId(), _am4.getId());
-		assertEquals("attributeType should be set correctly", "MY_ATTR_TYPE4", _am4.getAttributeType());
-		assertEquals("type should be set correctly", AddressType.OTHER, _am4.getType());
-		if(TEST_HYBRID_ADDRESSES) {		
-			assertEquals("msgType should be set correctly", "MY_MSG_TYPE4", _am4.getMsgType());
-			assertEquals("value should be set correctly", "MY_VALUE4", _am4.getValue());
-		}
-		assertEquals("street should be set correctly", "MY_STREET4", _am4.getStreet());
-		assertEquals("postalCode should be set correctly", "MY_POSTAL_CODE4", _am4.getPostalCode());
-		assertEquals("city should be set correctly", "MY_CITY4", _am4.getCity());
-		assertEquals("country should be set correctly", "MY_COUNTRY4", _am4.getCountry());
+		// try to change the addressType (from POSTAL to PHONE)
+		// update(_am2) -> BAD_REQUEST (ValidationException)
+		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).put(setPhoneDefaultValues(_am2, 3));
+		assertEquals("update() should return with status BAD_REQUEST(400)", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 				
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am2.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
+	public void testAddressTypePhone() {
+		// PHONE:   addressType, attributeType and value are mandatory, rest of fields are ignored
+		AddressModel _am1 = new AddressModel();
+		
+		// create(_am) -> BAD_REQUEST (because of empty addressType)
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAddressType(AddressType.PHONE);
+
+		// create(_am) -> BAD_REQUEST (because of empty attributeType)
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAttributeType(AttributeType.HOME);
+		
+		// create(_am) -> BAD_REQUEST (because of empty value)
+		 _response = addressbookWC.replacePath("/").path(adb.getId()).
+				 path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				 path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setValue("testAddressTypePhone");
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		
+		// check the values of the attributes
+		AddressModel _am2 = _response.readEntity(AddressModel.class);
+		assertEquals("addressType should be set correctly", AddressType.PHONE, _am2.getAddressType());
+		assertEquals("attributeType should be set correctly", AttributeType.HOME, _am2.getAttributeType());
+		assertEquals("value should be set correctly", "testAddressTypePhone", _am2.getValue());
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+		
+	@Test
+	public void testAddressTypeEmail() {
+		// EMAIL:   addressType, attributeType and value are mandatory, rest of fields are ignored
+		AddressModel _am1 = new AddressModel();
+		
+		// create(_am) -> BAD_REQUEST (because of empty type)
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAddressType(AddressType.EMAIL);
+
+		// create(_am) -> BAD_REQUEST (because of empty attributeType)
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAttributeType(AttributeType.HOME);
+		
+		// create(_am) -> BAD_REQUEST (because of empty value)
+		 _response = addressbookWC.replacePath("/").path(adb.getId()).
+				 path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				 path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setValue("testAddressTypeEmail");
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+
+		// check the values of the attributes
+		AddressModel _am2 = _response.readEntity(AddressModel.class);
+		assertEquals("addressType should be set correctly", AddressType.EMAIL, _am2.getAddressType());
+		assertEquals("attributeType should be set correctly", AttributeType.HOME, _am2.getAttributeType());
+		assertEquals("value should be set correctly", "testAddressTypeEmail", _am2.getValue());
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+}
+	
+	@Test
+	public void testAddressTypeWeb() {
+		// WEB:   addressType, attributeType and value are mandatory, rest of fields are ignored
+		AddressModel _am1 = new AddressModel();
+		
+		// create(_am) -> BAD_REQUEST (because of empty type)
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAddressType(AddressType.WEB);
+
+		// create(_am) -> BAD_REQUEST (because of empty attributeType)
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAttributeType(AttributeType.HOME);
+		
+		// create(_am) -> BAD_REQUEST (because of empty value)
+		 _response = addressbookWC.replacePath("/").path(adb.getId()).
+				 path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				 path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setValue("testAddressTypeWeb");
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+
+		// check the values of the attributes
+		AddressModel _am2 = _response.readEntity(AddressModel.class);
+		assertEquals("addressType should be set correctly", AddressType.WEB, _am2.getAddressType());
+		assertEquals("attributeType should be set correctly", AttributeType.HOME, _am2.getAttributeType());
+		assertEquals("value should be set correctly", "testAddressTypeWeb", _am2.getValue());
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+}
+
+	@Test
+	public void testAddressTypeMessaging() {
+		// MESSAGING:   addressType, attributeType, msgType and value are mandatory, rest of fields are ignored
+		AddressModel _am1 = new AddressModel();
+		
+		// create(_am) -> BAD_REQUEST (because of empty type)
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAddressType(AddressType.MESSAGING);
+
+		// create(_am) -> BAD_REQUEST (because of empty attributeType)
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAttributeType(AttributeType.HOME);
+		
+		// create(_am) -> BAD_REQUEST (because of empty msgType)
+		 _response = addressbookWC.replacePath("/").path(adb.getId()).
+				 path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				 path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setMsgType(MessageType.FACEBOOK);
+
+		// create(_am) -> BAD_REQUEST (because of empty value)
+		 _response = addressbookWC.replacePath("/").path(adb.getId()).
+				 path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				 path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setValue("testAddressTypeMessaging");
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+
+		// check the values of the attributes
+		AddressModel _am2 = _response.readEntity(AddressModel.class);
+		assertEquals("addressType should be set correctly", AddressType.MESSAGING, _am2.getAddressType());
+		assertEquals("type should be set correctly", AttributeType.HOME, _am2.getAttributeType());
+		assertEquals("msgType should be set correctly", MessageType.FACEBOOK, _am2.getMsgType());
+		assertEquals("value should be set correctly", "testAddressTypeMessaging", _am2.getValue());
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
 	@Test
+	public void testAddressTypePostal() {
+		// POSTAL: 	only addressType and attributeType are mandatory, all other fields can be empty (empty address)
+		AddressModel _am1 = new AddressModel();
+		
+		// create(_am) -> BAD_REQUEST (because of empty type)
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAddressType(AddressType.POSTAL);
+
+		// create(_am) -> BAD_REQUEST (because of empty attributeType)
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+		_am1.setAttributeType(AttributeType.HOME);
+		
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am1);
+		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+
+		// check the values of the attributes
+		AddressModel _am2 = _response.readEntity(AddressModel.class);
+		assertEquals("addressType should be set correctly", AddressType.POSTAL, _am2.getAddressType());
+		assertEquals("type should be set correctly", AttributeType.HOME, _am2.getAttributeType());
+
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am2.getId()).delete();
+		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	@Test
 	public void testAddressDelete(
 	) {
 		// create() -> _am1
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(createUrlAddress("testAddressDelete", AddressType.OTHER, "MY_VALUE"));
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(
+				createUrlAddress(AttributeType.WORK, "testAddressDelete"));
 		AddressModel _am1 = _response.readEntity(AddressModel.class);
 		
 		// read(_am1) -> _tmpObj
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _tmpObj = _response.readEntity(AddressModel.class);
 		assertEquals("ID should be unchanged when reading a project (remote):", _am1.getId(), _tmpObj.getId());						
 
 		// read(_am1) -> _tmpObj
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		_tmpObj = _response.readEntity(AddressModel.class);
 		assertEquals("ID should be unchanged when reading a project (remote):", _am1.getId(), _tmpObj.getId());						
 		
 		// delete(_am1) -> OK
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
 		// read(_am1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read(_am1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testAddressDoubleDelete() {
 		// new() -> _am
-		AddressModel _am = createUrlAddress("testAddressDoubleDelete", AddressType.OTHER, "MY_VALUE");
+		AddressModel _am = createUrlAddress(AttributeType.OTHER, "testAddressDoubleDelete");
 		
 		// create(_am) -> _am1
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(_am);
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(_am);
 		AddressModel _am1 = _response.readEntity(AddressModel.class);
 
 		// read(_am1) -> OK
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
 		// delete(_am1) -> OK
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).delete();		
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 		// read(_am1) -> NOT_FOUND   (try to read a deleted address)
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// delete _am1 -> NOT_FOUND  (try to delete an already deleted address)
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).delete();		
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read _am1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testAddressModifications() {
 		// create(new AddressModel()) -> _am1
-		Response _response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).post(createUrlAddress("testAddressModifications", AddressType.OTHER, "MY_VALUE"));
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).post(
+				createUrlAddress(AttributeType.HOME, "testAddressModifications"));
 		AddressModel _am1 = _response.readEntity(AddressModel.class);
 		
 		// test createdAt and createdBy
@@ -725,8 +999,10 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 		
 		// update(_am1)  -> _am2
 		_am1.setValue("MY_VALUE");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).put(_am1);
+		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).put(_am1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _am2 = _response.readEntity(AddressModel.class);
 
@@ -742,8 +1018,10 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 		// update(_am1) with modifiedBy/At set on client side -> ignored by server
 		_am1.setModifiedBy("MYSELF");
 		_am1.setModifiedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).put(_am1);
+		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).put(_am1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressModel _o3 = _response.readEntity(AddressModel.class);
 		
@@ -753,38 +1031,87 @@ public class AddressTest extends AbstractTestClient<AddressbooksService> {
 		assertThat(_am1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
 		// delete(_am1) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(contact.getId()).path(PATH_EL_ADDRESS).path(_am1.getId()).delete();		
+		_response = addressbookWC.replacePath("/").path(adb.getId()).
+				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
+				path(PATH_EL_ADDRESS).path(_am1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	/********************************** helper methods *********************************/			
-	private AddressModel setPostalAddressDefaultValues(AddressModel cm, String suffix) {
-		cm.setAttributeType("MY_ATTR_TYPE" + suffix);
-		cm.setType(AddressType.OTHER);
-		if(TEST_HYBRID_ADDRESSES) {
-			cm.setValue("MY_VALUE" + suffix);
-			cm.setMsgType("MY_MSG_TYPE" + suffix);
-		}
-		cm.setStreet("MY_STREET" + suffix);
-		cm.setPostalCode("MY_POSTAL_CODE" + suffix);
-		cm.setCity("MY_CITY" + suffix);
-		cm.setCountry("MY_COUNTRY" + suffix);
-		return cm;
+	private AddressModel setPostalAddressDefaultValues(AddressModel am, int suffix) {
+		am.setAddressType(AddressType.POSTAL);
+		am.setAttributeType(AttributeType.getDefaultAttributeType());
+		am.setStreet("MY_STREET" + suffix);
+		am.setPostalCode("MY_POSTAL_CODE" + suffix);
+		am.setCity("MY_CITY" + suffix);
+		am.setCountryCode((short) suffix);
+		return am;
 	}
 	
-	public static AddressModel createUrlAddress(String attrType, AddressType type, String value) {
+	private AddressModel setPhoneDefaultValues(AddressModel am, int suffix) {
+		am.setAddressType(AddressType.PHONE);
+		am.setAttributeType(AttributeType.getDefaultAttributeType());
+		am.setValue("MY_PHONE" + suffix);
+		return am;
+	}
+	
+	/*
+	private AddressModel setMsgDefaultValues(AddressModel am, String suffix) {
+		am.setAddressType(AddressType.MESSAGING);
+		am.setAttributeType(AttributeType.getDefaultAttributeType());
+		am.setMsgType(MessageType.getDefaultMessageType());
+		am.setValue("MY_VALUE" + suffix);
+		return am;
+	}
+	*/
+	
+	public static AddressModel createAddress(
+			AddressType adrType, 
+			AttributeType attrType, 
+			String value) {
 		AddressModel _am = new AddressModel();
+		_am.setAddressType(adrType);
 		_am.setAttributeType(attrType);
-		_am.setType(type);
+		_am.setValue(value);
+		return _am;
+	}
+	
+	public static AddressModel createUrlAddress(
+			AttributeType attrType,
+			String value) {
+		AddressModel _am = new AddressModel();
+		_am.setAddressType(AddressType.WEB);
+		_am.setAttributeType(attrType);
 		_am.setValue(value);
 		return _am;
 	}
 
-	public static AddressModel createPostalAddress(String attrType, AddressType type, String value) {
+	public static AddressModel createPostalAddress(
+			AttributeType attrType, 
+			String street, 
+			String postalCode, 
+			String city, 
+			int countryCode) 
+	{
 		AddressModel _am = new AddressModel();
+		_am.setAddressType(AddressType.POSTAL);
 		_am.setAttributeType(attrType);
-		_am.setType(type);
-		_am.setStreet(value);
+		_am.setStreet(street);
+		_am.setPostalCode(postalCode);
+		_am.setCity(city);
+		_am.setCountryCode((short) countryCode);
+		return _am;
+	}
+	
+	public static AddressModel createMsgAddress(
+			AttributeType attrType,
+			MessageType msgType,
+			String value) {
+		AddressModel _am = new AddressModel();
+		_am.setAddressType(AddressType.MESSAGING);
+		_am.setAttributeType(attrType);
+		_am.setMsgType(msgType);
+		_am.setValue(value);
 		return _am;
 	}
 }

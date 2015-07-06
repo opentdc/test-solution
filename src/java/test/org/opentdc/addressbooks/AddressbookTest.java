@@ -35,6 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
@@ -42,16 +44,22 @@ import org.opentdc.addressbooks.AddressbooksService;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
+public class AddressbookTest extends AbstractTestClient {
 	
-	private static final String API = "api/addressbooks/";
+	public static final String API_URL = "api/addressbooks/";
+	private WebClient addressbookWC = null;
 
 	@Before
 	public void initializeTest(
 	) {
-		initializeTest(API, AddressbooksService.class);
+		addressbookWC = initializeTest(API_URL, AddressbooksService.class);
 	}
 		
+	@After
+	public void cleanupTest() {
+		addressbookWC.close();
+	}
+	
 	/********************************** addressbook attribute tests *********************************/	
 	@Test
 	public void testAddressbookModelEmptyConstructor() {
@@ -132,12 +140,12 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		assertNull("name should not be set by empty constructor", _abm1.getName());
 
 		// create(_abm1) -> BAD_REQUEST (because of empty name)
-		Response _response = webclient.replacePath("/").post(_abm1);
+		Response _response = addressbookWC.replacePath("/").post(_abm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
 		// _abm1.setName() -> create(_abm1) -> _abm2
 		_abm1.setName("testAddressbookCreateReadDeleteWithEmptyConstructor");
-		_response = webclient.replacePath("/").post(_abm1);
+		_response = addressbookWC.replacePath("/").post(_abm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
 		
@@ -148,13 +156,13 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		assertEquals("name of returned object should remain unchanged after remote create", _abm1.getName(), _abm2.getName());
 		
 		// read(_abm2) -> _abm3
-		_response = webclient.replacePath("/").path(_abm2.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm2.getId()).get();
 		assertEquals("read(" + _abm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
 		assertEquals("id of returned object should be the same", _abm2.getId(), _abm3.getId());
 		assertEquals("name of returned object should be unchanged after remote create", _abm2.getName(), _abm3.getName());
 		// delete(_abm3)
-		_response = webclient.replacePath("/").path(_abm3.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm3.getId()).delete();
 		assertEquals("delete(" + _abm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -165,7 +173,7 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		assertNull("id should not be set by constructor", _abm1.getId());
 		assertEquals("name should be set by constructor", "testAddressbookCreateReadDelete", _abm1.getName());
 		// create(_abm1) -> _abm2
-		Response _response = webclient.replacePath("/").post(_abm1);
+		Response _response = addressbookWC.replacePath("/").post(_abm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
 		assertNull("id should be still null after remote create", _abm1.getId());
@@ -174,13 +182,13 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		assertNotNull("id of returned object should be set", _abm2.getId());
 		assertEquals("name of returned object should be unchanged after remote create", "testAddressbookCreateReadDelete", _abm2.getName());
 		// read(_abm2)  -> _abm3
-		_response = webclient.replacePath("/").path(_abm2.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm2.getId()).get();
 		assertEquals("read(" + _abm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
 		assertEquals("id of returned object should be the same", _abm2.getId(), _abm3.getId());
 		assertEquals("name of returned object should be unchanged after remote create", _abm2.getName(), _abm3.getName());
 		// delete(_abm3)
-		_response = webclient.replacePath("/").path(_abm3.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm3.getId()).delete();
 		assertEquals("delete(" + _abm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -191,14 +199,14 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		_abm1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _abm1.getId());
 		// create(_abm1) -> BAD_REQUEST
-		Response _response = webclient.replacePath("/").post(_abm1);
+		Response _response = addressbookWC.replacePath("/").post(_abm1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testAddressbookWithDuplicateId() {
 		// create(new()) -> _abm1
-		Response _response = webclient.replacePath("/").post(new AddressbookModel("testAddressbookWithDuplicateId"));
+		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookWithDuplicateId"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm1 = _response.readEntity(AddressbookModel.class);
 
@@ -207,42 +215,53 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		_abm2.setId(_abm1.getId());		// wrongly create a 2nd AddressbookModel object with the same ID
 		
 		// create(_abm2) -> CONFLICT
-		_response = webclient.replacePath("/").post(_abm2);
+		_response = addressbookWC.replacePath("/").post(_abm2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete _abm1
-		_response = webclient.replacePath("/").path(_abm1.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testAddressbookList(
 	) {		
+		addressbookWC.replacePath("/");
+		// list(/) -> _remoteList
+		Response _response = addressbookWC.replacePath("/").get();
+		List<AddressbookModel> _initialList = new ArrayList<AddressbookModel>(addressbookWC.getCollection(AddressbookModel.class));
+		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		System.out.println("_initialList:");
+		for (AddressbookModel _am : _initialList) {
+			System.out.println(_am.getId() + ": " + _am.getName());
+		}
+		
 		ArrayList<AddressbookModel> _localList = new ArrayList<AddressbookModel>();
-		Response _response = null;
 				
-		webclient.replacePath("/");
+		addressbookWC.replacePath("/");
+		System.out.println("LIMIT=" + LIMIT);
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = webclient.post(new AddressbookModel("testAddressbookList" + i));
+			_response = addressbookWC.post(new AddressbookModel("testAddressbookList" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(AddressbookModel.class));
 		}
 		System.out.println("localList:");
 		for (AddressbookModel _am : _localList) {
-			System.out.println(_am.getId());
+			System.out.println(_am.getId() + ": " + _am.getName());
 		}
 		assertEquals("correct number of addressbooks should be created", LIMIT, _localList.size());
 		
 		// list(/) -> _remoteList
-		_response = webclient.replacePath("/").get();
-		List<AddressbookModel> _remoteList = new ArrayList<AddressbookModel>(webclient.getCollection(AddressbookModel.class));
+		_response = addressbookWC.replacePath("/").get();
+		List<AddressbookModel> _remoteList = new ArrayList<AddressbookModel>(addressbookWC.getCollection(AddressbookModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("_remoteList:");
 		for (AddressbookModel _am : _remoteList) {
-			System.out.println(_am.getId());
+			System.out.println(_am.getId() + ": " + _am.getName());
 		}
-		assertEquals("list() should return the correct number of addressbooks", LIMIT, _remoteList.size());
+		
+		assertEquals("list() should return the correct number of addressbooks", LIMIT, _remoteList.size() - _initialList.size());
 		// implicitly proven:  _remoteList.size() == _localList.size()
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -254,12 +273,12 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 			assertTrue("addressbook <" + _abm.getId() + "> should be listed", _remoteListIds.contains(_abm.getId()));
 		}
 		for (AddressbookModel _abm : _localList) {
-			_response = webclient.replacePath("/").path(_abm.getId()).get();
+			_response = addressbookWC.replacePath("/").path(_abm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(AddressbookModel.class);
 		}
 		for (AddressbookModel _abm : _localList) {
-			_response = webclient.replacePath("/").path(_abm.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(_abm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -272,12 +291,12 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		AddressbookModel _abm2 = new AddressbookModel("testAddressbookCreate2");
 		
 		// create(_abm1)  -> _abm3
-		Response _response = webclient.replacePath("/").post(_abm1);
+		Response _response = addressbookWC.replacePath("/").post(_abm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
 
 		// create(_abm2) -> _abm4
-		_response = webclient.replacePath("/").post(_abm2);
+		_response = addressbookWC.replacePath("/").post(_abm2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm4 = _response.readEntity(AddressbookModel.class);		
 		assertNotNull("ID should be set", _abm3.getId());
@@ -287,11 +306,11 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		assertEquals("name2 should be set correctly", "testAddressbookCreate2", _abm4.getName());
 
 		// delete(_abm3) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_abm3.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_abm4) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_abm4.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -299,17 +318,17 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 	public void testAddressbookDoubleCreate(
 	) {
 		// create(new("testAddressbookDoubleCreate")) -> _abm
-		Response _response = webclient.replacePath("/").post(new AddressbookModel("testAddressbookDoubleCreate"));
+		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookDoubleCreate"));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm = _response.readEntity(AddressbookModel.class);
 		assertNotNull("ID should be set:", _abm.getId());		
 		
 		// create(_abm) -> CONFLICT
-		_response = webclient.replacePath("/").post(_abm);
+		_response = addressbookWC.replacePath("/").post(_abm);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_abm) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_abm.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
@@ -319,33 +338,33 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		ArrayList<AddressbookModel> _localList = new ArrayList<AddressbookModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = webclient.replacePath("/").post(new AddressbookModel("testAddressbookRead" + i));
+			_response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookRead" + i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(AddressbookModel.class));
 		}
 	
 		// test read on each local element
 		for (AddressbookModel _abm : _localList) {
-			_response = webclient.replacePath("/").path(_abm.getId()).get();
+			_response = addressbookWC.replacePath("/").path(_abm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(AddressbookModel.class);
 		}
 
 		// test read on each listed element
-		_response = webclient.replacePath("/").get();
-		List<AddressbookModel> _remoteList = new ArrayList<AddressbookModel>(webclient.getCollection(AddressbookModel.class));
+		_response = addressbookWC.replacePath("/").get();
+		List<AddressbookModel> _remoteList = new ArrayList<AddressbookModel>(addressbookWC.getCollection(AddressbookModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		AddressbookModel _tmpObj = null;
 		for (AddressbookModel _abm : _remoteList) {
-			_response = webclient.replacePath("/").path(_abm.getId()).get();
+			_response = addressbookWC.replacePath("/").path(_abm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(AddressbookModel.class);
 			assertEquals("ID should be unchanged when reading an addressbook", _abm.getId(), _tmpObj.getId());						
 		}
 
 		for (AddressbookModel _abm : _localList) {
-			_response = webclient.replacePath("/").path(_abm.getId()).delete();
+			_response = addressbookWC.replacePath("/").path(_abm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}	
@@ -357,17 +376,17 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		AddressbookModel _abm1 = new AddressbookModel("testAddressbookMultiRead");
 		
 		// create(_abm1) -> _abm2
-		Response _response = webclient.replacePath("/").post(_abm1);
+		Response _response = addressbookWC.replacePath("/").post(_abm1);
 		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
 
 		// read(_abm2) -> _abm3
-		_response = webclient.replacePath("/").path(_abm2.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
 		assertEquals("ID should be unchanged after read", _abm2.getId(), _abm3.getId());		
 
 		// read(_abm2) -> _abm4
-		_response = webclient.replacePath("/").path(_abm2.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm4 = _response.readEntity(AddressbookModel.class);
 		
@@ -379,7 +398,7 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		assertEquals("name should be the same", _abm3.getName(), _abm2.getName());
 		
 		// delete(_abm2)
-		_response = webclient.replacePath("/").path(_abm2.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -390,14 +409,14 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		AddressbookModel _abm1 = new AddressbookModel("testAddressbookUpdate");
 		
 		// create(_abm1) -> _abm2
-		Response _response = webclient.replacePath("/").post(_abm1);
+		Response _response = addressbookWC.replacePath("/").post(_abm1);
 		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
 		
 		// change the attributes
 		// update(_abm2) -> _abm3
 		_abm2.setName("testAddressbookUpdate1");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_abm2.getId()).put(_abm2);
+		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = addressbookWC.replacePath("/").path(_abm2.getId()).put(_abm2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
 
@@ -408,8 +427,8 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		// reset the attributes
 		// update(_abm2) -> _abm4
 		_abm2.setName("testAddressbookUpdate2");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_abm2.getId()).put(_abm2);
+		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = addressbookWC.replacePath("/").path(_abm2.getId()).put(_abm2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm4 = _response.readEntity(AddressbookModel.class);
 
@@ -417,7 +436,7 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		assertEquals("ID should be unchanged", _abm2.getId(), _abm4.getId());	
 		assertEquals("name should have changed", "testAddressbookUpdate2", _abm4.getName());
 		
-		_response = webclient.replacePath("/").path(_abm2.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -425,26 +444,26 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 	public void testAddressbookDelete(
 	) {
 		// create(testAddressbookDelete) -> _abm1
-		Response _response = webclient.replacePath("/").post(new AddressbookModel("testAddressbookDelete"));
+		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookDelete"));
 		AddressbookModel _abm1 = _response.readEntity(AddressbookModel.class);
 		
 		// read(_abm1) -> _abm2
-		_response = webclient.replacePath("/").path(_abm1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
 		assertEquals("ID should be unchanged when reading an addressbook (remote):", _abm1.getId(), _abm2.getId());						
 		
 		// delete(_abm1) -> OK
-		_response = webclient.replacePath("/").path(_abm1.getId()).delete();
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
 		// read(_abm1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_abm1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read(_abm1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_abm1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
@@ -452,34 +471,34 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 	public void testAddressbookDoubleDelete(
 	) {
 		// create(testAddressbookDoubleDelete) -> _abm1
-		Response _response = webclient.replacePath("/").post(new AddressbookModel("testAddressbookDoubleDelete"));
+		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookDoubleDelete"));
 		AddressbookModel _abm1 = _response.readEntity(AddressbookModel.class);
 
 		// read(_abm1) -> OK
-		_response = webclient.replacePath("/").path(_abm1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
 		// delete(_abm1) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_abm1.getId()).delete();		
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 		// read(_abm1) -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_abm1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// delete _abm1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_abm1.getId()).delete();		
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read _abm1 -> NOT_FOUND
-		_response = webclient.replacePath("/").path(_abm1.getId()).get();
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testAddressbookModifications() {
 		// create(testAddressbookModifications) -> _abm1
-		Response _response = webclient.replacePath("/").post(new AddressbookModel("testAddressbookModifications"));
+		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookModifications"));
 		AddressbookModel _abm1 = _response.readEntity(AddressbookModel.class);
 		
 		// test createdAt and createdBy
@@ -493,8 +512,8 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		
 		// update(_abm1)  -> _abm2
 		_abm1.setName("testAddressbookModifications2");
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_abm1.getId()).put(_abm1);
+		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).put(_abm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
 
@@ -510,8 +529,8 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		// update(o) with modifiedBy/At set on client side -> ignored by server
 		_abm1.setModifiedBy("MYSELF");
 		_abm1.setModifiedAt(new Date(1000));
-		webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = webclient.replacePath("/").path(_abm1.getId()).put(_abm1);
+		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).put(_abm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
 		
@@ -521,7 +540,33 @@ public class AddressbookTest extends AbstractTestClient<AddressbooksService> {
 		assertThat(_abm1.getModifiedAt(), not(equalTo(_abm3.getModifiedAt())));
 		
 		// delete(_abm1) -> NO_CONTENT
-		_response = webclient.replacePath("/").path(_abm1.getId()).delete();		
+		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	}
+	
+	/********************************** helper methods *********************************/	
+	public static WebClient createAddressbookWebClient() {
+		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), AddressbooksService.class);
+	}
+	
+	public static AddressbookModel createAddressbook(
+		WebClient addressbookWC, 
+		String name)
+	{
+		System.out.println("createAddressbook(" + addressbookWC + ", <" + name + ">");
+		AddressbookModel _am = new AddressbookModel(name);
+		Response _response = addressbookWC.replacePath("/").post(_am);
+		AddressbookModel _adb = _response.readEntity(AddressbookModel.class);
+		System.out.println(name + " posted Addressbook <" + _adb.getId() + ">.");
+		return _adb;	
+	}
+	
+	public static void cleanup(
+		WebClient addressbookWC,
+		String addressbookId,
+		String testName) {
+		addressbookWC.replacePath("/").path(addressbookId).delete();
+		System.out.println(testName + " deleted Addressbook <" + addressbookId + ">.");
+		addressbookWC.close();
 	}
 }
