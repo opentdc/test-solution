@@ -112,7 +112,7 @@ public class AddressBatchedListTest extends AbstractTestClient {
 		addressbookWC.resetQuery();
 		_response = addressbookWC.replacePath("/").path(adb.getId()).
 				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
-				path(AddressTest.PATH_EL_ADDRESS).query("position", 50).get();
+				path(AddressTest.PATH_EL_ADDRESS).query("position", 50).query("size", _increment).get();
 		List<AddressModel> _remoteList3 = new ArrayList<AddressModel>(addressbookWC.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 3rd Batch:");

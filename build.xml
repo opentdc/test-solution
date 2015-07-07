@@ -22,7 +22,7 @@
 		<fileset dir="../${java.build.platform}/wtt-service/lib/" includes="*.jar" />
 		<fileset dir="../opt/google/${java.build.platform}/gson/lib/" includes="*.jar" />
 		<fileset dir="../opt/junit/${java.build.platform}/junit/lib/" includes="*.jar" />
-		<fileset dir="../opt/swagger/${java.build.platform}/swagger-core-1.5.0/modules/swagger-annotations/target/" includes="swagger-annotations-1.5.0.jar" />			
+		<fileset dir="../opt/swagger/${java.build.platform}/swagger/lib/" includes="*.jar" />
 	</path>
 
 	<path id="junit.class.path">
