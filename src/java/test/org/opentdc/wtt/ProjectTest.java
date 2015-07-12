@@ -84,7 +84,7 @@ public class ProjectTest extends AbstractTestClient {
 		ProjectModel _pm = new ProjectModel("MY_TITLE", "MY_DESC");
 		assertNull("id should not be set by constructor", _pm.getId());
 		assertEquals("title should be set by constructor", "MY_TITLE", _pm.getTitle());
-		assertEquals("description should not set by constructor", "MY_DESC", _pm.getDescription());
+		assertEquals("description should be set by constructor", "MY_DESC", _pm.getDescription());
 	}
 	
 	@Test
