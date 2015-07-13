@@ -107,8 +107,8 @@ public class WorkRecordBatchedListTest extends AbstractTestClient {
 		Date _d = new Date();
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_res = WorkRecordsTest.createWorkRecord(
-					company.getId(), project.getId(), resource.getId(), rate.getId(), i, _d, i, 10 * i, true);
+			_res = WorkRecordsTest.createWorkRecord(company, project, resource, rate,
+					_d, i, 10 * i, true, "testWorkRecordBatchedList" + i);
 			_res.setComment(String.format("%2d", i));
 			_response = workRecordWC.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
