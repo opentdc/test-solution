@@ -39,532 +39,606 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opentdc.service.LocalizedTextModel;
+import org.opentdc.tags.TagTextModel;
 import org.opentdc.tags.TagsModel;
 import org.opentdc.tags.TagsService;
+import org.opentdc.util.LanguageCode;
 
 import test.org.opentdc.AbstractTestClient;
 
+/**
+ * Tests the Tags-Service.
+ * @author Bruno Kaiser
+ *
+ */
 public class TagsTest extends AbstractTestClient {
 	public static final String API_URL = "api/tag/";
 	private WebClient tagWC = null;
 
+	/**
+	 * Initializes the test case.
+	 */
 	@Before
 	public void initializeTest() {
 		tagWC = initializeTest(API_URL, TagsService.class);
 	}
 	
+	/**
+	 * Cleanup all resources needed by the test case.
+	 */
 	@After
 	public void cleanupTest() {
 		tagWC.close();
 	}
 
 	/********************************** tags attributes tests *********************************/	
+	/**
+	 * Test the empty constructor.
+	 */
 	@Test
-	public void testTagsModelEmptyConstructor() {
-		// new() -> _c
-		TagsModel _tm = new TagsModel();
-		assertNull("id should not be set by empty constructor", _tm.getId());
-		assertEquals("counter should be 0", 0, _tm.getCounter());
+	public void testEmptyConstructor() {
+		TagsModel _model = new TagsModel();
+		assertNull("id should not be set by empty constructor", _model.getId());
 	}
 	
+	/**
+	 * Test id attribute.
+	 */
 	@Test
-	public void testTagsModelIdAttributeChange() {
-		// new() -> _tm -> _rm.setId()
-		TagsModel _tm = new TagsModel();
-		assertNull("id should not be set by constructor", _tm.getId());
-		_tm.setId("MY_ID");
-		assertEquals("id should have changed", "MY_ID", _tm.getId());
-	}
-
-	@Test
-	public void testTagsModelCounterAttributeChange() {
-		// new() -> _tm -> _tm.setCounter()
-		TagsModel _tm = new TagsModel();
-		assertEquals("Counter should be 0", 0, _tm.getCounter());
-		_tm.setCounter(100);
-		assertEquals("Counter should have changed", 100, _tm.getCounter());
+	public void testId() {
+		TagsModel _model = new TagsModel();
+		assertNull("id should not be set by constructor", _model.getId());
+		_model.setId("testId");
+		assertEquals("id should have changed", "testId", _model.getId());
 	}
 	
+	/**
+	 * Test createdBy attribute.
+	 */
 	@Test
-	public void testTagsCreatedBy() {
-		// new() -> _tm -> _tm.setCreatedBy()
-		TagsModel _tm = new TagsModel();
-		assertNull("createdBy should not be set by empty constructor", _tm.getCreatedBy());
-		_tm.setCreatedBy("MY_NAME");
-		assertEquals("createdBy should have changed", "MY_NAME", _tm.getCreatedBy());	
+	public void testCreatedBy() {
+		TagsModel _model = new TagsModel();
+		assertNull("createdBy should not be set by empty constructor", _model.getCreatedBy());
+		_model.setCreatedBy("testCreatedBy");
+		assertEquals("createdBy should have changed", "testCreatedBy", _model.getCreatedBy());	
 	}
 	
+	/**
+	 * Test createdAt attribute.
+	 */
 	@Test
-	public void testTagsCreatedAt() {
-		// new() -> _tm -> _tm.setCreatedAt()
-		TagsModel _tm = new TagsModel();
-		assertNull("createdAt should not be set by empty constructor", _tm.getCreatedAt());
-		_tm.setCreatedAt(new Date());
-		assertNotNull("createdAt should have changed", _tm.getCreatedAt());
+	public void testCreatedAt() {
+		TagsModel _model = new TagsModel();
+		assertNull("createdAt should not be set by empty constructor", _model.getCreatedAt());
+		_model.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _model.getCreatedAt());
 	}
 		
+	/**
+	 * Test modifiedBy attribute.
+	 */
 	@Test
-	public void testTagsModifiedBy() {
-		// new() -> _tm -> _tm.setModifiedBy()
-		TagsModel _tm = new TagsModel();
-		assertNull("modifiedBy should not be set by empty constructor", _tm.getModifiedBy());
-		_tm.setModifiedBy("MY_NAME");
-		assertEquals("modifiedBy should have changed", "MY_NAME", _tm.getModifiedBy());	
+	public void testModifiedBy() {
+		TagsModel _model = new TagsModel();
+		assertNull("modifiedBy should not be set by empty constructor", _model.getModifiedBy());
+		_model.setModifiedBy("testModifiedBy");
+		assertEquals("modifiedBy should have changed", "testModifiedBy", _model.getModifiedBy());	
 	}
 	
+	/**
+	 * Test modifiedAt attribute.
+	 */
 	@Test
-	public void testTagsModifiedAt() {
-		// new() -> _tm -> _tm.setModifiedAt()
-		TagsModel _tm = new TagsModel();
-		assertNull("modifiedAt should not be set by empty constructor", _tm.getModifiedAt());
-		_tm.setModifiedAt(new Date());
-		assertNotNull("modifiedAt should have changed", _tm.getModifiedAt());
+	public void testModifiedAt() {
+		TagsModel _model = new TagsModel();
+		assertNull("modifiedAt should not be set by empty constructor", _model.getModifiedAt());
+		_model.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _model.getModifiedAt());
 	}
 
 	/********************************* REST service tests *********************************/	
+	/**
+	 * Test create() operation.
+	 */
 	@Test
-	public void testTagCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _tm1
-		TagsModel _tm1 = new TagsModel();
-		assertNull("id should not be set by empty constructor", _tm1.getId());
-		assertEquals("counter should be 0", 0, _tm1.getCounter());
+	public void testCreateReadDeleteWithEmptyConstructor() 
+	{
+		TagsModel _model1 = new TagsModel();
+		assertNull("id should not be set by empty constructor", _model1.getId());
+		TagsModel _model2 = postTag(_model1, Status.OK);
+		assertNull("create() should not change the id of the local object", _model1.getId());
+		assertNotNull("create() should set a valid id on the remote object returned", _model2.getId());
 		
-		// create(_rm1) -> _tm2
-		Response _response = tagWC.replacePath("/").post(_tm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm2 = _response.readEntity(TagsModel.class);
-		
-		// validate _rm1
-		assertNull("create() should not change the id of the local object", _tm1.getId());
-		assertEquals("create() should not change the counter of the local object", 0, _tm1.getCounter());
-		
-		// validate _rm2
-		assertNotNull("create() should set a valid id on the remote object returned", _tm2.getId());
-		assertEquals("create() should  change the counter", 1, _tm2.getCounter());
-		
-		// read(_rm2) -> _tm3
-		_response = tagWC.replacePath("/").path(_tm2.getId()).get();
-		assertEquals("read(" + _tm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm3 = _response.readEntity(TagsModel.class);
-		assertEquals("id of returned object should be the same", _tm2.getId(), _tm3.getId());
-		assertEquals("counter of returned object should be unchanged", _tm2.getCounter(), _tm3.getCounter());
-		// delete(_tm3)
-		_response = tagWC.replacePath("/").path(_tm3.getId()).delete();
-		assertEquals("delete(" + _tm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		TagsModel _model3 = getTag(_model2.getId(), Status.OK);
+		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
+		deleteTag(_model3.getId(), Status.NO_CONTENT);
 	}
 	
+	/**
+	 * Test to create a TagsModel with a custom id generated by the client.
+	 */
 	@Test
-	public void testCreateTagWithClientSideId() {
-		// new() -> _tm -> _tm.setId()
-		TagsModel _tm = new TagsModel();
-		_tm.setId("LOCAL_ID");
-		assertEquals("id should have changed", "LOCAL_ID", _tm.getId());
-		// create(_rm) -> BAD_REQUEST
-		Response _response = tagWC.replacePath("/").post(_tm);
-		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+	public void testCreateWithClientSideId() {
+		TagsModel _model = new TagsModel();
+		_model.setId("LOCAL_ID");
+		assertEquals("id should have changed", "LOCAL_ID", _model.getId());
+		postTag(_model, Status.BAD_REQUEST);
 	}
 	
+	/**
+	 * Test to create a TagsModel with an id that exists already.
+	 */
 	@Test
-	public void testCreateTagWithDuplicateId() {
-		// create(new()) -> _tm1
-		Response _response = tagWC.replacePath("/").post(new TagsModel());
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm1 = _response.readEntity(TagsModel.class);
-		assertEquals("counter should be correct", 1, _tm1.getCounter());
+	public void testCreateWithDuplicateId() {
+		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		getTag(_model1.getId(), Status.OK);		
+		TagsModel _model2 = new TagsModel();
+		_model2.setId(_model1.getId());
+		postTag(_model2, Status.CONFLICT);
+		getTag(_model1.getId(), Status.OK);
+		deleteTag(_model1.getId(), Status.NO_CONTENT);
+ 	}
+	
+	/**
+	 * Test list() operation filtered by LanguageCode.
+	 */
+	@Test
+	public void testListAll()
+	{
+		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		TagsModel _model2 = postTag(new TagsModel(), Status.OK);
+		TagsModel _model3 = postTag(new TagsModel(), Status.OK);
+		LocalizedTextTest.postLocalizedText(tagWC, _model1, new LocalizedTextModel(LanguageCode.DE, "eins"), Status.OK);
+		LocalizedTextTest.postLocalizedText(tagWC, _model2, new LocalizedTextModel(LanguageCode.DE, "zwei"), Status.OK);
+		LocalizedTextTest.postLocalizedText(tagWC, _model3, new LocalizedTextModel(LanguageCode.DE, "drei"), Status.OK);
+		LocalizedTextTest.postLocalizedText(tagWC, _model1, new LocalizedTextModel(LanguageCode.EN, "one"), Status.OK);
+		LocalizedTextTest.postLocalizedText(tagWC, _model2, new LocalizedTextModel(LanguageCode.EN, "two"), Status.OK);
+		LocalizedTextTest.postLocalizedText(tagWC, _model3, new LocalizedTextModel(LanguageCode.FR, "trois"), Status.OK);
 
-		// read(_tm1)
-		_response = tagWC.replacePath("/").path(_tm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm2 = _response.readEntity(TagsModel.class);
-		assertEquals("counter should be correct", 1, _tm2.getCounter());
-
-		// new() -> _tm3 -> _tm3.setId(_tm1.getId())
-		TagsModel _tm3 = new TagsModel();
-		_tm3.setId(_tm1.getId());
-
-		// create(_tm3) -> OK (counter incremented) -> _tm4_
-		_response = tagWC.replacePath("/").post(_tm3);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm4 = _response.readEntity(TagsModel.class);
-		assertEquals("counter should be correct", 2, _tm4.getCounter());
-
-		_response = tagWC.replacePath("/").path(_tm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm5 = _response.readEntity(TagsModel.class);
-		assertEquals("counter should be correct", 2, _tm5.getCounter());
-
-		// delete(_tm1) -> NO_CONTENT (counter decremented)
-		_response = tagWC.replacePath("/").path(_tm1.getId()).delete();
-		assertEquals("delete(" + _tm1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-
-		_response = tagWC.replacePath("/").path(_tm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm6 = _response.readEntity(TagsModel.class);
-		assertEquals("counter should be correct", 1, _tm6.getCounter());
-
-		// delete(_tm1) -> NO_CONTENT (counter decremented)
-		_response = tagWC.replacePath("/").path(_tm1.getId()).delete();
-		assertEquals("delete(" + _tm1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-
-		_response = tagWC.replacePath("/").path(_tm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+		List<TagTextModel> _tagList = listTags(null, Status.OK);
+		logResult("all tags (no query):", _tagList);
+		assertEquals("amount of returned tags must be correct", 6, _tagList.size());
+		
+		_tagList = listTags("lang=" + LanguageCode.DE, Status.OK);
+		logResult("DE tags:", _tagList);
+		assertEquals("amount of returned tags must be correct", 3, _tagList.size());
+		
+		_tagList = listTags("lang=" + LanguageCode.EN, Status.OK);
+		logResult("EN tags:", _tagList);
+		assertEquals("amount of returned tags must be correct", 2, _tagList.size());
+		assertEquals("tag text must be correct", "one", _tagList.get(0).getText());
+		
+		_tagList = listTags("lang=" + LanguageCode.FR, Status.OK);
+		logResult("FR tags:", _tagList);
+		assertEquals("amount of returned tags must be correct", 1, _tagList.size());
+		assertEquals("tag text must be correct", "trois", _tagList.get(0).getText());
+		
+		_tagList = listTags("lang=" + LanguageCode.IT, Status.OK);
+		logResult("IT tags:", _tagList);
+		assertEquals("amount of returned tags must be correct", 0, _tagList.size());
+		
+		listTags("language=DE", Status.BAD_REQUEST);
+		listTags("lang=OB", Status.BAD_REQUEST);
+		
+		deleteTag(_model1.getId(), Status.NO_CONTENT);
+		deleteTag(_model2.getId(), Status.NO_CONTENT);
+		deleteTag(_model3.getId(), Status.NO_CONTENT);
 	}
 	
-	@Test
-	public void testTagList(
-	) {		
-		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();
-		Response _response = null;
-		for (int i = 0; i < LIMIT; i++) {
-			// create(new()) -> _localList
-			_response = tagWC.replacePath("/").post(new TagsModel());
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(TagsModel.class));
+	/**
+	 * Print the result of the list() operation onto stdout.
+	 * @param title  the title of the log section
+	 * @param tagList the result list of TagTextModels
+	 */
+	private void logResult(String title, List<TagTextModel> tagList) {
+		System.out.println(title);
+		System.out.println("\ttagId\t\t\t\t\tlocalizedTextId\t\t\t\ttext\tlang");
+		for (TagTextModel _model : tagList) { 
+			System.out.println(
+					"\t" + _model.getTagId() + 
+					"\t" + _model.getLocalizedTextId() + 
+					"\t" + _model.getText() + 
+					"\t" + _model.getLang());
 		}
-		
-		// list(/) -> _remoteList
-		_response = tagWC.replacePath("/").get();
-		List<TagsModel> _remoteList = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+	}
 
+	/**
+	 * Test list() operation on TagsModels not containing LocalizedTextModels.
+	 */
+	@Test
+	public void testPureTagsList() 
+	{		
+		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();
+		for (int i = 0; i < LIMIT; i++) {
+			_localList.add(postTag(new TagsModel(), Status.OK));
+		}
+		List<TagTextModel> _remoteList = listTags(null, Status.OK);
+		assertEquals("list should be empty (because no LocalizedText is saved", 0, _remoteList.size());		
+		for (TagsModel _model : _localList) {
+			deleteTag(_model.getId(), Status.NO_CONTENT);
+		}
+	}
+		
+	/**
+	 * Test list() operation on TagsModels containing LocalizedTextModels).
+	 */
+	@Test
+	public void testTagsTextList() 
+	{		
+		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();
+		for (int i = 0; i < LIMIT; i++) {
+			_localList.add(postTag(new TagsModel(), Status.OK));
+			LocalizedTextTest.postLocalizedText(tagWC, _localList.get(i), new LocalizedTextModel(LanguageCode.DE, "testTagsTextList" + i), Status.OK);
+		}
+		List<TagTextModel> _remoteList = listTags(null, Status.OK);
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
-		for (TagsModel _rm : _remoteList) {
-			_remoteListIds.add(_rm.getId());
+		for (TagTextModel _model : _remoteList) {
+			_remoteListIds.add(_model.getTagId());
+		}		
+		for (TagsModel _model : _localList) {
+			assertTrue("tag <" + _model.getId() + "> should be listed", _remoteListIds.contains(_model.getId()));
 		}
-		
-		for (TagsModel _rm : _localList) {
-			assertTrue("tag <" + _rm.getId() + "> should be listed", _remoteListIds.contains(_rm.getId()));
+		for (TagsModel _model : _localList) {
+			getTag(_model.getId(), Status.OK);
 		}
-		for (TagsModel _rm : _localList) {
-			_response = tagWC.replacePath("/").path(_rm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_response.readEntity(TagsModel.class);
-		}
-		for (TagsModel _rm : _localList) {
-			_response = tagWC.replacePath("/").path(_rm.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		for (TagsModel _model : _localList) {
+			deleteTag(_model.getId(), Status.NO_CONTENT);
 		}
 	}
-		
+
+	/**
+	 * Test create() operation.
+	 */
 	@Test
-	public void testTagCreate() {
-		// new() -> _tm1
-		TagsModel _tm1 = new TagsModel();
-		// new() -> _tm2
-		TagsModel _tm2 = new TagsModel();
-		
-		// create(_tm1)  -> _tm3
-		Response _response = tagWC.replacePath("/").post(_tm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm3 = _response.readEntity(TagsModel.class);
-
-		// create(_tm2) -> _tm4
-		_response = tagWC.replacePath("/").post(_tm2);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm4 = _response.readEntity(TagsModel.class);		
-		assertNotNull("ID should be set", _tm3.getId());
-		assertNotNull("ID should be set", _tm4.getId());
-		assertThat(_tm4.getId(), not(equalTo(_tm3.getId())));
-		assertEquals("counter should be set correctly", 1, _tm3.getCounter());
-		assertEquals("counter should be set correctly", 1, _tm4.getCounter());
-
-		// delete(_tm3) -> NO_CONTENT
-		_response = tagWC.replacePath("/").path(_tm3.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-
-		// delete(_tm4) -> NO_CONTENT
-		_response = tagWC.replacePath("/").path(_tm4.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testCreate() {
+		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		TagsModel _model2 = postTag(new TagsModel(), Status.OK);
+		assertNotNull("ID should be set", _model1.getId());
+		assertNotNull("ID should be set", _model2.getId());
+		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
+		deleteTag(_model1.getId(), Status.NO_CONTENT);
+		deleteTag(_model2.getId(), Status.NO_CONTENT);
 	}
 	
+	/**
+	 * Test to create the same Model twice.
+	 */
 	@Test
-	public void testTagMultiCreate(
-	) {
-		// create(_tm) -> _tm1
-		TagsModel _tm = new TagsModel();
-		Response _response = tagWC.replacePath("/").post(_tm);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm1 = _response.readEntity(TagsModel.class);
-		assertNotNull("ID should be set:", _tm1.getId());
-		assertEquals("counter should be correct", 1, _tm1.getCounter());
-		
-		// create(_tm) -> _tm2
-		_response = tagWC.replacePath("/").post(_tm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tm2 = _response.readEntity(TagsModel.class);
-		assertEquals("ID should be the same", _tm1.getId(), _tm2.getId());
-		assertEquals("counter should be correct", 2, _tm2.getCounter());
-
-		// delete(_tm) -> NO_CONTENT
-		_response = tagWC.replacePath("/").path(_tm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-
-		// delete(_tm) -> NO_CONTENT
-		_response = tagWC.replacePath("/").path(_tm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testDoubleCreate() {
+		TagsModel _model = postTag(new TagsModel(), Status.OK);
+		assertNotNull("ID should be set:", _model.getId());
+		postTag(_model, Status.CONFLICT);
+		deleteTag(_model.getId(), Status.NO_CONTENT);
 	}
 
+	/**
+	 * Test read() operation.
+	 */
 	@Test
-	public void testTagRead(
-	) {
+	public void testRead() 
+	{
 		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();
-		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = tagWC.replacePath("/").post(new TagsModel());
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(TagsModel.class));
+			_localList.add(postTag(new TagsModel(), Status.OK));
 		}
-	
-		// test read on each local element
-		for (TagsModel _rm : _localList) {
-			_response = tagWC.replacePath("/").path(_rm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_response.readEntity(TagsModel.class);
+		for (TagsModel _model : _localList) {
+			getTag(_model.getId(), Status.OK);
 		}
-
-		// test read on each listed element
-		_response = tagWC.replacePath("/").get();
-		List<TagsModel> _remoteList = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-
-		TagsModel _tmpObj = null;
-		for (TagsModel _rm : _remoteList) {
-			_response = tagWC.replacePath("/").path(_rm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_tmpObj = _response.readEntity(TagsModel.class);
-			assertEquals("ID should be unchanged when reading a tag", _rm.getId(), _tmpObj.getId());						
+		List<TagTextModel> _remoteList = listTags(null, Status.OK);
+		
+		for (TagTextModel _model : _remoteList) {
+			getTag(_model.getTagId(), Status.OK);
 		}
-
-		for (TagsModel _rm : _localList) {
-			_response = tagWC.replacePath("/").path(_rm.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		for (TagsModel _model : _localList) {
+			deleteTag(_model.getId(), Status.NO_CONTENT);
 		}
 	}	
 
+	/**
+	 * Test multiple read() operations.
+	 */
 	@Test
-	public void testTagMultiRead(
-	) {
-		// create() -> _rm1
-		Response _response = tagWC.replacePath("/").post(new TagsModel());
-		TagsModel _rm1 = _response.readEntity(TagsModel.class);
-
-		// read(_rm1) -> _rm2
-		_response = tagWC.replacePath("/").path(_rm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _rm2 = _response.readEntity(TagsModel.class);
-		assertEquals("ID should be unchanged after read:", _rm1.getId(), _rm2.getId());		
-
-		// read(_rm1) -> _rm4
-		_response = tagWC.replacePath("/").path(_rm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _rm4 = _response.readEntity(TagsModel.class);
-		
-		// but: the two objects are not equal !
-		assertEquals("ID should be the same:", _rm2.getId(), _rm4.getId());
-		assertEquals("counter should be the same:", _rm2.getCounter(), _rm4.getCounter());
-		
-		assertEquals("ID should be the same:", _rm2.getId(), _rm1.getId());
-		assertEquals("counter should be the same:", _rm2.getCounter(), _rm1.getCounter());
-		
-		// delete(_rm1)
-		_response = tagWC.replacePath("/").path(_rm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testMultiRead() 
+	{
+		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		TagsModel _model2 = getTag(_model1.getId(), Status.OK);
+		assertEquals("ID should be unchanged after read:", _model1.getId(), _model2.getId());		
+		TagsModel _model3 = getTag(_model1.getId(), Status.OK);
+		assertEquals("ID should be the same:", _model2.getId(), _model3.getId());
+		assertEquals("ID should be the same:", _model2.getId(), _model1.getId());
+		deleteTag(_model3.getId(), Status.NO_CONTENT);
 	}
 	
+	/**
+	 * Test update() operation.
+	 */
 	@Test
-	public void testTagUpdate(
-	) {
-		// create() -> _rm1		
-		Response _response = tagWC.replacePath("/").post(new TagsModel());
-		TagsModel _rm1 = _response.readEntity(TagsModel.class);
-		
-		// change the attributes
-		// update(_rm1) -> _rm2
-		// TODO: update needs to be tested with LocalizedText, because there are no updatable fields in Tag
-		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = tagWC.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _rm2 = _response.readEntity(TagsModel.class);
-
-		assertNotNull("ID should be set", _rm2.getId());
-		assertEquals("ID should be unchanged", _rm1.getId(), _rm2.getId());	
-
-		// reset the attributes
-		// update(_rm1) -> _rm3
-		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = tagWC.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _rm3 = _response.readEntity(TagsModel.class);
-
-		assertNotNull("ID should be set", _rm3.getId());
-		assertEquals("ID should be unchanged", _rm1.getId(), _rm3.getId());	
-		
-		_response = tagWC.replacePath("/").path(_rm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testUpdate() 
+	{
+		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		TagsModel _model2 = putTag(_model1, Status.OK);
+		assertNotNull("ID should be set", _model2.getId());
+		assertEquals("ID should be unchanged", _model1.getId(), _model2.getId());	
+		deleteTag(_model1.getId(), Status.NO_CONTENT);
 	}
 	
+	/**
+	 * Test delete() operation.
+	 */
 	@Test
-	public void testTagDelete(
-	) {
-		// create() -> _rm1
-		Response _response = tagWC.replacePath("/").post(new TagsModel());
-		TagsModel _rm1 = _response.readEntity(TagsModel.class);
-		
-		// read(_rm1) -> _tmpObj
-		_response = tagWC.replacePath("/").path(_rm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _tmpObj = _response.readEntity(TagsModel.class);
-		assertEquals("ID should be unchanged when reading a tag (remote):", _rm1.getId(), _tmpObj.getId());						
-
-		// delete(_rm1) -> OK
-		_response = tagWC.replacePath("/").path(_rm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-	
-		// read the deleted object twice
-		// read(_rm1) -> NOT_FOUND
-		_response = tagWC.replacePath("/").path(_rm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// read(_rm1) -> NOT_FOUND
-		_response = tagWC.replacePath("/").path(_rm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+	public void testDelete() 
+	{
+		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		TagsModel _model2 = getTag(_model1.getId(), Status.OK);
+		assertEquals("ID should be unchanged when reading a tag (remote):", _model1.getId(), _model2.getId());						
+		deleteTag(_model1.getId(), Status.NO_CONTENT);
+		getTag(_model1.getId(), Status.NOT_FOUND);
+		getTag(_model1.getId(), Status.NOT_FOUND);
 	}
 	
+	/**
+	 * Test to delete the same model twice.
+	 */
 	@Test
-	public void testTagDoubleDelete(
-	) {
-		// new() -> _rm1
-		TagsModel _rm1 = new TagsModel();
-		
-		// create(_rm1) -> _rm2
-		Response _response = tagWC.replacePath("/").post(_rm1);
-		TagsModel _rm2 = _response.readEntity(TagsModel.class);
-
-		// read(_rm2) -> OK
-		_response = tagWC.replacePath("/").path(_rm2.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		
-		// delete(_rm2) -> OK
-		_response = tagWC.replacePath("/").path(_rm2.getId()).delete();		
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		
-		// read(_rm2) -> NOT_FOUND
-		_response = tagWC.replacePath("/").path(_rm2.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// delete _rm2 -> NOT_FOUND
-		_response = tagWC.replacePath("/").path(_rm2.getId()).delete();		
-		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// read _rm2 -> NOT_FOUND
-		_response = tagWC.replacePath("/").path(_rm2.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+	public void testDoubleDelete() 
+	{
+		TagsModel _model = postTag(new TagsModel(), Status.OK);
+		getTag(_model.getId(), Status.OK);
+		deleteTag(_model.getId(), Status.NO_CONTENT);
+		getTag(_model.getId(), Status.NOT_FOUND);
+		deleteTag(_model.getId(), Status.NOT_FOUND);
+		getTag(_model.getId(), Status.NOT_FOUND);
 	}
 	
+	/**
+	 * Test attributes createdAt, createdBy, modifiedAt, and modifiedBy.
+	 */
 	@Test
-	public void testTagsModifications() {
-		// create(new TagsModel()) -> _rm1
-		Response _response = tagWC.replacePath("/").post(new TagsModel());
-		TagsModel _rm1 = _response.readEntity(TagsModel.class);
-		System.out.println("created TagsModel " + _rm1.getId());
-		
-		// test createdAt and createdBy
-		assertNotNull("create() should set createdAt", _rm1.getCreatedAt());
-		assertNotNull("create() should set createdBy", _rm1.getCreatedBy());
-		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
-		assertNotNull("create() should set modifiedAt", _rm1.getModifiedAt());
-		assertNotNull("create() should set modifiedBy", _rm1.getModifiedBy());
-		assertEquals("createdAt and modifiedAt should be identical after create()", _rm1.getCreatedAt(), _rm1.getModifiedAt());
-		assertEquals("createdBy and modifiedBy should be identical after create()", _rm1.getCreatedBy(), _rm1.getModifiedBy());
-		try {
-			System.out.println("sleeping for 3 secs"); // in order to get different modifiedAt Dates
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// update(_rm1)  -> _rm2
-		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = tagWC.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _rm2 = _response.readEntity(TagsModel.class);
-		System.out.println("updated TagsModel " + _rm2.getId());
+	public void testModifications() 
+	{
+		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
+		assertNotNull("create() should set createdBy", _model1.getCreatedBy());
+		assertNotNull("create() should set modifiedAt", _model1.getModifiedAt());
+		assertNotNull("create() should set modifiedBy", _model1.getModifiedBy());
+		assertEquals("createdAt and modifiedAt should be identical after create()", _model1.getCreatedAt(), _model1.getModifiedAt());
+		assertEquals("createdBy and modifiedBy should be identical after create()", _model1.getCreatedBy(), _model1.getModifiedBy());
 
-		// test createdAt and createdBy (unchanged)
-		assertEquals("update() should not change createdAt", _rm1.getCreatedAt(), _rm2.getCreatedAt());
-		assertEquals("update() should not change createdBy", _rm1.getCreatedBy(), _rm2.getCreatedBy());
-		
-		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
-		System.out.println("comparing " + _rm2.getModifiedAt().toString() + " with " + _rm2.getCreatedAt().toString());
-		assertThat(_rm2.getModifiedAt().toString(), not(equalTo(_rm2.getCreatedAt().toString())));
+		TagsModel _model2 = putTag(_model1, Status.OK);
+		assertEquals("update() should not change createdAt", _model1.getCreatedAt(), _model2.getCreatedAt());
+		assertEquals("update() should not change createdBy", _model1.getCreatedBy(), _model2.getCreatedBy());
+		// the following has a timing issue; we don't want to sleep here in order to get two different times.
+		// assertThat(_tm2.getModifiedAt().toString(), not(equalTo(_tm2.getCreatedAt().toString())));
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
-		// assertThat(_rm2.getModifiedBy(), not(equalTo(_rm2.getCreatedBy())));
+		// assertThat(_tm2.getModifiedBy(), not(equalTo(_tm2.getCreatedBy())));
 
-		// update(_rm2) with createdBy set on client side -> ignored
-		String _createdBy = _rm1.getCreatedBy();
-		_rm1.setCreatedBy("testTagsModifications2");
-		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = tagWC.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should ignore client-side generated createdBy", 
-				Status.OK.getStatusCode(), _response.getStatus());
-		_rm1.setCreatedBy(_createdBy);
+		String _createdBy = _model1.getCreatedBy();
+		_model1.setCreatedBy("testModifications");
+		TagsModel _model3 = putTag(_model1, Status.OK);	// update should ignore client-side generated createdBy
+		assertEquals("update() should not change createdBy", _createdBy, _model3.getCreatedBy());
+		_model1.setCreatedBy(_createdBy);
 
-		// update(_rm1) with createdAt set on client side -> ignored
-		Date _d = _rm1.getCreatedAt();
-		_rm1.setCreatedAt(new Date(1000));
-		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = tagWC.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should ignore client-side generated createdAt", 
-				Status.OK.getStatusCode(), _response.getStatus());
-		_rm1.setCreatedAt(_d);
-
-		// update(_rm1) with modifiedBy/At set on client side -> ignored by server
-		_rm1.setModifiedBy("testTagsModifications3");
-		_rm1.setModifiedAt(new Date(1000));
-		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = tagWC.replacePath("/").path(_rm1.getId()).put(_rm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		TagsModel _o3 = _response.readEntity(TagsModel.class);
-		System.out.println("updated TagsModel " + _o3.getId());
-	
-		// test, that modifiedBy really ignored the client-side value "MYSELF"
-		assertThat(_rm1.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
-		// check whether the client-side modifiedAt() is ignored
-		assertThat(_rm1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
+		Date _createdAt = _model1.getCreatedAt();
+		_model1.setCreatedAt(new Date());
+		TagsModel _model4 = putTag(_model1, Status.OK);	// update should ignore client-side generated createdAt
+		assertEquals("update() should not change createdAt", _createdAt, _model4.getCreatedAt());
+		_model1.setCreatedAt(_createdAt);
 		
-		// delete(_rm1) -> NO_CONTENT
-		_response = tagWC.replacePath("/").path(_rm1.getId()).delete();		
-		System.out.println("deleted TagsModel " + _rm1.getId());
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		String _modifiedBy = _model1.getModifiedBy();
+		_model1.setModifiedBy("testModifications");
+		TagsModel _model5 = putTag(_model1, Status.OK);	// update should ignore client-side generated modifiedBy
+		assertEquals("update() should not change modifiedBy", _modifiedBy, _model5.getModifiedBy());
+
+		Date _modifiedAt = _model1.getModifiedAt();
+		Date _modifiedAt2 = new Date(1000);
+		_model1.setModifiedAt(_modifiedAt2);
+		TagsModel _model6 = putTag(_model1, Status.OK);	// update should ignore client-side generated modifiedAt
+		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt)));
+		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt2)));
+		
+		deleteTag(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	/********************************* helper methods *********************************/	
+	/**
+	 * Create a WebClient for the TagsService.
+	 * @return the WebClient
+	 */
 	public static WebClient createTagsWebClient() {
 		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), TagsService.class);
 	}
 	
+	/**
+	 * Create a new TagsModel on the server by executing a HTTP POST request.
+	 * @param tagWC the WebClient for the TagsService
+	 * @param exceptedStatus the expected HTTP status to test on
+	 * @return the created TagsModel
+	 */
 	public static TagsModel createTag(
-			WebClient tagWC) 
+			WebClient tagWC,
+			Status exceptedStatus) 
 	{
-		TagsModel _rm = new TagsModel();
-		Response _response = tagWC.replacePath("/").post(_rm);
+		TagsModel _model = new TagsModel();
+		Response _response = tagWC.replacePath("/").post(_model);
+		assertEquals("post should return with correct status", exceptedStatus.getStatusCode(), _response.getStatus());
 		return _response.readEntity(TagsModel.class);
 	}
+		
+	/**
+	 * Retrieve a list of TagTextModel from TagsService by executing a HTTP GET request.
+	 * This uses neither position nor size queries.
+	 * @param query the URL query to use
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return a List of TagTextModel object in JSON format
+	 */
+	public List<TagTextModel> listTags(
+			String query, 
+			Status expectedStatus) {
+		return listTags(tagWC, query, -1, -1, expectedStatus);
+	}
 	
+	/**
+	 * Retrieve a list of TagTextModel from TagsService by executing a HTTP GET request.
+	 * @param tagWC the WebClient for the TagsService
+	 * @param query the URL query to use
+	 * @param position the position to start a batch with
+	 * @param size the size of a batch
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return a List of TagTextModel objects in JSON format
+	 */
+	public static List<TagTextModel> listTags(
+			WebClient tagWC, 
+			String query, 
+			int position,
+			int size,
+			Status expectedStatus) {
+		System.out.println("listTags(tagWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ")");
+		Response _response = null;
+		tagWC.resetQuery();
+		if (query == null) {
+			if (position >= 0) {
+				if (size >= 0) {
+					_response = tagWC.replacePath("/").query("position", position).query("size", size).get();
+				} else {
+					_response = tagWC.replacePath("/").query("position", position).get();
+				}
+			} else {
+				if (size >= 0) {
+					_response = tagWC.replacePath("/").query("size", size).get();
+				} else {
+					_response = tagWC.replacePath("/").get();
+				}
+			}
+		} else {
+			if (position >= 0) {
+				if (size >= 0) {
+					_response = tagWC.replacePath("/").query("query", query).query("position", position).query("size", size).get();					
+				} else {
+					_response = tagWC.replacePath("/").query("query", query).query("position", position).get();					
+				}
+			} else {
+				if (size >= 0) {
+					_response = tagWC.replacePath("/").query("query", query).query("size", size).get();					
+				} else {
+					_response = tagWC.replacePath("/").query("query", query).get();					
+				}				
+			}
+		}
+		List<TagTextModel> _tags = null;
+		assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			_tags = new ArrayList<TagTextModel>(tagWC.getCollection(TagTextModel.class));
+			System.out.println("listTags(tagWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _tags.size());
+		}
+		return _tags;
+	}
+	
+	/**
+	 * Create a new TagsModel on the server by executing a HTTP POST request.
+	 * @param model the TagsModel to post to the server
+	 * @param exceptedStatus the expected HTTP status to test on
+	 * @return the created TagsModel
+	 * 
+	 * @param model the TagsModel data to create on the server
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the newly created TagsModel
+	 */
+	public TagsModel postTag(
+			TagsModel model, 
+			Status expectedStatus) {
+		Response _response = tagWC.replacePath("/").post(model);
+		assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(TagsModel.class);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Read the TagsModel with id from TagsService by executing a HTTP GET method.
+	 * @param id the id of the TagsModel to retrieve
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the retrieved TagsModel object in JSON format
+	 */
+	public TagsModel getTag(String id, Status expectedStatus) {
+		Response _response = tagWC.replacePath("/").path(id).get();
+		assertEquals("read() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(TagsModel.class);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Update a TagsModel on the TagsService by executing a HTTP PUT method.
+	 * @param tm the new TagsModel data
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the updated TagsModel object in JSON format
+	 */
+	public TagsModel putTag(TagsModel tm, Status expectedStatus) {
+		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		Response _response = tagWC.replacePath("/").path(tm.getId()).put(tm);
+		assertEquals("update() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(TagsModel.class);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Delete the TagsModel with id on the TagsService by executing a HTTP DELETE method.
+	 * @param id the id of the TagsModel object to delete
+	 * @param expectedStatus the expected HTTP status to test on
+	 */
+	public void deleteTag(String id, Status expectedStatus) {
+		deleteTag(tagWC, id, expectedStatus);
+	}
+	
+	/**
+	 * Delete the TagsModel with id on the TagsService by executing a HTTP DELETE method.
+	 * @param tagWC the WebClient for the TagsService
+	 * @param id the id of the TagsModel object to delete
+	 * @param expectedStatus the expected HTTP status to test on
+	 */
+	public static void deleteTag(
+			WebClient tagWC,
+			String id,
+			Status expectedStatus) {
+		Response _response = tagWC.replacePath("/").path(id).delete();		
+		assertEquals("delete() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+	}
+	
+	/**
+	 * Cleanup all static resources of the test case.
+	 * @param tagWC the WebClient for the TagsService
+	 * @param id the id of the TagsModel object
+	 * @param testName the name of the test case for logging purposes
+	 */
 	public static void cleanup(
 			WebClient tagWC,
-			String tagId,
+			String id,
 			String testName) {
-		cleanup(tagWC, tagId, testName, true);
+		cleanup(tagWC, id, testName, true);
 	}
 		
+	/**
+	 * Cleanup all static resources of the test case.
+	 * @param tagWC the WebClient for the TagsService
+	 * @param id the id of the TagsModel object
+	 * @param testName the name of the test case for logging purposes
+	 * @param closeWC defines whether or not to close the WebClient
+	 */
 	public static void cleanup(
 			WebClient tagWC,
-			String tagId,
+			String id,
 			String testName,
 			boolean closeWC) {
-		tagWC.replacePath("/").path(tagId).delete();
-		System.out.println(testName + " deleted tag <" + tagId + ">.");
+		tagWC.replacePath("/").path(id).delete();
+		System.out.println(testName + " deleted tag <" + id + ">.");
 		if (closeWC) {
 			tagWC.close();
 		}

@@ -28,15 +28,17 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opentdc.tags.TagTextModel;
 import org.opentdc.tags.TagsModel;
+import org.opentdc.util.LanguageCode;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.LocalizedTextModel;
 
 import test.org.opentdc.AbstractTestClient;
 
@@ -52,11 +54,11 @@ public class TagsBatchedListTest extends AbstractTestClient {
 	public void cleanupTest() {
 		tagWC.close();
 	}
+	
 
 	@Test
 	public void testTagBatchedList() {
 		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();		
-		Response _response = null;
 		System.out.println("***** testTagBatchedList:");
 		tagWC.replacePath("/");
 		// we want to allocate more than double the amount of default list size objects
@@ -65,51 +67,37 @@ public class TagsBatchedListTest extends AbstractTestClient {
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
 		TagsModel _res = null;
 		for (int i = 0; i < _limit2; i++) {
-			// create(new()) -> _localList
-			_res = new TagsModel();
-			_response = tagWC.post(_res);
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(TagsModel.class));
-			System.out.println("posted TagsModel " + _res.getId());
+			_res = TagsTest.createTag(tagWC, Status.OK);
+			_localList.add(_res);
+			LocalizedTextTest.postLocalizedText(tagWC, _res, new LocalizedTextModel(LanguageCode.ES, "testTagBatchedList" + i), Status.OK);
+			System.out.println("posted TagsModel " + _res.getId() + " with LocalizedText <testTagBatchedList" + i + ">");
 		}
-		System.out.println("****** locallist:");
-		for (TagsModel _rm : _localList) {
-			System.out.println(_rm.getId());
-		}
+		assertEquals("testcase should create the right amount of Tags", _limit2, _localList.size());
 
 		// get first batch
 		// list(position=0, size=25) -> elements 0 .. 24
-		tagWC.resetQuery();
-		_response = tagWC.replacePath("/").get();
-		List<TagsModel> _remoteList1 = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		List<TagTextModel> _remoteList1 = TagsTest.listTags(tagWC, null, -1, -1, Status.OK);
 		System.out.println("****** 1st Batch:");
-		for (TagsModel _rm : _remoteList1) {
-			System.out.println(_rm.getId());
+		for (TagTextModel _ttm : _remoteList1) {
+			System.out.println(_ttm.getTagId());
 		}
 		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
-		
+			
 		// get second batch
 		// list(position=25, size=25) -> elements 25 .. 49
-		tagWC.resetQuery();
-		_response = tagWC.replacePath("/").query("position", 25).get();
-		List<TagsModel> _remoteList2 = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		List<TagTextModel> _remoteList2 = TagsTest.listTags(tagWC, null, 25, -1, Status.OK);
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
-		for (TagsModel _rm : _remoteList2) {
-			System.out.println(_rm.getId());
+		for (TagTextModel _rm : _remoteList2) {
+			System.out.println(_rm.getTagId());
 		}
 		
 		// get rest 
 		// list(position=50, size=25) ->   elements 50 .. 54
-		tagWC.resetQuery();
-		_response = tagWC.replacePath("/").query("position", 50).get();
-		List<TagsModel> _remoteList3 = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		List<TagTextModel> _remoteList3 = TagsTest.listTags(tagWC, null, 50, -1, Status.OK);
 		System.out.println("****** 3rd Batch:");
-		for (TagsModel _rm : _remoteList3) {
-			System.out.println(_rm.getId());
+		for (TagTextModel _rm : _remoteList3) {
+			System.out.println(_rm.getTagId());
 		}
 		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
 		
@@ -117,13 +105,10 @@ public class TagsBatchedListTest extends AbstractTestClient {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<TagsModel> _remoteList = null;
+		List<TagTextModel> _remoteList = null;
 		while(true) {
 			_numberOfBatches++;
-			tagWC.resetQuery();
-			_response = tagWC.replacePath("/").query("position", _position).get();
-			_remoteList = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			_remoteList = TagsTest.listTags(tagWC, null, _position, -1, Status.OK);
 			_numberOfReturnedObjects += _remoteList.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
 			if (_remoteList.size() < GenericService.DEF_SIZE) {
@@ -137,31 +122,18 @@ public class TagsBatchedListTest extends AbstractTestClient {
 		assertEquals("last batch size should be as expected", _increment, _remoteList.size());
 	
 		// testing some explicit positions and sizes
-		tagWC.resetQuery();
-		// get next 5 elements from position 5
-		_response = tagWC.replacePath("/").query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		_remoteList = TagsTest.listTags(tagWC, null, 5, 5, Status.OK);  // get next 5 elements from position 5
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
-		// get last 4 elements 
-		tagWC.resetQuery();
-		_response = tagWC.replacePath("/").query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		_remoteList = TagsTest.listTags(tagWC, null, _limit2-4, 4, Status.OK);  // get last 4 elements
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
 		
-		// read over end of list
-		tagWC.resetQuery();
-		_response = tagWC.replacePath("/").query("position", _limit2-5).query("size", 10).get();
-		_remoteList = new ArrayList<TagsModel>(tagWC.getCollection(TagsModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		_remoteList = TagsTest.listTags(tagWC, null, _limit2-5, 10, Status.OK);  // read over end of list
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// removing all test objects
-		for (TagsModel _c : _localList) {
-			_response = tagWC.replacePath("/").path(_c.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		for (TagsModel _tm : _localList) {
+			TagsTest.deleteTag(tagWC, _tm.getId(), Status.NO_CONTENT);
 		}		
 	}
 }
