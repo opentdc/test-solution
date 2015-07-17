@@ -38,9 +38,11 @@ import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.WttService;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.OrgModel;
 import org.opentdc.addressbooks.OrgType;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
@@ -54,8 +56,9 @@ public class CompanyBatchedListTest extends AbstractTestClient {
 	
 	@Before
 	public void initializeTests() {
-		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		wttWC = initializeTest(ServiceUtil.WTT_API_URL, WttService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
+		
 		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		org = OrgTest.createOrg(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
 	}

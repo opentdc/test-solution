@@ -41,18 +41,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
 public class AddressbookTest extends AbstractTestClient {
 	
-	public static final String API_URL = "api/addressbooks/";
 	private WebClient addressbookWC = null;
 
 	@Before
 	public void initializeTest(
 	) {
-		addressbookWC = initializeTest(API_URL, AddressbooksService.class);
+		addressbookWC = initializeTest(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 	}
 		
 	@After
@@ -545,10 +545,6 @@ public class AddressbookTest extends AbstractTestClient {
 	}
 	
 	/********************************** helper methods *********************************/	
-	public static WebClient createAddressbookWebClient() {
-		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), AddressbooksService.class);
-	}
-	
 	public static AddressbookModel createAddressbook(
 		WebClient addressbookWC, 
 		String name)

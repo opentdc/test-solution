@@ -40,8 +40,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.OrgModel;
 import org.opentdc.addressbooks.OrgType;
+import org.opentdc.service.ServiceUtil;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.WttService;
 
@@ -50,7 +52,6 @@ import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.OrgTest;
 
 public class CompanyTest extends AbstractTestClient {
-	public static final String API_URL = "api/company/";	
 	private WebClient wttWC = null;
 	private static AddressbookModel adb = null;
 	private static OrgModel org = null;
@@ -58,8 +59,9 @@ public class CompanyTest extends AbstractTestClient {
 	
 	@Before
 	public void initializeTests() {
-		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		wttWC = initializeTest(ServiceUtil.WTT_API_URL, WttService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
+		
 		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		org = OrgTest.createOrg(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
 	}
@@ -591,10 +593,6 @@ public class CompanyTest extends AbstractTestClient {
 	}
 	
 	/********************************* helper methods *********************************/	
-	public static WebClient createWttWebClient() {
-		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), WttService.class);
-	}
-	
 	public static CompanyModel createCompany(
 			WebClient wttWC, 
 			WebClient addressbookWC,

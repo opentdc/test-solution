@@ -39,6 +39,7 @@ import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
@@ -52,7 +53,7 @@ public class ContactAllListTest extends AbstractTestClient {
 	@Before
 	public void initializeTest(
 	) {
-		addressbookWC = initializeTest(AddressbookTest.API_URL, AddressbooksService.class);
+		addressbookWC = initializeTest(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		addressbooks = new ArrayList<AddressbookModel>();
 		AddressbookModel _abm = null;
 		for (int i = 0; i < nrAddressbooks; i++) {

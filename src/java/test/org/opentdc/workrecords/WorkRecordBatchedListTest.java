@@ -37,12 +37,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.workrecords.WorkRecordModel;
+import org.opentdc.workrecords.WorkRecordsService;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
+import org.opentdc.wtt.WttService;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
+import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
@@ -64,17 +69,16 @@ public class WorkRecordBatchedListTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		workRecordWC = WorkRecordsTest.createWorkRecordsWebClient();
-		wttWC = CompanyTest.createWttWebClient();
-		resourceWC = ResourcesTest.createResourcesWebClient();
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		workRecordWC = createWebClient(ServiceUtil.WORKRECORDS_API_URL, WorkRecordsService.class);
+		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
+		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 		project = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
 		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
-				this.getClass().getName(), "FNAME", "LNAME", addressbook.getId(), contact.getId());
+		resource = ResourcesTest.createResource(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
 	}
 
 	@After

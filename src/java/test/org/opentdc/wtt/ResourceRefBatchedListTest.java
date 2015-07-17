@@ -38,10 +38,14 @@ import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
 import org.opentdc.wtt.ResourceRefModel;
+import org.opentdc.wtt.WttService;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
+import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
@@ -60,15 +64,15 @@ public class ResourceRefBatchedListTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTest() {
-		wttWC = CompanyTest.createWttWebClient();
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
-		resourceWC = ResourcesTest.createResourcesWebClient();
+		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
+		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
+
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 		parentProject = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
 		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
-				this.getClass().getName(), "FNAME", "LNAME", addressbook.getId(), contact.getId());
+		resource = ResourcesTest.createResource(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
 	}
 
 	@After

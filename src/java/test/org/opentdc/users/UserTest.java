@@ -40,7 +40,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.service.ServiceUtil;
 import org.opentdc.users.UserModel;
 import org.opentdc.users.UsersService;
 
@@ -49,7 +51,6 @@ import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
 
 public class UserTest extends AbstractTestClient {
-	public static final String API_URL = "api/users/";
 	private WebClient userWC = null;
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
@@ -57,8 +58,8 @@ public class UserTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		userWC = initializeTest(API_URL, UsersService.class);
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		userWC = initializeTest(ServiceUtil.USERS_API_URL, UsersService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.createAddressbook(addressbookWC, "UserTest");
 		contact = ContactTest.createContact(addressbookWC, adb.getId(), "FNAME", "LNAME");
 	}

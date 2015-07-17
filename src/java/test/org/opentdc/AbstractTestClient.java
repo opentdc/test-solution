@@ -23,56 +23,19 @@
  */
 package test.org.opentdc;
 
-import javax.ws.rs.core.MediaType;
-
-import org.apache.cxf.binding.BindingFactoryManager;
-import org.apache.cxf.jaxrs.JAXRSBindingFactory;
-import org.apache.cxf.jaxrs.client.JAXRSClientFactoryBean;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.ServiceUtil;
 
 public abstract class AbstractTestClient {
-	protected static final String DEFAULT_BASE_URL = "http://localhost:8080/opentdc-services-test/";
 	protected static int LIMIT;			// when testing lists, this defined the number of elements in a list
-
 	protected int status;
-
-	protected static String createUrl(
-		String defaultBaseUrl,
-		String apiUrl) 
-	{
-		String _serviceUrl = defaultBaseUrl;
-		if(System.getProperty("service.url") != null && 
-			System.getProperty("service.url").startsWith("http://")) {
-			_serviceUrl = System.getProperty("service.url");
-		}
-		if (!_serviceUrl.endsWith("/")) {
-			_serviceUrl = _serviceUrl + "/";
-		}
-		return _serviceUrl + apiUrl;
-	}
-	
-	protected static WebClient createWebClient(
-		String apiUrl,
-		Class<?> serviceClass) 
-	{
-		JAXRSClientFactoryBean _sf = new JAXRSClientFactoryBean();
-		_sf.setResourceClass(serviceClass);
-		_sf.setAddress(apiUrl);
-		BindingFactoryManager _manager = _sf.getBus().getExtension(BindingFactoryManager.class);
-		JAXRSBindingFactory _factory = new JAXRSBindingFactory();
-		_factory.setBus(_sf.getBus());
-		_manager.registerBindingFactory(JAXRSBindingFactory.JAXRS_BINDING_ID, _factory);
-		WebClient _webclient = _sf.createWebClient();
-		_webclient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		return _webclient;
-	}
 	
 	protected WebClient initializeTest(
 		String apiUrl,
 		Class<?> serviceClass)
 	{
-		WebClient _webclient = createWebClient(createUrl(DEFAULT_BASE_URL, apiUrl), serviceClass);
+		WebClient _webclient = ServiceUtil.createWebClient(apiUrl, serviceClass);
 		
 		// ensure that LIMIT < GenericeService.DEF_SIZE (for testing purposes)
 		if (GenericService.DEF_SIZE > 10) {
@@ -84,5 +47,9 @@ public abstract class AbstractTestClient {
 		}
 		*/
 		return _webclient;
+	}
+	
+	protected static WebClient createWebClient(String apiUrl, Class<?> serviceClass) {
+		return ServiceUtil.createWebClient(apiUrl, serviceClass);
 	}
 }

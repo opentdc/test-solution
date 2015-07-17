@@ -7,8 +7,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
+import org.opentdc.resources.ResourcesService;
+import org.opentdc.service.ServiceUtil;
 import org.opentdc.wtt.*;
 
 import test.org.opentdc.AbstractTestClient;
@@ -30,14 +33,14 @@ public class ProjectTreeTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		wttWC = CompanyTest.createWttWebClient();
-		resourceWC = ResourcesTest.createResourcesWebClient();
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
+		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
+		
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourcesTest.createResource(resourceWC, addressbookWC, 
-				this.getClass().getName(), "FNAME", "LNAME", addressbook.getId(), contact.getId());
+		resource = ResourcesTest.createResource(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
 	}
 
 	@After

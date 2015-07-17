@@ -37,9 +37,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressModel;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.AttributeType;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
@@ -50,7 +52,7 @@ public class AddressBatchedListTest extends AbstractTestClient {
 		
 	@Before
 	public void initializeTests() {
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		contact = ContactTest.createContact(addressbookWC, adb.getId(), this.getClass().getName(), "Test");
 	}

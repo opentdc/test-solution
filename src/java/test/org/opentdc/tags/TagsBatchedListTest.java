@@ -36,9 +36,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.tags.TagTextModel;
 import org.opentdc.tags.TagsModel;
+import org.opentdc.tags.TagsService;
 import org.opentdc.util.LanguageCode;
 import org.opentdc.service.GenericService;
 import org.opentdc.service.LocalizedTextModel;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
@@ -47,7 +49,7 @@ public class TagsBatchedListTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		tagWC = TagsTest.createTagsWebClient();
+		tagWC = createWebClient(ServiceUtil.TAGS_API_URL, TagsService.class);
 	}
 
 	@After

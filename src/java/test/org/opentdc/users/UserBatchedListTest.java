@@ -38,8 +38,10 @@ import org.junit.Test;
 import org.opentdc.users.UserModel;
 import org.opentdc.users.UsersService;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
@@ -52,8 +54,8 @@ public class UserBatchedListTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		userWC = initializeTest(UserTest.API_URL, UsersService.class);
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		userWC = initializeTest(ServiceUtil.USERS_API_URL, UsersService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 	}
 	

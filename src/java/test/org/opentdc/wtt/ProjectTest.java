@@ -40,6 +40,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
+import org.opentdc.service.ServiceUtil;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
 import org.opentdc.wtt.WttService;
@@ -56,8 +58,9 @@ public class ProjectTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		wttWC = initializeTest(CompanyTest.API_URL, WttService.class);
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		wttWC = initializeTest(ServiceUtil.WTT_API_URL, WttService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
+		
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 	}

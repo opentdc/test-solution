@@ -40,6 +40,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.service.LocalizedTextModel;
+import org.opentdc.service.ServiceUtil;
 import org.opentdc.tags.TagTextModel;
 import org.opentdc.tags.TagsModel;
 import org.opentdc.tags.TagsService;
@@ -53,7 +54,6 @@ import test.org.opentdc.AbstractTestClient;
  *
  */
 public class TagsTest extends AbstractTestClient {
-	public static final String API_URL = "api/tag/";
 	private WebClient tagWC = null;
 
 	/**
@@ -61,7 +61,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Before
 	public void initializeTest() {
-		tagWC = initializeTest(API_URL, TagsService.class);
+		tagWC = initializeTest(ServiceUtil.TAGS_API_URL, TagsService.class);
 	}
 	
 	/**
@@ -442,30 +442,6 @@ public class TagsTest extends AbstractTestClient {
 	
 	/********************************* helper methods *********************************/	
 	/**
-	 * Create a WebClient for the TagsService.
-	 * @return the WebClient
-	 */
-	public static WebClient createTagsWebClient() {
-		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), TagsService.class);
-	}
-	
-	/**
-	 * Create a new TagsModel on the server by executing a HTTP POST request.
-	 * @param tagWC the WebClient for the TagsService
-	 * @param exceptedStatus the expected HTTP status to test on
-	 * @return the created TagsModel
-	 */
-	public static TagsModel createTag(
-			WebClient tagWC,
-			Status exceptedStatus) 
-	{
-		TagsModel _model = new TagsModel();
-		Response _response = tagWC.replacePath("/").post(_model);
-		assertEquals("post should return with correct status", exceptedStatus.getStatusCode(), _response.getStatus());
-		return _response.readEntity(TagsModel.class);
-	}
-		
-	/**
 	 * Retrieve a list of TagTextModel from TagsService by executing a HTTP GET request.
 	 * This uses neither position nor size queries.
 	 * @param query the URL query to use
@@ -480,7 +456,7 @@ public class TagsTest extends AbstractTestClient {
 	
 	/**
 	 * Retrieve a list of TagTextModel from TagsService by executing a HTTP GET request.
-	 * @param tagWC the WebClient for the TagsService
+	 * @param webClient the WebClient for the TagsService
 	 * @param query the URL query to use
 	 * @param position the position to start a batch with
 	 * @param size the size of a batch
@@ -488,47 +464,49 @@ public class TagsTest extends AbstractTestClient {
 	 * @return a List of TagTextModel objects in JSON format
 	 */
 	public static List<TagTextModel> listTags(
-			WebClient tagWC, 
+			WebClient webClient, 
 			String query, 
 			int position,
 			int size,
 			Status expectedStatus) {
 		System.out.println("listTags(tagWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ")");
 		Response _response = null;
-		tagWC.resetQuery();
+		webClient.resetQuery();
 		if (query == null) {
 			if (position >= 0) {
 				if (size >= 0) {
-					_response = tagWC.replacePath("/").query("position", position).query("size", size).get();
+					_response = webClient.replacePath("/").query("position", position).query("size", size).get();
 				} else {
-					_response = tagWC.replacePath("/").query("position", position).get();
+					_response = webClient.replacePath("/").query("position", position).get();
 				}
 			} else {
 				if (size >= 0) {
-					_response = tagWC.replacePath("/").query("size", size).get();
+					_response = webClient.replacePath("/").query("size", size).get();
 				} else {
-					_response = tagWC.replacePath("/").get();
+					_response = webClient.replacePath("/").get();
 				}
 			}
 		} else {
 			if (position >= 0) {
 				if (size >= 0) {
-					_response = tagWC.replacePath("/").query("query", query).query("position", position).query("size", size).get();					
+					_response = webClient.replacePath("/").query("query", query).query("position", position).query("size", size).get();					
 				} else {
-					_response = tagWC.replacePath("/").query("query", query).query("position", position).get();					
+					_response = webClient.replacePath("/").query("query", query).query("position", position).get();					
 				}
 			} else {
 				if (size >= 0) {
-					_response = tagWC.replacePath("/").query("query", query).query("size", size).get();					
+					_response = webClient.replacePath("/").query("query", query).query("size", size).get();					
 				} else {
-					_response = tagWC.replacePath("/").query("query", query).get();					
+					_response = webClient.replacePath("/").query("query", query).get();					
 				}				
 			}
 		}
 		List<TagTextModel> _tags = null;
-		assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		if (expectedStatus != null) {
+			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			_tags = new ArrayList<TagTextModel>(tagWC.getCollection(TagTextModel.class));
+			_tags = new ArrayList<TagTextModel>(webClient.getCollection(TagTextModel.class));
 			System.out.println("listTags(tagWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _tags.size());
 		}
 		return _tags;
@@ -539,16 +517,14 @@ public class TagsTest extends AbstractTestClient {
 	 * @param model the TagsModel to post to the server
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created TagsModel
-	 * 
-	 * @param model the TagsModel data to create on the server
-	 * @param expectedStatus the expected HTTP status to test on
-	 * @return the newly created TagsModel
 	 */
 	public TagsModel postTag(
 			TagsModel model, 
 			Status expectedStatus) {
 		Response _response = tagWC.replacePath("/").post(model);
-		assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		if (expectedStatus != null) {
+			assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(TagsModel.class);
 		} else {
@@ -557,14 +533,67 @@ public class TagsTest extends AbstractTestClient {
 	}
 	
 	/**
+	 * Create a new TagsModel on the server by executing a HTTP POST request.
+	 * @param webClient the WebClient representing the TagsService
+	 * @param model the TagsModel data to create on the server
+	 * @param exceptedStatus the expected HTTP status to test on
+	 * @return the created TagsModel
+	 */
+	public static TagsModel postTag(
+			WebClient webClient,
+			TagsModel model,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").post(model);
+		if (expectedStatus != null) {
+			assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(TagsModel.class);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Create a new TagsModel on the server by executing a HTTP POST request.
+	 * @param webClient the WebClient representing the TagsService
+	 * @param exceptedStatus the expected HTTP status to test on
+	 * @return the created TagsModel
+	 */
+	public static TagsModel createTag(
+			WebClient webClient,
+			Status expectedStatus) 
+	{
+		return postTag(webClient, new TagsModel(), expectedStatus);
+	}
+		
+	/**
 	 * Read the TagsModel with id from TagsService by executing a HTTP GET method.
-	 * @param id the id of the TagsModel to retrieve
+	 * @param tagId the id of the TagsModel to retrieve
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the retrieved TagsModel object in JSON format
 	 */
-	public TagsModel getTag(String id, Status expectedStatus) {
-		Response _response = tagWC.replacePath("/").path(id).get();
-		assertEquals("read() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+	public TagsModel getTag(
+			String tagId, 
+			Status expectedStatus) {
+		return getTag(tagWC, tagId, expectedStatus);
+	}
+	
+	/**
+	 * Read the TagsModel with id from TagsService by executing a HTTP GET method.
+	 * @param webClient the web client representing the TagsService
+	 * @param tagId the id of the TagsModel to retrieve
+	 * @param expectedStatus  the expected HTTP status to test on
+	 * @return the retrieved TagsModel object in JSON format
+	 */
+	public static TagsModel getTag(
+			WebClient webClient,
+			String tagId,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").path(tagId).get();
+		if (expectedStatus != null) {
+			assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(TagsModel.class);
 		} else {
@@ -578,10 +607,28 @@ public class TagsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated TagsModel object in JSON format
 	 */
-	public TagsModel putTag(TagsModel tm, Status expectedStatus) {
-		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response _response = tagWC.replacePath("/").path(tm.getId()).put(tm);
-		assertEquals("update() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+	public TagsModel putTag(
+			TagsModel tm, 
+			Status expectedStatus) {
+		return putTag(tagWC, tm, expectedStatus);
+	}
+	
+	/**
+	 * Update a TagsModel on the TagsService by executing a HTTP PUT method.
+	 * @param webClient the web client representing the TagsService
+	 * @param model the new TagsModel data
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the updated TagsModel object in JSON format
+	 */
+	public static TagsModel putTag(
+			WebClient webClient,
+			TagsModel model,
+			Status expectedStatus) {
+		webClient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		Response _response = webClient.replacePath("/").path(model.getId()).put(model);
+		if (expectedStatus != null) {
+			assertEquals("PUT should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(TagsModel.class);
 		} else {
@@ -599,48 +646,26 @@ public class TagsTest extends AbstractTestClient {
 	}
 	
 	/**
-	 * Delete the TagsModel with id on the TagsService by executing a HTTP DELETE method.
-	 * @param tagWC the WebClient for the TagsService
-	 * @param id the id of the TagsModel object to delete
+	 * Delete the TagsModel with id including all its contained LocalizedTextModels on the TagsService by executing a HTTP DELETE method.
+	 * @param webClient the WebClient for the TagsService
+	 * @param tagId the id of the TagsModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
 	public static void deleteTag(
-			WebClient tagWC,
-			String id,
+			WebClient webClient,
+			String tagId,
 			Status expectedStatus) {
-		Response _response = tagWC.replacePath("/").path(id).delete();		
-		assertEquals("delete() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
-	}
-	
-	/**
-	 * Cleanup all static resources of the test case.
-	 * @param tagWC the WebClient for the TagsService
-	 * @param id the id of the TagsModel object
-	 * @param testName the name of the test case for logging purposes
-	 */
-	public static void cleanup(
-			WebClient tagWC,
-			String id,
-			String testName) {
-		cleanup(tagWC, id, testName, true);
-	}
-		
-	/**
-	 * Cleanup all static resources of the test case.
-	 * @param tagWC the WebClient for the TagsService
-	 * @param id the id of the TagsModel object
-	 * @param testName the name of the test case for logging purposes
-	 * @param closeWC defines whether or not to close the WebClient
-	 */
-	public static void cleanup(
-			WebClient tagWC,
-			String id,
-			String testName,
-			boolean closeWC) {
-		tagWC.replacePath("/").path(id).delete();
-		System.out.println(testName + " deleted tag <" + id + ">.");
-		if (closeWC) {
-			tagWC.close();
+		Status _expectedStatusGet = expectedStatus == Status.NO_CONTENT ? Status.OK : expectedStatus;
+		TagsModel _tagModel = getTag(webClient, tagId, _expectedStatusGet);
+		List<LocalizedTextModel> _localizedTextModels = LocalizedTextTest.listLocalizedTexts(webClient, tagId, _expectedStatusGet);
+		if (_localizedTextModels != null) {
+			for (LocalizedTextModel _localizedTextModel : _localizedTextModels) {
+				LocalizedTextTest.deleteLocalizedText(webClient, _tagModel, _localizedTextModel.getId(), expectedStatus);
+			}
 		}
-	}	
+		Response _response = webClient.replacePath("/").path(tagId).delete();	
+		if (expectedStatus != null) {
+			assertEquals("DELETE should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+	}
 }

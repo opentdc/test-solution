@@ -40,16 +40,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
+import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
 import org.opentdc.resources.ResourcesService;
+import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
 
 public class ResourcesTest extends AbstractTestClient {
-	public static final String API_URL = "api/resource/";
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
 	private WebClient resourceWC = null;
@@ -57,8 +58,8 @@ public class ResourcesTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		resourceWC = initializeTest(API_URL, ResourcesService.class);
-		addressbookWC = AddressbookTest.createAddressbookWebClient();
+		resourceWC = initializeTest(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
+		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
 		contact = ContactTest.createContact(addressbookWC, adb.getId(), "FNAME", "LNAME");
 	}
@@ -279,7 +280,7 @@ public class ResourcesTest extends AbstractTestClient {
 	@Test
 	public void testCreateResourceWithClientSideId() {
 		// new() -> _rm1 -> _rm1.setId("LOCAL_ID") -> create(_rm1) -> BAD_REQUEST
-		ResourceModel _rm1 = createResource("testCreateResourceWithClientSideId", 1);
+		ResourceModel _rm1 = createResourceModel("testCreateResourceWithClientSideId", 1);
 		_rm1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _rm1.getId());
 		// create(_c1) -> BAD_REQUEST
@@ -290,12 +291,12 @@ public class ResourcesTest extends AbstractTestClient {
 	@Test
 	public void testCreateResourceWithDuplicateId() {
 		// create(new()) -> _rm1
-		Response _response = resourceWC.replacePath("/").post(createResource("testCreateResourceWithDuplicateId", 1));
+		Response _response = resourceWC.replacePath("/").post(createResourceModel("testCreateResourceWithDuplicateId", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceModel _rm1 = _response.readEntity(ResourceModel.class);
 
 		// new() -> _rm2 -> _rm2.setId(_rm1.getId())
-		ResourceModel _rm2 = createResource("testCreateResourceWithDuplicateId", 2);
+		ResourceModel _rm2 = createResourceModel("testCreateResourceWithDuplicateId", 2);
 		_rm2.setId(_rm1.getId());		// wrongly create a 2nd ResourceModel object with the same ID
 		
 		// create(_c3) -> CONFLICT
@@ -315,7 +316,7 @@ public class ResourcesTest extends AbstractTestClient {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = resourceWC.replacePath("/").post(createResource("testResourceList", i));
+			_response = resourceWC.replacePath("/").post(createResourceModel("testResourceList", i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ResourceModel.class));
 		}
@@ -349,9 +350,9 @@ public class ResourcesTest extends AbstractTestClient {
 	@Test
 	public void testResourceCreate() {
 		// new("MY_TITLE", "MY_DESC") -> _rm1
-		ResourceModel _rm1 = createResource("testResourceCreate", 1);
+		ResourceModel _rm1 = createResourceModel("testResourceCreate", 1);
 		// new("MY_TITLE2", "MY_DESC2") -> _rm2
-		ResourceModel _rm2 = createResource("testResourceCreate", 2);
+		ResourceModel _rm2 = createResourceModel("testResourceCreate", 2);
 		
 		// create(_rm1)  -> _rm3
 		Response _response = resourceWC.replacePath("/").post(_rm1);
@@ -392,7 +393,7 @@ public class ResourcesTest extends AbstractTestClient {
 	public void testResourceDoubleCreate(
 	) {
 		// create(new()) -> _rm
-		Response _response = resourceWC.replacePath("/").post(createResource("testResourceDoubleCreate", 1));
+		Response _response = resourceWC.replacePath("/").post(createResourceModel("testResourceDoubleCreate", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceModel _rm = _response.readEntity(ResourceModel.class);
 		assertNotNull("ID should be set", _rm.getId());		
@@ -412,7 +413,7 @@ public class ResourcesTest extends AbstractTestClient {
 		ArrayList<ResourceModel> _localList = new ArrayList<ResourceModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = resourceWC.replacePath("/").post(createResource("testResourceRead", i));
+			_response = resourceWC.replacePath("/").post(createResourceModel("testResourceRead", i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ResourceModel.class));
 		}
@@ -447,7 +448,7 @@ public class ResourcesTest extends AbstractTestClient {
 	public void testResourceMultiRead(
 	) {
 		// new() -> _rm1
-		ResourceModel _rm1 = createResource("testResourceMultiRead", 1);
+		ResourceModel _rm1 = createResourceModel("testResourceMultiRead", 1);
 		
 		// create(_rm1) -> _rm2
 		Response _response = resourceWC.replacePath("/").post(_rm1);
@@ -486,7 +487,7 @@ public class ResourcesTest extends AbstractTestClient {
 	public void testResourceUpdate(
 	) {
 		// new() -> _rm1
-		ResourceModel _rm1 = createResource("testResourceUpdate", 1);
+		ResourceModel _rm1 = createResourceModel("testResourceUpdate", 1);
 		
 		// create(_rm1) -> _rm2
 		Response _response = resourceWC.replacePath("/").post(_rm1);
@@ -539,7 +540,7 @@ public class ResourcesTest extends AbstractTestClient {
 	public void testResourceDelete(
 	) {
 		// new() -> _rm1
-		ResourceModel _rm1 = createResource("testResourceDelete", 1);
+		ResourceModel _rm1 = createResourceModel("testResourceDelete", 1);
 		// create(_rm1) -> _rm2
 		Response _response = resourceWC.replacePath("/").post(_rm1);
 		ResourceModel _rm2 = _response.readEntity(ResourceModel.class);
@@ -568,7 +569,7 @@ public class ResourcesTest extends AbstractTestClient {
 	public void testResourceDoubleDelete(
 	) {
 		// new() -> _rm1
-		ResourceModel _rm1 = createResource("testResourceDoubleDelete", 1);
+		ResourceModel _rm1 = createResourceModel("testResourceDoubleDelete", 1);
 		
 		// create(_rm1) -> _rm2
 		Response _response = resourceWC.replacePath("/").post(_rm1);
@@ -598,7 +599,7 @@ public class ResourcesTest extends AbstractTestClient {
 	@Test
 	public void testResourceModifications() {
 		// create(new ResourceModel()) -> _rm1
-		Response _response = resourceWC.replacePath("/").post(createResource("testResourceModifications", 1));
+		Response _response = resourceWC.replacePath("/").post(createResourceModel("testResourceModifications", 1));
 		ResourceModel _rm1 = _response.readEntity(ResourceModel.class);
 		
 		// test createdAt and createdBy
@@ -645,35 +646,58 @@ public class ResourcesTest extends AbstractTestClient {
 	}
 	
 	/********************************* helper methods *********************************/	
-	public static WebClient createResourcesWebClient() {
-		return createWebClient(createUrl(DEFAULT_BASE_URL, API_URL), ResourcesService.class);
-	}
-	
-	public ResourceModel createResource(
+	public ResourceModel createResourceModel(
 			String name, 
 			int suffix) {
 		ContactModel _cm = ContactTest.createContact(addressbookWC, adb.getId(), "MY_FNAME" + suffix, "MY_LNAME" + suffix);
 		return new ResourceModel(name + suffix, _cm.getFirstName(), _cm.getLastName(), _cm.getId());
 	}	
 	
+	/**
+	 * Create a new ResourceModel on the server by executing a HTTP POST request.
+	 * @param model the ResourceModel to post to the server
+	 * @param exceptedStatus the expected HTTP status to test on
+	 * @return the created ResourceModel
+	 */
+	public ResourceModel postResource(
+			ResourceModel model, 
+			Status expectedStatus) {
+		return postResource(resourceWC, model, expectedStatus);
+	}
+	
+	/**
+	 * Create a new ResourceModel on the server by executing a HTTP POST request.
+	 * @param webClient the WebClient representing the ResourceService
+	 * @param model the ResourceModel data to create on the server
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the created ResourceModel
+	 */
+	public static ResourceModel postResource(
+			WebClient webClient,
+			ResourceModel model,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").post(model);
+		assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(ResourceModel.class);
+		} else {
+			return null;
+		}
+	}
 	public static ResourceModel createResource(
 			WebClient resourceWC, 
-			WebClient addressbookWC, 
-			String name, 
-			String fName, 
-			String lName, 
-			String aid, 
-			String contactId) {
-		ContactModel _cm = ContactTest.createContact(addressbookWC, aid, fName, lName);
-		ResourceModel _rm = new ResourceModel();
-		_rm.setName(name);
-		_rm.setFirstName(fName);
-		_rm.setLastName(lName);
-		_rm.setContactId(_cm.getId());
-		Response _response = resourceWC.replacePath("/").post(_rm);
-		return _response.readEntity(ResourceModel.class);
+			AddressbookModel addressbookModel,
+			ContactModel contactModel,
+			String resourceName,
+			Status expectedStatus) {
+		ResourceModel _resourceModel = new ResourceModel();
+		_resourceModel.setName(resourceName);
+		_resourceModel.setContactId(contactModel.getId());
+		_resourceModel.setFirstName(contactModel.getFirstName());
+		_resourceModel.setLastName(contactModel.getLastName());
+		return postResource(resourceWC, _resourceModel, expectedStatus);
 	}
-
+	
 	public static void cleanup(
 			WebClient resourceWC,
 			String resourceId,

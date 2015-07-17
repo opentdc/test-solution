@@ -40,6 +40,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.service.LocalizedTextModel;
+import org.opentdc.service.ServiceUtil;
 import org.opentdc.tags.TagsModel;
 import org.opentdc.tags.TagsService;
 import org.opentdc.util.LanguageCode;
@@ -53,13 +54,14 @@ public class LocalizedTextTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		tagWC = initializeTest(TagsTest.API_URL, TagsService.class);
+		tagWC = initializeTest(ServiceUtil.TAGS_API_URL, TagsService.class);
 		tag = TagsTest.createTag(tagWC, Status.OK);
 	}
 
 	@After
 	public void cleanupTest() {
-		TagsTest.cleanup(tagWC, tag.getId(), this.getClass().getName());
+		TagsTest.deleteTag(tagWC, tag.getId(), Status.NO_CONTENT);
+		tagWC.close();
 	}
 	
 	/********************************** localizedText attributes tests *********************************/			
@@ -418,10 +420,10 @@ public class LocalizedTextTest extends AbstractTestClient {
 
 	public static List<LocalizedTextModel> listLocalizedTexts(
 			WebClient tagWC,
-			String id,
+			String tagId,
 			Status expectedStatus) 
 	{
-		Response _response = tagWC.replacePath("/").path(id).path(PATH_EL_LANG).get();
+		Response _response = tagWC.replacePath("/").path(tagId).path(PATH_EL_LANG).get();
 		assertEquals("get should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return new ArrayList<LocalizedTextModel>(tagWC.getCollection(LocalizedTextModel.class));
@@ -431,19 +433,19 @@ public class LocalizedTextTest extends AbstractTestClient {
 	}
 	
 	public LocalizedTextModel postLocalizedText(
-			LocalizedTextModel tm,
+			LocalizedTextModel model,
 			Status expectedStatus) 
 	{
-		return postLocalizedText(tagWC, tag, tm, expectedStatus);
+		return postLocalizedText(tagWC, tag, model, expectedStatus);
 	}
 
 	public static LocalizedTextModel postLocalizedText(
 			WebClient tagWC,
 			TagsModel tag,
-			LocalizedTextModel tm,
+			LocalizedTextModel model,
 			Status expectedStatus) 
 	{
-		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).post(tm);
+		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).post(model);
 		assertEquals("post should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(LocalizedTextModel.class);
@@ -452,7 +454,10 @@ public class LocalizedTextTest extends AbstractTestClient {
 		}
 	}
 	
-	private LocalizedTextModel createLocalizedText(LanguageCode langCode, String text, Status status) {
+	private LocalizedTextModel createLocalizedText(
+			LanguageCode langCode, 
+			String text, 
+			Status status) {
 		return postLocalizedText(tagWC, tag, new LocalizedTextModel(langCode, text), status);
 	}
 
@@ -466,10 +471,10 @@ public class LocalizedTextTest extends AbstractTestClient {
 	public static LocalizedTextModel getLocalizedText(
 			WebClient tagWC,
 			TagsModel tag,
-			String id,
+			String localizedTextId,
 			Status expectedStatus) 
 	{
-		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).path(id).get();
+		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).path(localizedTextId).get();
 		assertEquals("get should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(LocalizedTextModel.class);
@@ -478,17 +483,19 @@ public class LocalizedTextTest extends AbstractTestClient {
 		}
 	}
 
-	private LocalizedTextModel putLocalizedText(LocalizedTextModel ltm, Status expectedStatus) {
-		return putLocalizedText(tagWC, tag, ltm, expectedStatus);
+	private LocalizedTextModel putLocalizedText(
+			LocalizedTextModel model, 
+			Status expectedStatus) {
+		return putLocalizedText(tagWC, tag, model, expectedStatus);
 	}
 	
 	public static LocalizedTextModel putLocalizedText(
 			WebClient tagWC,
 			TagsModel tag,
-			LocalizedTextModel ltm,
+			LocalizedTextModel model,
 			Status expectedStatus) {
 		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).path(ltm.getId()).put(ltm);
+		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).path(model.getId()).put(model);
 		assertEquals("update() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(LocalizedTextModel.class);
