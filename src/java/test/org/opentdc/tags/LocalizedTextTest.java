@@ -67,7 +67,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	/********************************** localizedText attributes tests *********************************/			
 	@Test
 	public void testEmptyConstructor() {
-		// new() -> _ltm
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("id should not be set by empty constructor", _ltm.getId());
 		assertNull("languageCode should not be set by empty constructor", _ltm.getLangCode());
@@ -76,7 +75,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	
 	@Test
 	public void testConstructor() {		
-		// new(DE, "testConstructor") -> _ltm
 		LocalizedTextModel _ltm = new LocalizedTextModel(LanguageCode.DE, "testConstructor");
 		assertNull("id should not be set by constructor", _ltm.getId());
 		assertEquals("languageCode should be set by constructor", LanguageCode.DE, _ltm.getLangCode());
@@ -85,7 +83,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	
 	@Test
 	public void testIdChange() {
-		// new() -> _ltm -> _ltm.setId()
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("id should not be set by constructor", _ltm.getId());
 		_ltm.setId("testIdChange");
@@ -94,7 +91,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 
 	@Test
 	public void testLanguageCodeChange() {
-		// new() -> _ltm -> _ltm.setLangCode()
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("languageCode should not be set by empty constructor", _ltm.getLangCode());
 		_ltm.setLangCode(LanguageCode.EN);
@@ -103,7 +99,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	
 	@Test
 	public void testTextChange() {
-		// new() -> _ltm -> _ltm.setText()
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("text should not be set by empty constructor", _ltm.getText());
 		_ltm.setText("testTextChange");
@@ -112,7 +107,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreatedBy() {
-		// new() -> _ltm -> _ltm.setCreatedBy()
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("createdBy should not be set by empty constructor", _ltm.getCreatedBy());
 		_ltm.setCreatedBy("testProjectCreatedBy");
@@ -121,7 +115,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreatedAt() {
-		// new() -> _ltm -> _ltm.setCreatedAt()
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("createdAt should not be set by empty constructor", _ltm.getCreatedAt());
 		_ltm.setCreatedAt(new Date());
@@ -130,7 +123,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 		
 	@Test
 	public void testModifiedBy() {
-		// new() -> _ltm -> _ltm.setModifiedBy()
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("modifiedBy should not be set by empty constructor", _ltm.getModifiedBy());
 		_ltm.setModifiedBy("testModifiedBy");
@@ -139,7 +131,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	
 	@Test
 	public void testModifiedAt() {
-		// new() -> _ltm -> _ltm.setModifiedAt()
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("modifiedAt should not be set by empty constructor", _ltm.getModifiedAt());
 		_ltm.setModifiedAt(new Date());
@@ -149,7 +140,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	/********************************* REST service tests *********************************/	
 	@Test
 	public void testCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _ltm1
 		LocalizedTextModel _ltm1 = new LocalizedTextModel();
 		assertNull("id should not be set by empty constructor", _ltm1.getId());
 		assertNull("languageCode should not be set by empty constructor", _ltm1.getLangCode());
@@ -204,7 +194,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreateWithClientSideId() {
-		// new() -> _ltm1 -> _ltm1.setId()
 		LocalizedTextModel _ltm1 = new LocalizedTextModel(LanguageCode.RM, "testCreateWithClientSideId");
 		_ltm1.setId("LOCAL_ID");
 		postLocalizedText(_ltm1, Status.BAD_REQUEST);
@@ -305,7 +294,6 @@ public class LocalizedTextTest extends AbstractTestClient {
 		_localList.add(createLocalizedText(LanguageCode.IT, "testRead5", Status.OK));
 		_localList.add(createLocalizedText(LanguageCode.RM, "testRead6", Status.OK));
 	
-		// test read on each local element
 		for (LocalizedTextModel _ltm : _localList) {
 			getLocalizedText(_ltm.getId(), Status.OK);
 		}

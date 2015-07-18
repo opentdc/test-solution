@@ -58,7 +58,7 @@ public class SubProjectBatchedListTest extends AbstractTestClient {
 		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 		parentProject = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
 	}

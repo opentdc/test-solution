@@ -62,7 +62,7 @@ public class CompanyTest extends AbstractTestClient {
 		wttWC = initializeTest(ServiceUtil.WTT_API_URL, WttService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		
-		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
 		org = OrgTest.createOrg(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
 	}
 

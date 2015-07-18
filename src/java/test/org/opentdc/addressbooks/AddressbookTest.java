@@ -50,8 +50,7 @@ public class AddressbookTest extends AbstractTestClient {
 	private WebClient addressbookWC = null;
 
 	@Before
-	public void initializeTest(
-	) {
+	public void initializeTest() {
 		addressbookWC = initializeTest(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 	}
 		
@@ -62,499 +61,475 @@ public class AddressbookTest extends AbstractTestClient {
 	
 	/********************************** addressbook attribute tests *********************************/	
 	@Test
-	public void testAddressbookModelEmptyConstructor() {
-		// new() -> _abm
-		AddressbookModel _abm = new AddressbookModel();
-		assertNull("id should not be set by empty constructor", _abm.getId());
-		assertNull("name should not be set by empty constructor", _abm.getName());
+	public void testEmptyConstructor() {
+		AddressbookModel _model = new AddressbookModel();
+		assertNull("id should not be set by empty constructor", _model.getId());
+		assertNull("name should not be set by empty constructor", _model.getName());
 	}
 	
 	@Test
-	public void testAddressbookModelConstructor() {		
-		// new("MY_NAME") -> _abm
-		AddressbookModel _abm = new AddressbookModel("MY_NAME");
-		assertNull("id should not be set by constructor", _abm.getId());
-		assertEquals("name should be set by constructor", "MY_NAME", _abm.getName());
+	public void testConstructor() {		
+		AddressbookModel _model = new AddressbookModel("testConstructor");
+		assertNull("id should not be set by constructor", _model.getId());
+		assertEquals("name should be set by constructor", "testConstructor", _model.getName());
 	}
 	
 	@Test
-	public void testAddressbookIdAttributeChange() {
-		// new() -> _abm -> _abm.setId()
-		AddressbookModel _abm = new AddressbookModel();
-		assertNull("id should not be set by constructor", _abm.getId());
-		_abm.setId("MY_ID");
-		assertEquals("id should have changed", "MY_ID", _abm.getId());
+	public void testId() {
+		AddressbookModel _model = new AddressbookModel();
+		assertNull("id should not be set by constructor", _model.getId());
+		_model.setId("testId");
+		assertEquals("id should have changed", "testId", _model.getId());
 	}
 
 	@Test
-	public void testAddressbookNameAttributeChange() {
-		// new() -> _abm -> _abm.setName()
-		AddressbookModel _abm = new AddressbookModel();
-		assertNull("name should not be set by empty constructor", _abm.getName());
-		_abm.setName("MY_NAME");
-		assertEquals("name should have changed", "MY_NAME", _abm.getName());
+	public void testName() {
+		AddressbookModel _model = new AddressbookModel();
+		assertNull("name should not be set by empty constructor", _model.getName());
+		_model.setName("testName");
+		assertEquals("name should have changed", "testName", _model.getName());
 	}
 	
 	@Test
-	public void testAddressbookCreatedBy() {
-		// new() -> _abm -> _abm.setCreatedBy()
-		AddressbookModel _abm = new AddressbookModel();
-		assertNull("createdBy should not be set by empty constructor", _abm.getCreatedBy());
-		_abm.setCreatedBy("MY_NAME");
-		assertEquals("createdBy should have changed", "MY_NAME", _abm.getCreatedBy());	
+	public void testCreatedBy() {
+		AddressbookModel _model = new AddressbookModel();
+		assertNull("createdBy should not be set by empty constructor", _model.getCreatedBy());
+		_model.setCreatedBy("testCreatedBy");
+		assertEquals("createdBy should have changed", "testCreatedBy", _model.getCreatedBy());	
 	}
 	
 	@Test
-	public void testAddressbookCreatedAt() {
-		// new() -> _abm -> _abm.setCreatedAt()
-		AddressbookModel _abm = new AddressbookModel();
-		assertNull("createdAt should not be set by empty constructor", _abm.getCreatedAt());
-		_abm.setCreatedAt(new Date());
-		assertNotNull("createdAt should have changed", _abm.getCreatedAt());
+	public void testCreatedAt() {
+		AddressbookModel _model = new AddressbookModel();
+		assertNull("createdAt should not be set by empty constructor", _model.getCreatedAt());
+		_model.setCreatedAt(new Date());
+		assertNotNull("createdAt should have changed", _model.getCreatedAt());
 	}
 		
 	@Test
-	public void testAddressbookModifiedBy() {
-		// new() -> _abm -> _abm.setModifiedBy()
-		AddressbookModel _abm = new AddressbookModel();
-		assertNull("modifiedBy should not be set by empty constructor", _abm.getModifiedBy());
-		_abm.setModifiedBy("MY_NAME");
-		assertEquals("modifiedBy should have changed", "MY_NAME", _abm.getModifiedBy());	
+	public void testModifiedBy() {
+		AddressbookModel _model = new AddressbookModel();
+		assertNull("modifiedBy should not be set by empty constructor", _model.getModifiedBy());
+		_model.setModifiedBy("testModifiedBy");
+		assertEquals("modifiedBy should have changed", "testModifiedBy", _model.getModifiedBy());	
 	}
 	
 	@Test
-	public void testAddressbookModifiedAt() {
-		// new() -> _abm -> _abm.setModifiedAt()
-		AddressbookModel _abm = new AddressbookModel();
-		assertNull("modifiedAt should not be set by empty constructor", _abm.getModifiedAt());
-		_abm.setModifiedAt(new Date());
-		assertNotNull("modifiedAt should have changed", _abm.getModifiedAt());
+	public void testModifiedAt() {
+		AddressbookModel _model = new AddressbookModel();
+		assertNull("modifiedAt should not be set by empty constructor", _model.getModifiedAt());
+		_model.setModifiedAt(new Date());
+		assertNotNull("modifiedAt should have changed", _model.getModifiedAt());
 	}
 
 	/********************************** addressbook REST service tests *********************************/	
 	@Test
-	public void testAddressbookCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _abm1
-		AddressbookModel _abm1 = new AddressbookModel();
-		assertNull("id should not be set by empty constructor", _abm1.getId());
-		assertNull("name should not be set by empty constructor", _abm1.getName());
+	public void testCreateReadDeleteWithEmptyConstructor() {
+		AddressbookModel _model1 = new AddressbookModel();
+		assertNull("id should not be set by empty constructor", _model1.getId());
+		assertNull("name should not be set by empty constructor", _model1.getName());
 
-		// create(_abm1) -> BAD_REQUEST (because of empty name)
-		Response _response = addressbookWC.replacePath("/").post(_abm1);
-		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-
-		// _abm1.setName() -> create(_abm1) -> _abm2
-		_abm1.setName("testAddressbookCreateReadDeleteWithEmptyConstructor");
-		_response = addressbookWC.replacePath("/").post(_abm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
-		
-		// validate _abm1
-		assertNull("create() should not change the id of the local object", _abm1.getId());
-		assertEquals("create() should not change the name of the local object", "testAddressbookCreateReadDeleteWithEmptyConstructor", _abm1.getName());
-		assertNotNull("create() should set a valid id on the remote object returned", _abm2.getId());
-		assertEquals("name of returned object should remain unchanged after remote create", _abm1.getName(), _abm2.getName());
-		
-		// read(_abm2) -> _abm3
-		_response = addressbookWC.replacePath("/").path(_abm2.getId()).get();
-		assertEquals("read(" + _abm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
-		assertEquals("id of returned object should be the same", _abm2.getId(), _abm3.getId());
-		assertEquals("name of returned object should be unchanged after remote create", _abm2.getName(), _abm3.getName());
-		// delete(_abm3)
-		_response = addressbookWC.replacePath("/").path(_abm3.getId()).delete();
-		assertEquals("delete(" + _abm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		postAddressbook(_model1, Status.BAD_REQUEST);
+		_model1.setName("testCreateReadDeleteWithEmptyConstructor");
+		AddressbookModel _model2 = postAddressbook(_model1, Status.OK);		
+		assertNull("create() should not change the id of the local object", _model1.getId());
+		assertEquals("create() should not change the name of the local object", "testCreateReadDeleteWithEmptyConstructor", _model1.getName());
+		assertNotNull("create() should set a valid id on the remote object returned", _model2.getId());
+		assertEquals("name of returned object should remain unchanged after remote create", _model1.getName(), _model2.getName());
+		AddressbookModel _model3 = getAddressbook(_model2.getId(), Status.OK);
+		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
+		assertEquals("name of returned object should be unchanged after remote create", _model2.getName(), _model3.getName());
+		deleteAddressbook(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
-	public void testAddressbookCreateReadDelete() {
-		// new("MY_NAME") -> _abm1
-		AddressbookModel _abm1 = new AddressbookModel("testAddressbookCreateReadDelete");
-		assertNull("id should not be set by constructor", _abm1.getId());
-		assertEquals("name should be set by constructor", "testAddressbookCreateReadDelete", _abm1.getName());
-		// create(_abm1) -> _abm2
-		Response _response = addressbookWC.replacePath("/").post(_abm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
-		assertNull("id should be still null after remote create", _abm1.getId());
-		assertEquals("name should be unchanged after remote create", "testAddressbookCreateReadDelete", _abm1.getName());
-		
-		assertNotNull("id of returned object should be set", _abm2.getId());
-		assertEquals("name of returned object should be unchanged after remote create", "testAddressbookCreateReadDelete", _abm2.getName());
-		// read(_abm2)  -> _abm3
-		_response = addressbookWC.replacePath("/").path(_abm2.getId()).get();
-		assertEquals("read(" + _abm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
-		assertEquals("id of returned object should be the same", _abm2.getId(), _abm3.getId());
-		assertEquals("name of returned object should be unchanged after remote create", _abm2.getName(), _abm3.getName());
-		// delete(_abm3)
-		_response = addressbookWC.replacePath("/").path(_abm3.getId()).delete();
-		assertEquals("delete(" + _abm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-	}
-	
-	@Test
-	public void testAddressbookWithClientSideId() {
-		// new() -> _abm1 -> _abm1.setId()
-		AddressbookModel _abm1 = new AddressbookModel("testAddressbookWithClientSideId");
-		_abm1.setId("LOCAL_ID");
-		assertEquals("id should have changed", "LOCAL_ID", _abm1.getId());
-		// create(_abm1) -> BAD_REQUEST
-		Response _response = addressbookWC.replacePath("/").post(_abm1);
-		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-	}
-	
-	@Test
-	public void testAddressbookWithDuplicateId() {
-		// create(new()) -> _abm1
-		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookWithDuplicateId"));
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm1 = _response.readEntity(AddressbookModel.class);
+	public void testCreateReadDelete() {
+		AddressbookModel _model1 = new AddressbookModel("testCreateReadDelete");
+		assertNull("id should not be set by constructor", _model1.getId());
+		assertEquals("name should be set by constructor", "testCreateReadDelete", _model1.getName());
 
-		// new() -> _abm2 -> _abm2.setId(_abm1.getId())
-		AddressbookModel _abm2 = new AddressbookModel("testAddressbookWithDuplicateId2");
-		_abm2.setId(_abm1.getId());		// wrongly create a 2nd AddressbookModel object with the same ID
+		AddressbookModel _model2 = postAddressbook(_model1, Status.OK);
+		assertNull("id should be still null after remote create", _model1.getId());
+		assertEquals("name should be unchanged after remote create", "testCreateReadDelete", _model1.getName());	
+		assertNotNull("id of returned object should be set", _model2.getId());
+		assertEquals("name of returned object should be unchanged after remote create", "testCreateReadDelete", _model2.getName());
 		
-		// create(_abm2) -> CONFLICT
-		_response = addressbookWC.replacePath("/").post(_abm2);
-		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
-
-		// delete _abm1
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		AddressbookModel _model3 = getAddressbook(_model2.getId(), Status.OK);
+		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
+		assertEquals("name of returned object should be unchanged after remote create", _model2.getName(), _model3.getName());
+		
+		deleteAddressbook(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
-	public void testAddressbookList(
-	) {		
-		addressbookWC.replacePath("/");
-		// list(/) -> _remoteList
-		Response _response = addressbookWC.replacePath("/").get();
-		List<AddressbookModel> _initialList = new ArrayList<AddressbookModel>(addressbookWC.getCollection(AddressbookModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("_initialList:");
-		for (AddressbookModel _am : _initialList) {
-			System.out.println(_am.getId() + ": " + _am.getName());
-		}
-		
-		ArrayList<AddressbookModel> _localList = new ArrayList<AddressbookModel>();
-				
-		addressbookWC.replacePath("/");
-		System.out.println("LIMIT=" + LIMIT);
+	public void testClientSideId() {
+		AddressbookModel _model = new AddressbookModel("testClientSideId");
+		_model.setId("LOCAL_ID");
+		assertEquals("id should have changed", "LOCAL_ID", _model.getId());
+		postAddressbook(_model, Status.BAD_REQUEST);
+	}
+	
+	@Test
+	public void testDuplicateId() {
+		AddressbookModel _model1 = postAddressbook(new AddressbookModel("testDuplicateId1"), Status.OK);		
+		AddressbookModel _model2 = new AddressbookModel("testDuplicateId2");
+		_model2.setId(_model1.getId());		// wrongly create a 2nd AddressbookModel object with the same ID
+		postAddressbook(_model2, Status.CONFLICT);
+		deleteAddressbook(_model1.getId(), Status.NO_CONTENT);
+	}
+	
+	@Test
+	public void testList() {
+		ArrayList<AddressbookModel> _localList = new ArrayList<AddressbookModel>();	
 		for (int i = 0; i < LIMIT; i++) {
-			// create(new()) -> _localList
-			_response = addressbookWC.post(new AddressbookModel("testAddressbookList" + i));
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(AddressbookModel.class));
-		}
-		System.out.println("localList:");
-		for (AddressbookModel _am : _localList) {
-			System.out.println(_am.getId() + ": " + _am.getName());
+			_localList.add(postAddressbook(new AddressbookModel("testAddressbookList" + i), Status.OK));
 		}
 		assertEquals("correct number of addressbooks should be created", LIMIT, _localList.size());
 		
-		// list(/) -> _remoteList
-		_response = addressbookWC.replacePath("/").get();
-		List<AddressbookModel> _remoteList = new ArrayList<AddressbookModel>(addressbookWC.getCollection(AddressbookModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("_remoteList:");
-		for (AddressbookModel _am : _remoteList) {
-			System.out.println(_am.getId() + ": " + _am.getName());
-		}
-		
-		assertEquals("list() should return the correct number of addressbooks", LIMIT, _remoteList.size() - _initialList.size());
+		List<AddressbookModel> _remoteList = listAddressbooks(null, Status.OK);		
+		assertEquals("list() should return the correct number of addressbooks", LIMIT + 1, _remoteList.size());
 		// implicitly proven:  _remoteList.size() == _localList.size()
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
-		for (AddressbookModel _abm : _remoteList) {
-			_remoteListIds.add(_abm.getId());
+		for (AddressbookModel _model : _remoteList) {
+			_remoteListIds.add(_model.getId());
 		}
-		
-		for (AddressbookModel _abm : _localList) {
-			assertTrue("addressbook <" + _abm.getId() + "> should be listed", _remoteListIds.contains(_abm.getId()));
+		for (AddressbookModel _model : _localList) {
+			assertTrue("addressbook <" + _model.getId() + "> should be listed", _remoteListIds.contains(_model.getId()));
 		}
-		for (AddressbookModel _abm : _localList) {
-			_response = addressbookWC.replacePath("/").path(_abm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_response.readEntity(AddressbookModel.class);
+		for (AddressbookModel _model : _localList) {
+			getAddressbook(_model.getId(), Status.OK);
 		}
-		for (AddressbookModel _abm : _localList) {
-			_response = addressbookWC.replacePath("/").path(_abm.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		for (AddressbookModel _model : _localList) {
+			deleteAddressbook(_model.getId(), Status.NO_CONTENT);
 		}
 	}
 
 	@Test
-	public void testAddressbookCreate() {
-		// new("testAddressbookCreate1") -> _abm1
-		AddressbookModel _abm1 = new AddressbookModel("testAddressbookCreate1");
-		// new("testAddressbookCreate2") -> _abm2
-		AddressbookModel _abm2 = new AddressbookModel("testAddressbookCreate2");
-		
-		// create(_abm1)  -> _abm3
-		Response _response = addressbookWC.replacePath("/").post(_abm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
+	public void testCreate() {
+		AddressbookModel _model1 = postAddressbook(new AddressbookModel("testCreate1"), Status.OK);
+		AddressbookModel _model2 = postAddressbook(new AddressbookModel("testCreate2"), Status.OK);
+		assertNotNull("ID should be set", _model1.getId());
+		assertNotNull("ID should be set", _model2.getId());
+		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
+		assertEquals("name1 should be set correctly", "testCreate1", _model1.getName());
+		assertEquals("name2 should be set correctly", "testCreate2", _model2.getName());
 
-		// create(_abm2) -> _abm4
-		_response = addressbookWC.replacePath("/").post(_abm2);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm4 = _response.readEntity(AddressbookModel.class);		
-		assertNotNull("ID should be set", _abm3.getId());
-		assertNotNull("ID should be set", _abm4.getId());
-		assertThat(_abm4.getId(), not(equalTo(_abm3.getId())));
-		assertEquals("name1 should be set correctly", "testAddressbookCreate1", _abm3.getName());
-		assertEquals("name2 should be set correctly", "testAddressbookCreate2", _abm4.getName());
-
-		// delete(_abm3) -> NO_CONTENT
-		_response = addressbookWC.replacePath("/").path(_abm3.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-
-		// delete(_abm4) -> NO_CONTENT
-		_response = addressbookWC.replacePath("/").path(_abm4.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		deleteAddressbook(_model1.getId(), Status.NO_CONTENT);
+		deleteAddressbook(_model2.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
-	public void testAddressbookDoubleCreate(
-	) {
-		// create(new("testAddressbookDoubleCreate")) -> _abm
-		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookDoubleCreate"));
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm = _response.readEntity(AddressbookModel.class);
-		assertNotNull("ID should be set:", _abm.getId());		
-		
-		// create(_abm) -> CONFLICT
-		_response = addressbookWC.replacePath("/").post(_abm);
-		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
-
-		// delete(_abm) -> NO_CONTENT
-		_response = addressbookWC.replacePath("/").path(_abm.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testDoubleCreate() {
+		AddressbookModel _model = postAddressbook(new AddressbookModel("testDoubleCreate"), Status.OK);
+		assertNotNull("ID should be set:", _model.getId());		
+		postAddressbook(_model, Status.CONFLICT);
+		deleteAddressbook(_model.getId(), Status.NO_CONTENT);
 	}
 
 	@Test
-	public void testAddressbookRead(
+	public void testRead(
 	) {
 		ArrayList<AddressbookModel> _localList = new ArrayList<AddressbookModel>();
-		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookRead" + i));
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(AddressbookModel.class));
+			_localList.add(postAddressbook(new AddressbookModel("testRead" + i), Status.OK));
 		}
-	
-		// test read on each local element
-		for (AddressbookModel _abm : _localList) {
-			_response = addressbookWC.replacePath("/").path(_abm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_response.readEntity(AddressbookModel.class);
+		for (AddressbookModel _model : _localList) {
+			getAddressbook(_model.getId(), Status.OK);
 		}
-
-		// test read on each listed element
-		_response = addressbookWC.replacePath("/").get();
-		List<AddressbookModel> _remoteList = new ArrayList<AddressbookModel>(addressbookWC.getCollection(AddressbookModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-
-		AddressbookModel _tmpObj = null;
-		for (AddressbookModel _abm : _remoteList) {
-			_response = addressbookWC.replacePath("/").path(_abm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_tmpObj = _response.readEntity(AddressbookModel.class);
-			assertEquals("ID should be unchanged when reading an addressbook", _abm.getId(), _tmpObj.getId());						
+		List<AddressbookModel> _remoteList = listAddressbooks(null, Status.OK);
+		for (AddressbookModel _model : _remoteList) {
+			assertEquals("ID should be unchanged when reading an addressbook", _model.getId(), getAddressbook(_model.getId(), Status.OK).getId());						
 		}
-
-		for (AddressbookModel _abm : _localList) {
-			_response = addressbookWC.replacePath("/").path(_abm.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		for (AddressbookModel _model : _localList) {
+			deleteAddressbook(_model.getId(), Status.NO_CONTENT);
 		}
 	}	
 
 	@Test
-	public void testAddressbookMultiRead(
+	public void testMultiRead(
 	) {
-		// new() -> _abm1
-		AddressbookModel _abm1 = new AddressbookModel("testAddressbookMultiRead");
-		
-		// create(_abm1) -> _abm2
-		Response _response = addressbookWC.replacePath("/").post(_abm1);
-		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
-
-		// read(_abm2) -> _abm3
-		_response = addressbookWC.replacePath("/").path(_abm2.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
-		assertEquals("ID should be unchanged after read", _abm2.getId(), _abm3.getId());		
-
-		// read(_abm2) -> _abm4
-		_response = addressbookWC.replacePath("/").path(_abm2.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm4 = _response.readEntity(AddressbookModel.class);
-		
-		// but: the two objects are not equal !
-		assertEquals("ID should be the same", _abm3.getId(), _abm4.getId());
-		assertEquals("name should be the same", _abm3.getName(), _abm4.getName());
-		
-		assertEquals("ID should be the same", _abm3.getId(), _abm2.getId());
-		assertEquals("name should be the same", _abm3.getName(), _abm2.getName());
-		
-		// delete(_abm2)
-		_response = addressbookWC.replacePath("/").path(_abm2.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		AddressbookModel _model1 = postAddressbook(new AddressbookModel("testMultiRead"), Status.OK);
+		AddressbookModel _model2 = getAddressbook(_model1.getId(), Status.OK);
+		assertEquals("ID should be unchanged after read", _model1.getId(), _model2.getId());		
+		AddressbookModel _model3 = getAddressbook(_model1.getId(), Status.OK);		
+		assertEquals("ID should be the same", _model2.getId(), _model3.getId());
+		assertEquals("name should be the same", _model2.getName(), _model3.getName());
+		assertEquals("ID should be the same", _model2.getId(), _model1.getId());
+		assertEquals("name should be the same", _model2.getName(), _model1.getName());
+		deleteAddressbook(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
-	public void testAddressbookUpdate(
-	) {
-		// new() -> _abm1
-		AddressbookModel _abm1 = new AddressbookModel("testAddressbookUpdate");
-		
-		// create(_abm1) -> _abm2
-		Response _response = addressbookWC.replacePath("/").post(_abm1);
-		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
-		
-		// change the attributes
-		// update(_abm2) -> _abm3
-		_abm2.setName("testAddressbookUpdate1");
-		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = addressbookWC.replacePath("/").path(_abm2.getId()).put(_abm2);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
-
-		assertNotNull("ID should be set", _abm3.getId());
-		assertEquals("ID should be unchanged", _abm2.getId(), _abm3.getId());	
-		assertEquals("name should have changed", "testAddressbookUpdate1", _abm3.getName());
-
-		// reset the attributes
-		// update(_abm2) -> _abm4
-		_abm2.setName("testAddressbookUpdate2");
-		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = addressbookWC.replacePath("/").path(_abm2.getId()).put(_abm2);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm4 = _response.readEntity(AddressbookModel.class);
-
-		assertNotNull("ID should be set", _abm4.getId());
-		assertEquals("ID should be unchanged", _abm2.getId(), _abm4.getId());	
-		assertEquals("name should have changed", "testAddressbookUpdate2", _abm4.getName());
-		
-		_response = addressbookWC.replacePath("/").path(_abm2.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testUpdate() {
+		AddressbookModel _model1 = postAddressbook(new AddressbookModel("testUpdate"), Status.OK);
+		_model1.setName("testUpdate1");
+		AddressbookModel _model2 = putAddressbook(_model1, Status.OK);
+		assertNotNull("ID should be set", _model2.getId());
+		assertEquals("ID should be unchanged", _model1.getId(), _model2.getId());	
+		assertEquals("name should have changed", "testUpdate1", _model2.getName());
+		_model1.setName("testUpdate2");
+		AddressbookModel _model3 = putAddressbook(_model1, Status.OK);
+		assertNotNull("ID should be set", _model3.getId());
+		assertEquals("ID should be unchanged", _model1.getId(), _model3.getId());	
+		assertEquals("name should have changed", "testUpdate2", _model3.getName());
+		deleteAddressbook(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
-	public void testAddressbookDelete(
-	) {
-		// create(testAddressbookDelete) -> _abm1
-		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookDelete"));
-		AddressbookModel _abm1 = _response.readEntity(AddressbookModel.class);
-		
-		// read(_abm1) -> _abm2
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
-		assertEquals("ID should be unchanged when reading an addressbook (remote):", _abm1.getId(), _abm2.getId());						
-		
-		// delete(_abm1) -> OK
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-	
-		// read the deleted object twice
-		// read(_abm1) -> NOT_FOUND
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// read(_abm1) -> NOT_FOUND
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+	public void testDelete() {
+		AddressbookModel _model1 = postAddressbook(new AddressbookModel("testDelete"), Status.OK);
+		AddressbookModel _model2 = getAddressbook(_model1.getId(), Status.OK);
+		assertEquals("ID should be unchanged when reading an addressbook (remote):", _model1.getId(), _model2.getId());						
+		deleteAddressbook(_model1.getId(), Status.NO_CONTENT);
+		getAddressbook(_model1.getId(), Status.NOT_FOUND);
+		getAddressbook(_model1.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
-	public void testAddressbookDoubleDelete(
-	) {
-		// create(testAddressbookDoubleDelete) -> _abm1
-		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookDoubleDelete"));
-		AddressbookModel _abm1 = _response.readEntity(AddressbookModel.class);
-
-		// read(_abm1) -> OK
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		
-		// delete(_abm1) -> NO_CONTENT
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();		
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		
-		// read(_abm1) -> NOT_FOUND
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// delete _abm1 -> NOT_FOUND
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();		
-		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// read _abm1 -> NOT_FOUND
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+	public void testDoubleDelete() {
+		AddressbookModel _model1 = postAddressbook(new AddressbookModel("testDoubleDelete"), Status.OK);
+		getAddressbook(_model1.getId(), Status.OK);
+		deleteAddressbook(_model1.getId(), Status.NO_CONTENT);
+		getAddressbook(_model1.getId(), Status.NOT_FOUND);
+		deleteAddressbook(_model1.getId(), Status.NOT_FOUND);
+		getAddressbook(_model1.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
-	public void testAddressbookModifications() {
-		// create(testAddressbookModifications) -> _abm1
-		Response _response = addressbookWC.replacePath("/").post(new AddressbookModel("testAddressbookModifications"));
-		AddressbookModel _abm1 = _response.readEntity(AddressbookModel.class);
-		
-		// test createdAt and createdBy
-		assertNotNull("create() should set createdAt", _abm1.getCreatedAt());
-		assertNotNull("create() should set createdBy", _abm1.getCreatedBy());
-		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
-		assertNotNull("create() should set modifiedAt", _abm1.getModifiedAt());
-		assertNotNull("create() should set modifiedBy", _abm1.getModifiedBy());
-		assertEquals("createdAt and modifiedAt should be identical after create()", _abm1.getCreatedAt(), _abm1.getModifiedAt());
-		assertEquals("createdBy and modifiedBy should be identical after create()", _abm1.getCreatedBy(), _abm1.getModifiedBy());
-		
-		// update(_abm1)  -> _abm2
-		_abm1.setName("testAddressbookModifications2");
-		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).put(_abm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm2 = _response.readEntity(AddressbookModel.class);
-
-		// test createdAt and createdBy (unchanged)
-		assertEquals("update() should not change createdAt", _abm1.getCreatedAt(), _abm2.getCreatedAt());
-		assertEquals("update() should not change createdBy", _abm1.getCreatedBy(), _abm2.getCreatedBy());
-		
-		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
-		assertThat(_abm2.getModifiedAt(), not(equalTo(_abm2.getCreatedAt())));
+	public void testModifications() {
+		AddressbookModel _model1 = postAddressbook(new AddressbookModel("testModifications"), Status.OK);
+		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
+		assertNotNull("create() should set createdBy", _model1.getCreatedBy());
+		assertNotNull("create() should set modifiedAt", _model1.getModifiedAt());
+		assertNotNull("create() should set modifiedBy", _model1.getModifiedBy());
+		assertEquals("createdAt and modifiedAt should be identical after create()", _model1.getCreatedAt(), _model1.getModifiedAt());
+		assertEquals("createdBy and modifiedBy should be identical after create()", _model1.getCreatedBy(), _model1.getModifiedBy());
+		_model1.setName("testModifications2");
+		AddressbookModel _model2 = putAddressbook(_model1, Status.OK);
+		assertEquals("update() should not change createdAt", _model1.getCreatedAt(), _model2.getCreatedAt());
+		assertEquals("update() should not change createdBy", _model1.getCreatedBy(), _model2.getCreatedBy());
+		assertThat(_model2.getModifiedAt(), not(equalTo(_model2.getCreatedAt())));
 		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
-		// assertThat(_abm2.getModifiedBy(), not(equalTo(_abm2.getCreatedBy())));
-
-		// update(o) with modifiedBy/At set on client side -> ignored by server
-		_abm1.setModifiedBy("MYSELF");
-		_abm1.setModifiedAt(new Date(1000));
-		addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).put(_abm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		AddressbookModel _abm3 = _response.readEntity(AddressbookModel.class);
+		// assertThat(_model2.getModifiedBy(), not(equalTo(_model2.getCreatedBy())));
+		_model1.setModifiedBy("MYSELF");
+		_model1.setModifiedAt(new Date(1000));
+		AddressbookModel _model3 = putAddressbook(_model1, Status.OK);
 		
 		// test, that modifiedBy really ignored the client-side value "MYSELF"
-		assertThat(_abm1.getModifiedBy(), not(equalTo(_abm3.getModifiedBy())));
+		assertThat(_model1.getModifiedBy(), not(equalTo(_model3.getModifiedBy())));
 		// check whether the client-side modifiedAt() is ignored
-		assertThat(_abm1.getModifiedAt(), not(equalTo(_abm3.getModifiedAt())));
+		assertThat(_model1.getModifiedAt(), not(equalTo(_model3.getModifiedAt())));
 		
-		// delete(_abm1) -> NO_CONTENT
-		_response = addressbookWC.replacePath("/").path(_abm1.getId()).delete();		
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+		deleteAddressbook(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	/********************************** helper methods *********************************/	
+	/**
+	 * Retrieve a list of AddressbookModel from AddressbooksService by executing a HTTP GET request.
+	 * This uses neither position nor size queries.
+	 * @param query the URL query to use
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return a List of TagTextModel object in JSON format
+	 */
+	public List<AddressbookModel> listAddressbooks(
+			String query, 
+			Status expectedStatus) {
+		return listAddressbooks(addressbookWC, query, -1, -1, expectedStatus);
+	}
+	
+	/**
+	 * Retrieve a list of AddressbookModel from AddressbooksService by executing a HTTP GET request.
+	 * @param webClient the WebClient for the AddressbooksService
+	 * @param query the URL query to use
+	 * @param position the position to start a batch with
+	 * @param size the size of a batch
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return a List of AddressbookModel objects in JSON format
+	 */
+	public static List<AddressbookModel> listAddressbooks(
+			WebClient webClient, 
+			String query, 
+			int position,
+			int size,
+			Status expectedStatus) {
+		System.out.println("listAddressbooks(tagWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ")");
+		Response _response = null;
+		webClient.resetQuery();
+		if (query == null) {
+			if (position >= 0) {
+				if (size >= 0) {
+					_response = webClient.replacePath("/").query("position", position).query("size", size).get();
+				} else {
+					_response = webClient.replacePath("/").query("position", position).get();
+				}
+			} else {
+				if (size >= 0) {
+					_response = webClient.replacePath("/").query("size", size).get();
+				} else {
+					_response = webClient.replacePath("/").get();
+				}
+			}
+		} else {
+			if (position >= 0) {
+				if (size >= 0) {
+					_response = webClient.replacePath("/").query("query", query).query("position", position).query("size", size).get();					
+				} else {
+					_response = webClient.replacePath("/").query("query", query).query("position", position).get();					
+				}
+			} else {
+				if (size >= 0) {
+					_response = webClient.replacePath("/").query("query", query).query("size", size).get();					
+				} else {
+					_response = webClient.replacePath("/").query("query", query).get();					
+				}				
+			}
+		}
+		List<AddressbookModel> _addressbooks = null;
+		if (expectedStatus != null) {
+			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			_addressbooks = new ArrayList<AddressbookModel>(webClient.getCollection(AddressbookModel.class));
+			System.out.println("listTags(tagWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _addressbooks.size());
+		}
+		return _addressbooks;
+	}
+	
+	private AddressbookModel postAddressbook(
+			AddressbookModel model,
+			Status expectedStatus) {
+		return postAddressbook(addressbookWC, model, expectedStatus);
+	}
+
+	/**
+	 * Create a new AddressbookModel on the server by executing a HTTP POST request.
+	 * @param webClient the WebClient representing the AddressbooksService
+	 * @param model the AddressbookModel data to create on the server
+	 * @param exceptedStatus the expected HTTP status to test on
+	 * @return the created AddressbookModel
+	 */
+	public static AddressbookModel postAddressbook(
+			WebClient webClient,
+			AddressbookModel model,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").post(model);
+		if (expectedStatus != null) {
+			assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(AddressbookModel.class);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Create a new AddressbookModel on the server by executing a HTTP POST request.
+	 * @param webClient the WebClient representing the AddressbooksService
+	 * @param exceptedStatus the expected HTTP status to test on
+	 * @return the created AddressbookModel
+	 */
 	public static AddressbookModel createAddressbook(
-		WebClient addressbookWC, 
-		String name)
+			WebClient webClient,
+			String addressbookName,
+			Status expectedStatus) 
 	{
-		System.out.println("createAddressbook(" + addressbookWC + ", <" + name + ">");
-		AddressbookModel _am = new AddressbookModel(name);
-		Response _response = addressbookWC.replacePath("/").post(_am);
-		AddressbookModel _adb = _response.readEntity(AddressbookModel.class);
-		System.out.println(name + " posted Addressbook <" + _adb.getId() + ">.");
-		return _adb;	
+		return postAddressbook(webClient, new AddressbookModel(addressbookName), expectedStatus);
+	}
+		
+	/**
+	 * Read the AddressbookModel with id from AddressbooksService by executing a HTTP GET method.
+	 * @param id the id of the AddressbookModel to retrieve
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the retrieved AddressbookModel object in JSON format
+	 */
+	private AddressbookModel getAddressbook(
+			String id, 
+			Status expectedStatus) {
+		return getAddressbook(addressbookWC, id, expectedStatus);
+	}
+	
+	/**
+	 * Read the AddressbookModel with id from AddressbooksService by executing a HTTP GET method.
+	 * @param webClient the web client representing the AddressbooksService
+	 * @param id the id of the AddressbookModel to retrieve
+	 * @param expectedStatus  the expected HTTP status to test on
+	 * @return the retrieved AddressbookModel object in JSON format
+	 */
+	public static AddressbookModel getAddressbook(
+			WebClient webClient,
+			String id,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").path(id).get();
+		if (expectedStatus != null) {
+			assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(AddressbookModel.class);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Update a AddressbookModel on the AddressbooksService by executing a HTTP PUT method.
+	 * @param model the new AddressbookModel data
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the updated AddressbookModel object in JSON format
+	 */
+	public AddressbookModel putAddressbook(
+			AddressbookModel model, 
+			Status expectedStatus) {
+		return putAddressbook(addressbookWC, model, expectedStatus);
+	}
+	
+	/**
+	 * Update a AddressbookModel on the AddressbooksService by executing a HTTP PUT method.
+	 * @param webClient the web client representing the AddressbooksService
+	 * @param model the new AddressbookModel data
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the updated AddressbookModel object in JSON format
+	 */
+	public static AddressbookModel putAddressbook(
+			WebClient webClient,
+			AddressbookModel model,
+			Status expectedStatus) {
+		webClient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		Response _response = webClient.replacePath("/").path(model.getId()).put(model);
+		if (expectedStatus != null) {
+			assertEquals("PUT should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(AddressbookModel.class);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Delete the AddressbookModel with id on the AddressbooksService by executing a HTTP DELETE method.
+	 * @param id the id of the AddressbookModel object to delete
+	 * @param expectedStatus the expected HTTP status to test on
+	 */
+	public void deleteAddressbook(String id, Status expectedStatus) {
+		deleteAddressbook(addressbookWC, id, expectedStatus);
+	}
+	
+	/**
+	 * Delete the AddressbookModel with id on the AddressbooksService by executing a HTTP DELETE method.
+	 * @param webClient the WebClient for the AddressbooksService
+	 * @param tagId the id of the AddressbookModel object to delete
+	 * @param expectedStatus the expected HTTP status to test on
+	 */
+	public static void deleteAddressbook(
+			WebClient webClient,
+			String id,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").path(id).delete();	
+		if (expectedStatus != null) {
+			assertEquals("DELETE should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
 	}
 	
 	public static void cleanup(
@@ -564,5 +539,5 @@ public class AddressbookTest extends AbstractTestClient {
 		addressbookWC.replacePath("/").path(addressbookId).delete();
 		System.out.println(testName + " deleted Addressbook <" + addressbookId + ">.");
 		addressbookWC.close();
-	}
+	}	
 }

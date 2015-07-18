@@ -56,7 +56,7 @@ public class UserBatchedListTest extends AbstractTestClient {
 	public void initializeTests() {
 		userWC = initializeTest(ServiceUtil.USERS_API_URL, UsersService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
 	}
 	
 	@After

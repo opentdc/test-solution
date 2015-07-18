@@ -71,7 +71,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 		parentProject = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
 		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
@@ -87,28 +87,23 @@ public class ResourceRefTest extends AbstractTestClient {
 	
 	/********************************** resourceRef attribute tests *********************************/
 	@Test
-	public void testResourceRefModelEmptyConstructor() {
-		// new() -> _rrm
+	public void testEmptyConstructor() {
 		ResourceRefModel _rrm = new ResourceRefModel();
 		assertNull("id should not be set by empty constructor", _rrm.getId());
 		assertNull("resourceId should not be set by empty constructor", _rrm.getResourceId());
-		assertNull("firstname should not be set by empty constructor", _rrm.getFirstName());
-		assertNull("lastname should not be set by empty constructor", _rrm.getLastName());
+		assertNull("resourceName should not be set by empty constructor", _rrm.getResourceName());
 	}
 	
 	@Test
-	public void testResourceRefModelConstructor() {		
-		// new("MY_RESID", "MY_FNAME", "MY_LNAME") -> _rrm
-		ResourceRefModel _rrm = new ResourceRefModel("MY_RESID", "MY_FNAME", "MY_LNAME");
+	public void testConstructor() {		
+		ResourceRefModel _rrm = new ResourceRefModel("MY_RESID");
 		assertNull("id should be null", _rrm.getId());
 		assertEquals("resourceId should be set correctly", "MY_RESID", _rrm.getResourceId());
-		assertEquals("firstname should be set correctly", "MY_FNAME", _rrm.getFirstName());
-		assertEquals("lastname should be set correctly", "MY_LNAME", _rrm.getLastName());
+		assertNull("resourceName should not be set", _rrm.getResourceName());
 	}
 	
 	@Test
-	public void testResourceRefIdAttributeChange() {
-		// new() -> _rrm -> _rrm.setId()
+	public void testId() {
 		ResourceRefModel _rrm = new ResourceRefModel();
 		assertNull("id should not be set by constructor", _rrm.getId());
 		_rrm.setId("MY_ID");
@@ -116,7 +111,7 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefResourceIdAttributeChange() {
+	public void testResourceId() {
 		// new() -> _rrm -> _rrm.setResourceId()
 		ResourceRefModel _rrm = new ResourceRefModel();
 		assertNull("resourceId should not be set by empty constructor", _rrm.getResourceId());
@@ -125,26 +120,15 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefFirstNameAttributeChange() {
-		// new() -> _rrm -> _rrm.setFirstName()
+	public void testResourceName() {
 		ResourceRefModel _rrm = new ResourceRefModel();
-		assertNull("firstname should not be set by empty constructor", _rrm.getFirstName());
-		_rrm.setFirstName("MY_FNAME");
-		assertEquals("firstname should have changed:", "MY_FNAME", _rrm.getFirstName());
+		assertNull("resourceName should not be set by empty constructor", _rrm.getResourceName());
+		_rrm.setResourceName("MY_FNAME");
+		assertEquals("resourceName should have changed:", "MY_FNAME", _rrm.getResourceName());
 	}
-	
+		
 	@Test
-	public void testResourceRefLastNameAttributeChange() {
-		// new() -> _rrm -> _rrm.setLastName()
-		ResourceRefModel _rrm = new ResourceRefModel();
-		assertNull("lastname should not be set by empty constructor", _rrm.getLastName());
-		_rrm.setLastName("MY_LNAME");
-		assertEquals("lastname should have changed:", "MY_LNAME", _rrm.getLastName());
-	}
-	
-	@Test
-	public void testResourceRefCreatedBy() {
-		// new() -> _rrm -> _rrm.setCreatedBy()
+	public void testCreatedBy() {
 		ResourceRefModel _rrm = new ResourceRefModel();
 		assertNull("createdBy should not be set by empty constructor", _rrm.getCreatedBy());
 		_rrm.setCreatedBy("MY_NAME");
@@ -152,8 +136,7 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefCreatedAt() {
-		// new() -> _rrm -> _rrm.setCreatedAt()
+	public void testCreatedAt() {
 		ResourceRefModel _rrm = new ResourceRefModel();
 		assertNull("createdAt should not be set by empty constructor", _rrm.getCreatedAt());
 		_rrm.setCreatedAt(new Date());
@@ -161,8 +144,7 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 		
 	@Test
-	public void testResourceRefModifiedBy() {
-		// new() -> _rrm -> _rrm.setModifiedBy()
+	public void testModifiedBy() {
 		ResourceRefModel _rrm = new ResourceRefModel();
 		assertNull("modifiedBy should not be set by empty constructor", _rrm.getModifiedBy());
 		_rrm.setModifiedBy("MY_NAME");
@@ -170,8 +152,7 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefModifiedAt() {
-		// new() -> _rrm -> _rrm.setModifiedAt()
+	public void testModifiedAt() {
 		ResourceRefModel _rrm = new ResourceRefModel();
 		assertNull("modifiedAt should not be set by empty constructor", _rrm.getModifiedAt());
 		_rrm.setModifiedAt(new Date());
@@ -183,49 +164,31 @@ public class ResourceRefTest extends AbstractTestClient {
 	// add:  POST "api/company/{cid}/project/{pid}/resource"
 	// delete:  DELETE "api/company/{cid}/project/{pid}/resource/{rid}"
 	@Test
-	public void testResourceRefCreateDeleteWithEmptyConstructor() {
-		// new(1) -> _rrm1
+	public void testCreateDeleteWithEmptyConstructor() {
 		ResourceRefModel _rrm1 = new ResourceRefModel();
 		assertNull("id should not be set by empty constructor", _rrm1.getId());
 		assertNull("resourceId should not be set by empty constructor", _rrm1.getResourceId());
-		assertNull("firstname should not be set by empty constructor", _rrm1.getFirstName());
-		assertNull("lastname should not be set by empty constructor", _rrm1.getLastName());
+		assertNull("resourceName should not be set by empty constructor", _rrm1.getResourceName());
 		
 		// create(_rrm1) -> BAD_REQUEST (because of empty resourceId)
 		Response _response = wttWC.replacePath("/").post(_rrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		_rrm1.setResourceId(resource.getId());
 
-		// create(_rrm1) -> BAD_REQUEST (because of empty firstName)
-		_response = wttWC.replacePath("/").post(_rrm1);
-		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_rrm1.setFirstName("MY_FNAME");
-
-		// create(_rrm1) -> BAD_REQUEST (because of empty lastName)
-		_response = wttWC.replacePath("/").post(_rrm1);
-		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_rrm1.setLastName("MY_LNAME");
-
-		// create(_rrm1) -> _rrm2
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).post(_rrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceRefModel _rrm2 = _response.readEntity(ResourceRefModel.class);
 		
-		// validate _rrm1 (local object)
 		assertNull("id should still be null", _rrm1.getId());
 		assertEquals("resourceId should be set by constructor", resource.getId(), _rrm1.getResourceId());
-		assertEquals("firstname should be set by constructor", "MY_FNAME", _rrm1.getFirstName());
-		assertEquals("lastname should be set by constructor", "MY_LNAME", _rrm1.getLastName());
+		assertNull("resourceName should not be set", _rrm1.getResourceName());
 		
-		// validate _rrm2 (created object)
 		assertNotNull("create() should set a valid id on the remote object returned", _rrm2.getId());		
 		assertEquals("create() should not change resourceId", resource.getId(), _rrm2.getResourceId());
-		assertEquals("create() should not change firstname", "MY_FNAME", _rrm2.getFirstName());
-		assertEquals("create() should not change lastname", "MY_LNAME", _rrm2.getLastName());
+		assertEquals("create() should derive the resourceName", resource.getName(), _rrm2.getResourceName());
 
-		// delete(_rrm2)
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).path(_rrm2.getId()).delete();
@@ -233,14 +196,12 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefCreateDelete() {
-		// new("MY_RESID", "MY_FNAME", "MY_LNAME")  -> _rrm1
-		ResourceRefModel _rrm1 = createResourceRef("testResourceRefCreateDelete", 1);
+	public void testCreateDelete() {
+		ResourceRefModel _rrm1 = new ResourceRefModel(resource.getId());
 		assertNull("id should be null", _rrm1.getId());
 		assertEquals("resourceId should be set by constructor", resource.getId(), _rrm1.getResourceId());
-		assertEquals("firstname should be set by constructor", "MY_FNAME1", _rrm1.getFirstName());
-		assertEquals("lastname should be set by constructor", "MY_LNAME1", _rrm1.getLastName());
-		// create(_rrm1) -> _rrm2
+		assertNull("resourceName should not be set", _rrm1.getResourceName());
+
 		Response _response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).post(_rrm1);
@@ -249,13 +210,11 @@ public class ResourceRefTest extends AbstractTestClient {
 		
 		assertNull("id should still be null", _rrm1.getId());
 		assertEquals("resourceId should be unchanged after remote create", resource.getId(), _rrm1.getResourceId());
-		assertEquals("firstname should be unchanged after remote create", "MY_FNAME1", _rrm1.getFirstName());
-		assertEquals("lastname should be unchanged after remote create", "MY_LNAME1", _rrm1.getLastName());
+		assertNull("resourceName should not be set", _rrm1.getResourceName());
 		
 		assertNotNull("create() should set a valid id on the remote object returned", _rrm2.getId());		
-		assertEquals("resourceId of returned object should be unchanged after remote create", resource.getId(), _rrm2.getResourceId());
-		assertEquals("firstname of returned object should be unchanged after remote create", "MY_FNAME1", _rrm2.getFirstName());
-		assertEquals("lastname of returned object should be unchanged after remote create", "MY_LNAME1", _rrm2.getLastName());
+		assertEquals("create() should not change the resourceId", resource.getId(), _rrm2.getResourceId());
+		assertEquals("create() should derive the resourceName", resource.getName(), _rrm2.getResourceName());
 		
 		// delete(_rrm2)
 		_response = wttWC.replacePath("/").path(company.getId()).
@@ -265,8 +224,7 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefOnSubProject() {
-		// create(new ProjectModel()) -> _pm
+	public void testOnSubProject() {
 		Response _response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(ProjectTest.PATH_EL_PROJECT)
@@ -274,31 +232,24 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectModel _pm = _response.readEntity(ProjectModel.class);
 		
-		// new ResourceRefModel(1) -> _rrm1
-		ResourceRefModel _rrm1 = createResourceRef("testResourceRefOnSubProject", 1);
+		ResourceRefModel _rrm1 = new ResourceRefModel(resource.getId());
 		assertNull("id should not be set by empty constructor", _rrm1.getId());
 		assertEquals("resourceId should be set by constructor", resource.getId(), _rrm1.getResourceId());
-		assertEquals("firstname should be set by constructor", "MY_FNAME1", _rrm1.getFirstName());
-		assertEquals("lastname should be set by constructor", "MY_LNAME1", _rrm1.getLastName());
+		assertNull("resourceName should not be set by constructor", _rrm1.getResourceName());
 		
-		// createResourceRef(_rrm1) on subproject _pm -> _rrm2
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(_pm.getId()).
 				path(PATH_EL_RESOURCE).post(_rrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceRefModel _rrm2 = _response.readEntity(ResourceRefModel.class);
 		
-		// validate _rrm1 (local object)
 		assertNull("create() should not change the id of the local object", _rrm1.getId());
 		assertEquals("create() should not change the resourceId", resource.getId(), _rrm1.getResourceId());
-		assertEquals("create() should not change the firstname", "MY_FNAME1", _rrm1.getFirstName());
-		assertEquals("create() should not change the lastname", "MY_LNAME1", _rrm1.getLastName());
+		assertNull("create() should not change the resourceName", _rrm1.getResourceName());
 		
-		// validate _rrm2 (remote object returned)
 		assertNotNull("create() should set a valid id on the remote object returned", _rrm2.getId());
 		assertEquals("resourceId should not change the resourceId", resource.getId(), _rrm2.getResourceId());
-		assertEquals("firstname should not change the firstname", "MY_FNAME1", _rrm2.getFirstName());
-		assertEquals("lastname should not change the lastname", "MY_LNAME1", _rrm2.getLastName());
+		assertEquals("create() should derive the resourceName", resource.getName(), _rrm2.getResourceName());
 		
 		// delete(_rrm2)
 		 _response = wttWC.replacePath("/").path(company.getId()).
@@ -314,16 +265,16 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testCreateResourceRefWithDuplicateId() {
+	public void testCreateWithDuplicateId() {
 		// new(1) -> _rrm1
 		Response _response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
-				path(PATH_EL_RESOURCE).post(createResourceRef("testCreateResourceRefWithDuplicateId", 1));
+				path(PATH_EL_RESOURCE).post(new ResourceRefModel(resource.getId()));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceRefModel _rrm1 = _response.readEntity(ResourceRefModel.class);
 
 		// new() -> _rrm2 -> _rrm2.setId(_rrm.getId())
-		ResourceRefModel _rrm2 = createResourceRef("testCreateResourceRefWithDuplicateId", 2);
+		ResourceRefModel _rrm2 = new ResourceRefModel(resource.getId());
 		_rrm2.setId(_rrm1.getId());		// wrongly create a 2nd ResourceRefModel object with the same ID
 		
 		// create(_rrm2) -> CONFLICT
@@ -340,20 +291,18 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefList(
+	public void testList(
 	) {		
 		ArrayList<ResourceRefModel> _localList = new ArrayList<ResourceRefModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			// create(new()) -> _localList
 			_response = wttWC.replacePath("/").path(company.getId()).
 					path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
-					path(PATH_EL_RESOURCE).post(createResourceRef("testResourceRefList", i));
+					path(PATH_EL_RESOURCE).post(new ResourceRefModel(resource.getId()));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ResourceRefModel.class));
 		}
 		
-		// list(/) -> _remoteList
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).get();
@@ -378,20 +327,15 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 
 	@Test
-	public void testResourceRefCreate() {
-		// new(1) -> _rrm1
-		ResourceRefModel _rrm1 = createResourceRef("testResourceRefCreate", 1);
-		// new(2) -> _rrm2
-		ResourceRefModel _rrm2 = createResourceRef("testResourceRefCreate", 2);
-		
-		// create(_rrm1)  -> _rrm3
+	public void testCreate() {
+		ResourceRefModel _rrm1 = new ResourceRefModel(resource.getId());
+		ResourceRefModel _rrm2 = new ResourceRefModel(resource.getId());
 		Response _response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).post(_rrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceRefModel _rrm3 = _response.readEntity(ResourceRefModel.class);
 
-		// create(_rrm2) -> _rrm4
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).post(_rrm2);
@@ -401,20 +345,16 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertNotNull("ID should be set", _rrm4.getId());
 		assertThat(_rrm4.getId(), not(equalTo(_rrm3.getId())));
 		assertEquals("resourceId should be set correctly", resource.getId(), _rrm3.getResourceId());
-		assertEquals("firstname should be set correctly", "MY_FNAME1", _rrm3.getFirstName());
-		assertEquals("lastname should be set correctly", "MY_LNAME1", _rrm3.getLastName());
+		assertEquals("resourceName should be derived", resource.getName(), _rrm3.getResourceName());
 		
 		assertEquals("resourceId should be set correctly", resource.getId(), _rrm4.getResourceId());
-		assertEquals("firstname should be set correctly", "MY_FNAME2", _rrm4.getFirstName());
-		assertEquals("lastname should be set correctly", "MY_LNAME2", _rrm4.getLastName());
+		assertEquals("resourceName should be derived", resource.getName(), _rrm4.getResourceName());
 
-		// delete(_rrm3) -> NO_CONTENT
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).path(_rrm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
-		// delete(_rrm4) -> NO_CONTENT
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).path(_rrm4.getId()).delete();
@@ -422,23 +362,20 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefDoubleCreate(
+	public void testDoubleCreate(
 	) {
-		// create(1) -> _rrm
 		Response _response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
-				path(PATH_EL_RESOURCE).post(createResourceRef("testResourceRefDoubleCreate", 1));
+				path(PATH_EL_RESOURCE).post(new ResourceRefModel(resource.getId()));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceRefModel _rrm = _response.readEntity(ResourceRefModel.class);
 		assertEquals("ID should be unchanged", resource.getId(), _rrm.getResourceId());		
 		
-		// create(_rrm) -> CONFLICT			// double create
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).post(_rrm);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
-		// delete(_rrm) -> NO_CONTENT
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).path(_rrm.getId()).delete();
@@ -446,21 +383,18 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testResourceRefDelete(
+	public void testDelete(
 	) {
-		// create(1) -> _rrm
 		Response _response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
-				path(PATH_EL_RESOURCE).post(createResourceRef("testResourceRefDelete", 1));
+				path(PATH_EL_RESOURCE).post(new ResourceRefModel(resource.getId()));
 		ResourceRefModel _rrm = _response.readEntity(ResourceRefModel.class);
 		
-		// removeResource(_rrm) -> NO_CONTENT
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).path(_rrm.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
-		// removeResource _rrm -> NOT_FOUND
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).path(_rrm.getId()).delete();
@@ -469,16 +403,13 @@ public class ResourceRefTest extends AbstractTestClient {
 	
 	@Test
 	public void testResourceRefModifications() {
-		// create(new ResourceRefModel()) -> _rrm
 		Response _response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
-				path(PATH_EL_RESOURCE).post(createResourceRef("testResourceRefModifications", 1));
+				path(PATH_EL_RESOURCE).post(new ResourceRefModel(resource.getId()));
 		ResourceRefModel _rrm = _response.readEntity(ResourceRefModel.class);
 		
-		// test createdAt and createdBy
 		assertNotNull("create() should set createdAt", _rrm.getCreatedAt());
 		assertNotNull("create() should set createdBy", _rrm.getCreatedBy());
-		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
 		assertNotNull("create() should set modifiedAt", _rrm.getModifiedAt());
 		assertNotNull("create() should set modifiedBy", _rrm.getModifiedBy());
 		assertEquals("createdAt and modifiedAt should be identical after create()", _rrm.getCreatedAt(), _rrm.getModifiedAt());
@@ -486,7 +417,6 @@ public class ResourceRefTest extends AbstractTestClient {
 		
 		// there is no update method for ResourceRef
 		
-		// delete(_rrm) -> NO_CONTENT
 		_response = wttWC.replacePath("/").path(company.getId()).
 				path(ProjectTest.PATH_EL_PROJECT).path(parentProject.getId()).
 				path(PATH_EL_RESOURCE).path(_rrm.getId()).delete();		
@@ -494,12 +424,6 @@ public class ResourceRefTest extends AbstractTestClient {
 	}
 
 	/********************************* helper methods *********************************/	
-	public ResourceRefModel createResourceRef(
-			String id, 
-			int suffix) {
-		return new ResourceRefModel(resource.getId(), "MY_FNAME" + suffix, "MY_LNAME" + suffix);
-	}
-		
 	public static ResourceRefModel createResourceRef(
 				WebClient wttWC,
 				String companyId,
@@ -507,7 +431,7 @@ public class ResourceRefTest extends AbstractTestClient {
 				String resourceId) {
 		Response _response = wttWC.replacePath("/").path(companyId).
 				path(ProjectTest.PATH_EL_PROJECT).path(projectId).
-				path(PATH_EL_RESOURCE).post(new ResourceRefModel(resourceId, "MY_FNAME", "MY_LNAME"));
+				path(PATH_EL_RESOURCE).post(new ResourceRefModel(resourceId));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		return _response.readEntity(ResourceRefModel.class);	
 	}

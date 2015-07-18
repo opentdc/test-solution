@@ -60,7 +60,7 @@ public class UserTest extends AbstractTestClient {
 	public void initializeTests() {
 		userWC = initializeTest(ServiceUtil.USERS_API_URL, UsersService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-		adb = AddressbookTest.createAddressbook(addressbookWC, "UserTest");
+		adb = AddressbookTest.createAddressbook(addressbookWC, "UserTest", Status.OK);
 		contact = ContactTest.createContact(addressbookWC, adb.getId(), "FNAME", "LNAME");
 	}
 	
@@ -72,30 +72,29 @@ public class UserTest extends AbstractTestClient {
 	
 	/********************************** users attributes tests *********************************/	
 	@Test
-	public void testUserModelEmptyConstructor() {
-		// new() -> _um
+	public void testEmptyConstructor() {
 		UserModel _um = new UserModel();
-		assertNull("id should not be set by empty constructor", _um.getId());
-		assertNull("loginId should not be set by empty constructor", _um.getLoginId());
-		assertNull("contactId should not be set by empty constructor", _um.getContactId());
-		assertNull("hashedPassword should not be set by empty constructor", _um.getHashedPassword());
-		assertNull("salt should not be set by empty constructor", _um.getSalt());
+		assertNull("id should not be set", _um.getId());
+		assertNull("loginId should not be set", _um.getLoginId());
+		assertNull("contactId should not be set", _um.getContactId());
+		assertNull("hashedPassword should not be set", _um.getHashedPassword());
+		assertNull("salt should not be set", _um.getSalt());
+		assertNull("authType should not be set", _um.getAuthType());
 	}
 	
 	@Test
-	public void testUserModelConstructor() {		
-		// new("LID", "CID", "MY_PWD", "MY_SALT") -> _um
-		UserModel _um = new UserModel("LID", "CID", "MY_PWD", "MY_SALT");
-		assertNull("id should not be set by constructor", _um.getId());
-		assertEquals("loginId should be set by constructor", "LID", _um.getLoginId());
-		assertEquals("contactId should be set by constructor", "CID", _um.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD", _um.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT", _um.getSalt());
+	public void testConstructor() {		
+		UserModel _um = new UserModel("LID", "CID");
+		assertNull("id should not be set", _um.getId());
+		assertEquals("loginId should be set", "LID", _um.getLoginId());
+		assertEquals("contactId should be set", "CID", _um.getContactId());
+		assertNull("hashedPassword should not be set", _um.getHashedPassword());
+		assertNull("salt should not be set", _um.getSalt());
+		assertNull("authType should not be set", _um.getAuthType());
 	}
 	
 	@Test
-	public void testUserIdAttributeChange() {
-		// new() -> _um -> _um.setId()
+	public void testId() {
 		UserModel _um = new UserModel();
 		assertNull("id should not be set by constructor", _um.getId());
 		_um.setId("MY_ID");
@@ -103,8 +102,7 @@ public class UserTest extends AbstractTestClient {
 	}
 
 	@Test
-	public void testLoginIdAttributeChange() {
-		// new() -> _um -> _um.setLoginId()
+	public void testLoginId() {
 		UserModel _um = new UserModel();
 		assertNull("loginId should not be set by empty constructor", _um.getLoginId());
 		_um.setLoginId("LID");
@@ -112,8 +110,7 @@ public class UserTest extends AbstractTestClient {
 	}
 
 	@Test
-	public void testContactIdAttributeChange() {
-		// new() -> _um -> _um.setContactId()
+	public void testContactId() {
 		UserModel _um = new UserModel();
 		assertNull("contactId should not be set by empty constructor", _um.getContactId());
 		_um.setContactId("CID");
@@ -121,8 +118,7 @@ public class UserTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testHashedPasswordAttributeChange() {
-		// new() -> _um -> _um.setHashedPassword()
+	public void testHashedPassword() {
 		UserModel _um = new UserModel();
 		assertNull("hashedPassword should not be set by empty constructor", _um.getHashedPassword());
 		_um.setHashedPassword("MY_PWD");
@@ -130,8 +126,7 @@ public class UserTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testSaltAttributeChange() {
-		// new() -> _um -> _um.setSalt()
+	public void testSalt() {
 		UserModel _um = new UserModel();
 		assertNull("salt should not be set by empty constructor", _um.getSalt());
 		_um.setSalt("MY_SALT");
@@ -139,8 +134,7 @@ public class UserTest extends AbstractTestClient {
 	}
 		
 	@Test
-	public void testUserCreatedBy() {
-		// new() -> _um -> _um.setCreatedBy()
+	public void testCreatedBy() {
 		UserModel _um = new UserModel();
 		assertNull("createdBy should not be set by empty constructor", _um.getCreatedBy());
 		_um.setCreatedBy("MY_NAME");
@@ -148,8 +142,7 @@ public class UserTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testUserCreatedAt() {
-		// new() -> _um -> _um.setCreatedAt()
+	public void testCreatedAt() {
 		UserModel __um = new UserModel();
 		assertNull("createdAt should not be set by empty constructor", __um.getCreatedAt());
 		__um.setCreatedAt(new Date());
@@ -157,8 +150,7 @@ public class UserTest extends AbstractTestClient {
 	}
 		
 	@Test
-	public void testUserModifiedBy() {
-		// new() -> _um -> _um.setModifiedBy()
+	public void testModifiedBy() {
 		UserModel _um = new UserModel();
 		assertNull("modifiedBy should not be set by empty constructor", _um.getModifiedBy());
 		_um.setModifiedBy("MY_NAME");
@@ -166,8 +158,7 @@ public class UserTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testUserModifiedAt() {
-		// new() -> _um -> _um.setModifiedAt()
+	public void testModifiedAt() {
 		UserModel _um = new UserModel();
 		assertNull("modifiedAt should not be set by empty constructor", _um.getModifiedAt());
 		_um.setModifiedAt(new Date());
@@ -176,14 +167,14 @@ public class UserTest extends AbstractTestClient {
 
 	/********************************* REST service tests *********************************/	
 	@Test
-	public void testUserCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _um1
+	public void testCreateReadDeleteWithEmptyConstructor() {
 		UserModel _um1 = createUser("testUserCreateReadDeleteWithEmptyConstructor", 1);
 		assertNull("id should not be set by constructor", _um1.getId());
 		assertEquals("loginId should be set by constructor", "testUserCreateReadDeleteWithEmptyConstructor1", _um1.getLoginId());
 		assertEquals("contactId should be set by constructor", contact.getId(), _um1.getContactId());
-		assertEquals("hashedPassword should be set by constructor", "MY_PWD1", _um1.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT1", _um1.getSalt());
+		assertNull("hashedPassword should not be set", _um1.getHashedPassword());
+		assertNull("salt should not be set", _um1.getSalt());
+		assertNull("authType should not be set", _um1.getAuthType());
 
 		// create(_um1) -> _um2
 		Response _response = userWC.replacePath("/").post(_um1);
@@ -194,15 +185,15 @@ public class UserTest extends AbstractTestClient {
 		assertNull("create() should not change the id of the local object", _um1.getId());
 		assertEquals("create() should not change the loginId of the local object", "testUserCreateReadDeleteWithEmptyConstructor1", _um1.getLoginId());
 		assertEquals("create() should not change the contactId of the local object", contact.getId(), _um1.getContactId());
-		assertEquals("create() should not change hashedPassword of the local object", "MY_PWD1", _um1.getHashedPassword());
-		assertEquals("create() should not change the salt of the local object", "MY_SALT1", _um1.getSalt());
+		assertNull("create() should not change hashedPassword of the local object", _um1.getHashedPassword());
+		assertNull("create() should not change the salt of the local object", _um1.getSalt());
 
 		// validate _um2 (remote object)
 		assertNotNull("create() should set a valid id on the remote object returned", _um2.getId());
 		assertEquals("create() should not change the loginId", "testUserCreateReadDeleteWithEmptyConstructor1", _um2.getLoginId());
 		assertEquals("create() should not change the contactId", contact.getId(), _um2.getContactId());
-		assertEquals("create() should not change the hashedPassword", "MY_PWD1", _um2.getHashedPassword());
-		assertEquals("create() should not change the salt", "MY_SALT1", _um2.getSalt());
+		assertNull("create() should not change the hashedPassword", _um2.getHashedPassword());
+		assertNull("create() should not change the salt", _um2.getSalt());
 
 		// read(_um2) -> _um3
 		_response = userWC.replacePath("/").path(_um2.getId()).get();
@@ -230,8 +221,8 @@ public class UserTest extends AbstractTestClient {
 		assertNull("id should not be set by constructor", _um1.getId());
 		assertEquals("loginId should be set by constructor", "testUserCreateReadDelete1", _um1.getLoginId());
 		assertEquals("contactId should be set by constructor", contact.getId(), _um1.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD1", _um1.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT1", _um1.getSalt());
+		assertNull("hashedPassword should not be set", _um1.getHashedPassword());
+		assertNull("salt should not be set by constructor", _um1.getSalt());
 		
 		// create(_um1) -> _um2
 		Response _response = userWC.replacePath("/").post(_um1);
@@ -242,15 +233,15 @@ public class UserTest extends AbstractTestClient {
 		assertNull("id should be unchanged", _um1.getId());
 		assertEquals("loginId should be unchanged", "testUserCreateReadDelete1", _um1.getLoginId());
 		assertEquals("contactId should be unchanged", contact.getId(), _um1.getContactId());
-		assertEquals("hashedPassword should be unchangede", "MY_PWD1", _um1.getHashedPassword());
-		assertEquals("salt should be unchanged", "MY_SALT1", _um1.getSalt());
+		assertNull("hashedPassword should be unchanged", _um1.getHashedPassword());
+		assertNull("salt should be unchanged", _um1.getSalt());
 		
 		// validating _um2 (created object)
 		assertNotNull("id of returned object should be set", _um2.getId());
 		assertEquals("loginId should be unchanged", "testUserCreateReadDelete1", _um2.getLoginId());
 		assertEquals("contactId should be unchanged", contact.getId(), _um2.getContactId());
-		assertEquals("hashedPassword should be unchangede", "MY_PWD1", _um2.getHashedPassword());
-		assertEquals("salt should be unchanged", "MY_SALT1", _um2.getSalt());
+		assertNull("hashedPassword should be unchanged", _um2.getHashedPassword());
+		assertNull("salt should be unchanged", _um2.getSalt());
 				
 		// read(_um2)  -> _um3
 		_response = userWC.replacePath("/").path(_um2.getId()).get();
@@ -261,7 +252,7 @@ public class UserTest extends AbstractTestClient {
 		assertEquals("id of returned object should be the same", _um2.getId(), _um3.getId());
 		assertEquals("loginId should be unchanged", _um2.getLoginId(), _um3.getLoginId());
 		assertEquals("contactId should be unchanged", _um2.getContactId(), _um3.getContactId());
-		assertEquals("hashedPassword should be unchangede", _um2.getHashedPassword(), _um3.getHashedPassword());
+		assertEquals("hashedPassword should be unchanged", _um2.getHashedPassword(), _um3.getHashedPassword());
 		assertEquals("salt should be unchanged", _um2.getSalt(), _um3.getSalt());
 		
 		// delete(_um3)
@@ -338,43 +329,33 @@ public class UserTest extends AbstractTestClient {
 
 	@Test
 	public void testUserCreate() {
-		// new(1) -> _um1
-		UserModel _um1 = createUser("testUserCreate", 1);
-		
-		// new(2) -> _um2
-		UserModel _um2 = createUser("testUserCreate", 2);
-		
-		// create(_um1)  -> _um3
-		Response _response = userWC.replacePath("/").post(_um1);
+		Response _response = userWC.replacePath("/").post(createUser("testUserCreate", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _um3 = _response.readEntity(UserModel.class);
+		UserModel _model1 = _response.readEntity(UserModel.class);
 
-		// create(_um2) -> _um4
-		_response = userWC.replacePath("/").post(_um2);
+		_response = userWC.replacePath("/").post(createUser("testUserCreate", 2));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		UserModel _um4 = _response.readEntity(UserModel.class);
-		assertThat(_um4.getId(), not(equalTo(_um3.getId())));
+		UserModel _model2 = _response.readEntity(UserModel.class);
+		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
 		
-		// validate _um3
-		assertNotNull("ID should be set", _um3.getId());
-		assertEquals("loginId should be set by constructor", "testUserCreate1", _um3.getLoginId());
-		assertEquals("contactId should be set by constructor", contact.getId(), _um3.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD1", _um3.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT1", _um3.getSalt());
+		assertNotNull("ID should be set", _model1.getId());
+		assertEquals("loginId should be set by constructor", "testUserCreate1", _model1.getLoginId());
+		assertEquals("contactId should be set by constructor", contact.getId(), _model1.getContactId());
+		assertNull("hashedPassword should not be set by constructor", _model1.getHashedPassword());
+		assertNull("salt should not be set by constructor", _model1.getSalt());
 				
-		// validate _um4
-		assertNotNull("ID should be set", _um4.getId());
-		assertEquals("loginId should be set by constructor", "testUserCreate2", _um4.getLoginId());
-		assertEquals("contactId should be set by constructor", contact.getId(), _um4.getContactId());
-		assertEquals("v should be set by constructor", "MY_PWD2", _um4.getHashedPassword());
-		assertEquals("salt should be set by constructor", "MY_SALT2", _um4.getSalt());
+		assertNotNull("ID should be set", _model2.getId());
+		assertEquals("loginId should be set by constructor", "testUserCreate2", _model2.getLoginId());
+		assertEquals("contactId should be set by constructor", contact.getId(), _model2.getContactId());
+		assertNull("hashedPassword should not be set by constructor", _model2.getHashedPassword());
+		assertNull("salt should not be set by constructor", _model2.getSalt());
 		
 		// delete(_um3) -> NO_CONTENT
-		_response = userWC.replacePath("/").path(_um3.getId()).delete();
+		_response = userWC.replacePath("/").path(_model1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_um4) -> NO_CONTENT
-		_response = userWC.replacePath("/").path(_um4.getId()).delete();
+		_response = userWC.replacePath("/").path(_model2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -654,6 +635,6 @@ public class UserTest extends AbstractTestClient {
 	
 	/********************************* helper methods *********************************/	
 	public UserModel createUser(String loginId, int suffix) {
-		return new UserModel(loginId + suffix, contact.getId(), "MY_PWD" + suffix, "MY_SALT" + suffix);
+		return new UserModel(loginId + suffix, contact.getId());
 	}
 }
