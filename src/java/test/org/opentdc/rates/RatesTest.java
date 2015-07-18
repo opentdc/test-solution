@@ -150,17 +150,17 @@ public class RatesTest extends AbstractTestClient {
 		_model.setCurrency(Currency.getDefaultCurrency());
 		assertEquals("currency should have changed to default currency", Currency.getDefaultCurrency(), _model.getCurrency());
 		assertEquals("default currency should be correct", Currency.CHF, Currency.getDefaultCurrency());
-		_model.setCurrency(Currency.getCurrency("Euro"));
+		_model.setCurrency(Currency.EUR);
 		assertEquals("currency should be correct", Currency.EUR, _model.getCurrency());
 		assertEquals("label should be correct", Currency.EUR.getLabel(), _model.getCurrency().getLabel());
 		assertEquals("label should be correct", "Euro", Currency.EUR.getLabel());
 		assertEquals("stringified value should be correct", Currency.EUR.toString(), _model.getCurrency().toString());
-		_model.setCurrency(Currency.getCurrency("Swiss Franc"));
+		_model.setCurrency(Currency.CHF);
 		assertEquals("currency should be correct", Currency.CHF, _model.getCurrency());
 		assertEquals("label should be correct", Currency.CHF.getLabel(), _model.getCurrency().getLabel());
 		assertEquals("label should be correct", "Swiss Franc", Currency.CHF.getLabel());
 		assertEquals("stringified value should be correct", Currency.CHF.toString(), _model.getCurrency().toString());
-		_model.setCurrency(Currency.getCurrency("US Dollar"));
+		_model.setCurrency(Currency.USD);
 		assertEquals("currency should be correct", Currency.USD, _model.getCurrency());
 		assertEquals("label should be correct", Currency.USD.getLabel(), _model.getCurrency().getLabel());
 		assertEquals("label should be correct", "US Dollar", Currency.USD.getLabel());
@@ -492,7 +492,7 @@ public class RatesTest extends AbstractTestClient {
 			WebClient webClient,
 			Status expectedStatus) 
 	{
-		Response _response = webClient.replacePath("/").get();
+		Response _response = webClient.replacePath("/").query("size", Integer.MAX_VALUE).get();
 		assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return new ArrayList<RatesModel>(webClient.getCollection(RatesModel.class));
