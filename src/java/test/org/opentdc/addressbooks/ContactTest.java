@@ -53,7 +53,7 @@ public class ContactTest extends AbstractTestClient {
 		@Before
 		public void initializeTests() {
 			addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-			adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+			adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
 		}
 		
 		@After

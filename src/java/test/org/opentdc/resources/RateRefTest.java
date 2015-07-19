@@ -70,7 +70,7 @@ public class RateRefTest extends AbstractTestClient {
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		rateWC = createWebClient(ServiceUtil.RATES_API_URL, RatesService.class);
 		
-		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
 		contact = ContactTest.createContact(addressbookWC, adb.getId(), "FNAME", "LNAME");
 		resource = ResourcesTest.createResource(resourceWC, adb, contact, "RateRefTest", Status.OK);
 		rate = RatesTest.createRate(rateWC, Status.OK);

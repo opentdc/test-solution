@@ -81,7 +81,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName());
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
 		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
 		company2 = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC2");
 		project = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
@@ -104,7 +104,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	/********************************** workrecord attributes tests *********************************/	
 	@Test
 	public void testEmptyConstructor() {
-		// new() -> _wrm
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("id should not be set by empty constructor", _wrm.getId());
 		assertNull("companyId should not be set by empty constructor", _wrm.getCompanyId());
@@ -137,7 +136,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 
 	@Test
 	public void testId() {
-		// new() -> _wrm -> _wrm.setId()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("id should not be set by constructor", _wrm.getId());
 		_wrm.setId("testId");
@@ -146,7 +144,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 
 	@Test
 	public void testCompanyId() {
-		// new() -> _wrm -> _wrm.setCompanyId()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("companyId should not be set by empty constructor", _wrm.getCompanyId());
 		_wrm.setCompanyId("testCompanyId");
@@ -155,7 +152,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testCompanyTitle() {
-		// new() -> _wrm -> _wrm.setCompanyTitle()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("CompanyTitle should not be set by empty constructor", _wrm.getCompanyTitle());
 		_wrm.setCompanyTitle("testCompanyTitle");
@@ -164,7 +160,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testProjectId() {
-		// new() -> _wrm -> _wrm.setProjectId()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("projectId should not be set by empty constructor", _wrm.getProjectId());
 		_wrm.setProjectId("testProjectId");
@@ -173,7 +168,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testProjectTitle() {
-		// new() -> _wrm -> _wrm.setProjectTitle()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("projectTitle should not be set by empty constructor", _wrm.getProjectTitle());
 		_wrm.setProjectTitle("testProjectTitle");
@@ -182,7 +176,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testResourceId() {
-		// new() -> _wrm -> _wrm.setResourceId()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("resourceId should not be set by empty constructor", _wrm.getResourceId());
 		_wrm.setResourceId("testResourceId");
@@ -200,7 +193,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 		
 	@Test
 	public void testDurationHours() {
-		// new() -> _wrm -> _wrm.setDurationHours()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertEquals("durationHours should be initialized to default value by empty constructor", 1, _wrm.getDurationHours());
 		_wrm.setDurationHours(3);
@@ -209,7 +201,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testDurationMinutes() {
-		// new() -> _wrm -> _wrm.setDurationMinutes()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertEquals("durationMinutes should be initialized to default value by empty constructor", 30, _wrm.getDurationMinutes());
 		_wrm.setDurationMinutes(45);
@@ -218,7 +209,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testComment() {
-		// new() -> _wrm -> _wrm.setComment()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("comment should not be set by empty constructor", _wrm.getComment());
 		_wrm.setComment("testComment");
@@ -227,7 +217,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testIsBillable() {
-		// new() -> _wrm -> _wrm.setBillable()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertEquals("isBillable should be initialized to default value by empty constructor", true, _wrm.isBillable());
 		_wrm.setBillable(false);
@@ -236,7 +225,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreatedBy() {
-		// new() -> _wrm -> _wrm.setCreatedBy()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("createdBy should not be set by empty constructor", _wrm.getCreatedBy());
 		_wrm.setCreatedBy("testCreatedBy");
@@ -245,7 +233,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreatedAt() {
-		// new() -> _wrm -> _wrm.setCreatedAt()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("createdAt should not be set by empty constructor", _wrm.getCreatedAt());
 		_wrm.setCreatedAt(new Date());
@@ -254,7 +241,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 		
 	@Test
 	public void testModifiedBy() {
-		// new() -> _wrm -> _wrm.setModifiedBy()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("modifiedBy should not be set by empty constructor", _wrm.getModifiedBy());
 		_wrm.setModifiedBy("testModifiedBy");
@@ -263,7 +249,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@Test
 	public void testModifiedAt() {
-		// new() -> _wrm -> _wrm.setModifiedAt()
 		WorkRecordModel _wrm = new WorkRecordModel();
 		assertNull("modifiedAt should not be set by empty constructor", _wrm.getModifiedAt());
 		_wrm.setModifiedAt(new Date());
@@ -273,7 +258,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 	/********************************* REST service tests *********************************/	
 	@Test
 	public void testCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _wrm1
 		WorkRecordModel _wrm1 = new WorkRecordModel();
 		assertNull("id should not be set by empty constructor", _wrm1.getId());
 		assertNull("companyId should not be set by empty constructor", _wrm1.getCompanyId());
@@ -287,32 +271,25 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertNull("comment should not be set by empty constructor", _wrm1.getComment());
 		assertEquals("isBillable should be set on default initial value", true, _wrm1.isBillable());
 		
-		// create(_wrm1) -> BAD_REQUEST (because of empty companyId)
 		postWorkRecord(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setCompanyId(company.getId());
 
-		// create(_wrm1) -> BAD_REQUEST (because of empty companyTitle)
 		postWorkRecord(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setCompanyTitle(company.getTitle());
 
-		// create(_wrm1) -> BAD_REQUEST (because of empty projectId)
 		postWorkRecord(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setProjectId(project.getId());
 		
-		// create(_wrm1) -> BAD_REQUEST (because of empty projectTitle)
 		postWorkRecord(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setProjectTitle(project.getTitle());
 
-		// create(_wrm1) -> BAD_REQUEST (because of empty resourceId)
 		postWorkRecord(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setResourceId(resource.getId());
 
-		// create(_wrm1) -> BAD_REQUEST (because of empty startAt)
 		postWorkRecord(_wrm1, Status.BAD_REQUEST);
 		Date _date = new Date();
 		_wrm1.setStartAt(_date);
 
-		// create(_wrm1) -> _wrm2
 		WorkRecordModel _wrm2 = postWorkRecord(_wrm1, Status.OK);
 		
 		// validate _wrm1
@@ -355,13 +332,11 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("comment of returned object should be unchanged after remote create", _wrm2.getComment(), _wrm3.getComment());
 		assertEquals("isBillable of returned object should be unchanged after remote create", _wrm2.isBillable(), _wrm3.isBillable());
 
-		// delete(_wrm3)
 		deleteWorkRecord(_wrm3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testCreateReadDelete() {
-		// new() -> _wrm1
 		WorkRecordModel _wrm1 = createWorkRecord(company, project, resource, date, 4, 20, true, "testCreateReadDelete1");
 		
 		// validate _wrm1
@@ -419,7 +394,6 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("comment of returned object should be the same", _wrm2.getComment(), _wrm3.getComment());
 		assertEquals("isBillable should be the same", _wrm2.isBillable(), _wrm3.isBillable());		
 
-		// delete(_wrm3)
 		deleteWorkRecord(_wrm3.getId(), Status.NO_CONTENT);
 	}
 	
@@ -585,12 +559,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 		
 		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
 	}
-	
-	@Test
-	public void testWrongUpdates() {
-		// TODO
-	}
-	
+		
 	@Test
 	public void testUpdate() {
 		WorkRecordModel _wrm1 = postWorkRecord(
