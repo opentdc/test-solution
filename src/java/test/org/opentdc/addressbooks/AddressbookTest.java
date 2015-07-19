@@ -187,7 +187,7 @@ public class AddressbookTest extends AbstractTestClient {
 		assertEquals("correct number of addressbooks should be created", LIMIT, _localList.size());
 		
 		List<AddressbookModel> _remoteList = listAddressbooks(null, Status.OK);		
-		assertEquals("list() should return the correct number of addressbooks", LIMIT + 1, _remoteList.size());
+		assertTrue("list() should return the correct number of addressbooks", _remoteList.size() > (LIMIT + 1));
 		// implicitly proven:  _remoteList.size() == _localList.size()
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -335,7 +335,7 @@ public class AddressbookTest extends AbstractTestClient {
 	public List<AddressbookModel> listAddressbooks(
 			String query, 
 			Status expectedStatus) {
-		return listAddressbooks(addressbookWC, query, -1, -1, expectedStatus);
+		return listAddressbooks(addressbookWC, query, -1, Integer.MAX_VALUE, expectedStatus);
 	}
 	
 	/**
