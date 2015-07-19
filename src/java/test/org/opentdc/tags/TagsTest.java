@@ -198,20 +198,20 @@ public class TagsTest extends AbstractTestClient {
 
 		List<TagTextModel> _tagList = listTags(null, Status.OK);
 		logResult("all tags (no query):", _tagList);
-		assertEquals("amount of returned tags must be correct", 6, _tagList.size());
+		assertTrue("amount of returned tags must be correct", _tagList.size() >= 6);
 		
 		_tagList = listTags("lang=" + LanguageCode.DE, Status.OK);
 		logResult("DE tags:", _tagList);
-		assertEquals("amount of returned tags must be correct", 3, _tagList.size());
+		assertTrue("amount of returned tags must be correct", _tagList.size() >= 3);
 		
 		_tagList = listTags("lang=" + LanguageCode.EN, Status.OK);
 		logResult("EN tags:", _tagList);
-		assertEquals("amount of returned tags must be correct", 2, _tagList.size());
+		assertTrue("amount of returned tags must be correct", _tagList.size() >= 2);
 		assertEquals("tag text must be correct", "one", _tagList.get(0).getText());
 		
 		_tagList = listTags("lang=" + LanguageCode.FR, Status.OK);
 		logResult("FR tags:", _tagList);
-		assertEquals("amount of returned tags must be correct", 1, _tagList.size());
+		assertTrue("amount of returned tags must be correct", _tagList.size() >= 1);
 		assertEquals("tag text must be correct", "trois", _tagList.get(0).getText());
 		
 		_tagList = listTags("lang=" + LanguageCode.IT, Status.OK);
@@ -249,12 +249,13 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testPureTagsList() 
 	{		
+		List<TagTextModel> _remoteList1 = listTags(null, Status.OK);
 		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();
 		for (int i = 0; i < LIMIT; i++) {
 			_localList.add(postTag(new TagsModel(), Status.OK));
 		}
-		List<TagTextModel> _remoteList = listTags(null, Status.OK);
-		assertEquals("list should be empty (because no LocalizedText is saved", 0, _remoteList.size());		
+		List<TagTextModel> _remoteList2 = listTags(null, Status.OK);
+		assertEquals("list should be empty (because no LocalizedText is saved", _remoteList1.size(), _remoteList2.size());		
 		for (TagsModel _model : _localList) {
 			deleteTag(_model.getId(), Status.NO_CONTENT);
 		}
@@ -451,7 +452,7 @@ public class TagsTest extends AbstractTestClient {
 	public List<TagTextModel> listTags(
 			String query, 
 			Status expectedStatus) {
-		return listTags(tagWC, query, -1, -1, expectedStatus);
+		return listTags(tagWC, query, -1, Integer.MAX_VALUE, expectedStatus);
 	}
 	
 	/**

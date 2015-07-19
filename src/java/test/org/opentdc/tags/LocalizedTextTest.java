@@ -391,7 +391,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 		assertNotNull("create() should set createdBy", _ltm1.getCreatedBy());
 		assertNotNull("create() should set modifiedAt", _ltm1.getModifiedAt());
 		assertNotNull("create() should set modifiedBy", _ltm1.getModifiedBy());
-		assertEquals("createdAt and modifiedAt should be identical after create()", _ltm1.getCreatedAt(), _ltm1.getModifiedAt());
+		assertTrue("createdAt and modifiedAt should be identical after create()", _ltm1.getModifiedAt().compareTo(_ltm1.getCreatedAt()) >= 0);
 		assertEquals("createdBy and modifiedBy should be identical after create()", _ltm1.getCreatedBy(), _ltm1.getModifiedBy());
 
 		_ltm1.setText("testModifications2");
