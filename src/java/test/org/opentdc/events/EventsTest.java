@@ -39,7 +39,7 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opentdc.events.EventsModel;
+import org.opentdc.events.EventModel;
 import org.opentdc.events.EventsService;
 import org.opentdc.events.InvitationState;
 import org.opentdc.events.SalutationType;
@@ -77,7 +77,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testEmptyConstructor() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("id should not be set by empty constructor", _model.getId());
 		assertNull("firstName should not be set by empty constructor", _model.getFirstName());
 		assertNull("lastName should not be set by empty constructor", _model.getLastName());
@@ -92,7 +92,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testConstructor() {		
-		EventsModel _model = new EventsModel("testConstructor1", "testConstructor2", "testConstructor3");
+		EventModel _model = new EventModel("testConstructor1", "testConstructor2", "testConstructor3");
 		assertNull("id should not be set by constructor", _model.getId());
 		assertEquals("firstName should be set by constructor", "testConstructor1", _model.getFirstName());
 		assertEquals("lastName should be set by constructor", "testConstructor2", _model.getLastName());
@@ -107,7 +107,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testId() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("id should not be set by constructor", _model.getId());
 		_model.setId("testId");
 		assertEquals("id should have changed", "testId", _model.getId());
@@ -118,7 +118,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testFirstName() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("firstName should not be set by empty constructor", _model.getFirstName());
 		_model.setFirstName("testFirstName");
 		assertEquals("firstName should have changed", "testFirstName", _model.getFirstName());
@@ -129,7 +129,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testLastName() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("lastName should not be set by empty constructor", _model.getLastName());
 		_model.setLastName("testLastName");
 		assertEquals("lastName should have changed", "testLastName", _model.getLastName());
@@ -140,7 +140,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testEmail() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("email should not be set by empty constructor", _model.getEmail());
 		_model.setEmail("testEmail");
 		assertEquals("email should have changed", "testEmail", _model.getEmail());
@@ -151,7 +151,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testComment() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("comment should not be set by empty constructor", _model.getComment());
 		_model.setComment("testComment");
 		assertEquals("comment should have changed", "testComment", _model.getComment());
@@ -162,7 +162,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testSalutation() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("salutation should not be set by empty constructor", _model.getSalutation());
 		_model.setSalutation(SalutationType.HERR);
 		assertEquals("salutation should have changed", SalutationType.HERR, _model.getSalutation());
@@ -173,7 +173,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testInvitationState() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("invitationState should not be set by empty constructor", _model.getInvitationState());
 		_model.setInvitationState(InvitationState.REGISTERED);
 		assertEquals("invitationState should have changed", InvitationState.REGISTERED, _model.getInvitationState());
@@ -184,7 +184,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testCreatedBy() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("createdBy should not be set by empty constructor", _model.getCreatedBy());
 		_model.setCreatedBy("testCreatedBy");
 		assertEquals("createdBy should have changed", "testCreatedBy", _model.getCreatedBy());	
@@ -195,7 +195,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testCreatedAt() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("createdAt should not be set by empty constructor", _model.getCreatedAt());
 		_model.setCreatedAt(new Date());
 		assertNotNull("createdAt should have changed", _model.getCreatedAt());
@@ -206,7 +206,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testModifiedBy() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("modifiedBy should not be set by empty constructor", _model.getModifiedBy());
 		_model.setModifiedBy("testModifiedBy");
 		assertEquals("modifiedBy should have changed", "testModifiedBy", _model.getModifiedBy());	
@@ -217,7 +217,7 @@ public class EventsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testModifiedAt() {
-		EventsModel _model = new EventsModel();
+		EventModel _model = new EventModel();
 		assertNull("modifiedAt should not be set by empty constructor", _model.getModifiedAt());
 		_model.setModifiedAt(new Date());
 		assertNotNull("modifiedAt should have changed", _model.getModifiedAt());
@@ -226,7 +226,7 @@ public class EventsTest extends AbstractTestClient {
 	/********************************* REST service tests *********************************/	
 	@Test
 	public void testCreateReadDeleteWithEmptyConstructor() {
-		EventsModel _model1 = new EventsModel();
+		EventModel _model1 = new EventModel();
 		assertNull("id should not be set by empty constructor", _model1.getId());
 		assertNull("firstName should not be set by empty constructor", _model1.getFirstName());
 		assertNull("lastName should not be set by empty constructor", _model1.getLastName());
@@ -241,7 +241,7 @@ public class EventsTest extends AbstractTestClient {
 		_model1.setLastName("Muster");
 		postEvent(_model1, Status.BAD_REQUEST);
 		_model1.setEmail("hans.muster@test.com");
-		EventsModel _model2 = postEvent(_model1, Status.OK);
+		EventModel _model2 = postEvent(_model1, Status.OK);
 		assertNull("create() should not change the id of the local object", _model1.getId());
 		assertEquals("create() should not change the firstName of the local object", "Hans", _model1.getFirstName());
 		assertEquals("create() should not change the lastName of the local object", "Muster", _model1.getLastName());
@@ -258,7 +258,7 @@ public class EventsTest extends AbstractTestClient {
 		assertEquals("create() should not change the salutation", SalutationType.DU_M, _model2.getSalutation());
 		assertEquals("create() should not change the invitationState", InvitationState.INITIAL, _model2.getInvitationState());
 		
-		EventsModel _model3 = getEvent(_model2.getId(), Status.OK);
+		EventModel _model3 = getEvent(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		assertEquals("firstName should be unchanged", _model2.getFirstName(), _model3.getFirstName());
 		assertEquals("lastName should be unchanged", _model2.getLastName(), _model3.getLastName());
@@ -271,13 +271,13 @@ public class EventsTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreateReadDelete() {
-		EventsModel _model1 = new EventsModel("Hans", "Muster", "hans.muster@test.com");
+		EventModel _model1 = new EventModel("Hans", "Muster", "hans.muster@test.com");
 		assertNull("id should not be set by constructor", _model1.getId());
 		assertEquals("firstName should be set by constructor", "Hans", _model1.getFirstName());
 		assertEquals("lastName should be set by constructor", "Muster", _model1.getLastName());
 		assertEquals("email should be set by constructor", "hans.muster@test.com", _model1.getEmail());
 
-		EventsModel _model2 = postEvent(_model1, Status.OK);
+		EventModel _model2 = postEvent(_model1, Status.OK);
 		assertNull("id should be still null after remote create", _model1.getId());
 		assertEquals("firstName should be unchanged", "Hans", _model1.getFirstName());
 		assertEquals("lastName should be unchanged", "Muster", _model1.getLastName());
@@ -286,7 +286,7 @@ public class EventsTest extends AbstractTestClient {
 		assertEquals("firstName should be unchanged", "Hans", _model2.getFirstName());
 		assertEquals("lastName should be unchanged", "Muster", _model2.getLastName());
 
-		EventsModel _model3 = getEvent(_model2.getId(), Status.OK);
+		EventModel _model3 = getEvent(_model2.getId(), Status.OK);
 		assertEquals("id should be the same", _model2.getId(), _model3.getId());
 		assertEquals("firstName should be unchanged", _model2.getFirstName(), _model3.getFirstName());
 		assertEquals("lastName be unchanged", _model2.getLastName(), _model3.getLastName());
@@ -295,7 +295,7 @@ public class EventsTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreateWithClientSideId() {
-		EventsModel _model = new EventsModel("Hans", "Muster", "hans.muster@test.com");
+		EventModel _model = new EventModel("Hans", "Muster", "hans.muster@test.com");
 		_model.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _model.getId());
 		postEvent(_model, Status.BAD_REQUEST);
@@ -303,8 +303,8 @@ public class EventsTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreateWithDuplicateId() {
-		EventsModel _model1 = postEvent(new EventsModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		EventsModel _model2 = postEvent(new EventsModel("John", "Doe", "john.doe@test.com"), Status.OK);
+		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		EventModel _model2 = postEvent(new EventModel("John", "Doe", "john.doe@test.com"), Status.OK);
 		String _id = _model2.getId();
 		_model2.setId(_model1.getId());		// wrongly create a 2nd EventsModel object with the same ID
 		postEvent(_model2, Status.CONFLICT);
@@ -315,34 +315,34 @@ public class EventsTest extends AbstractTestClient {
 	@Test
 	public void testList(
 	) {		
-		ArrayList<EventsModel> _localList = new ArrayList<EventsModel>();
+		ArrayList<EventModel> _localList = new ArrayList<EventModel>();
 		for (int i = 0; i < LIMIT; i++) {
 			_localList.add(postEvent(
-				new EventsModel("Hans", "Muster", "hans.muster@test.com"),
+				new EventModel("Hans", "Muster", "hans.muster@test.com"),
 				Status.OK));
 		}
-		List<EventsModel> _remoteList = listEvents(null, Status.OK);
+		List<EventModel> _remoteList = listEvents(null, Status.OK);
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
-		for (EventsModel _model : _remoteList) {
+		for (EventModel _model : _remoteList) {
 			_remoteListIds.add(_model.getId());
 		}
 		
-		for (EventsModel _model : _localList) {
+		for (EventModel _model : _localList) {
 			assertTrue("event <" + _model.getId() + "> should be listed", _remoteListIds.contains(_model.getId()));
 		}
-		for (EventsModel _model : _localList) {
+		for (EventModel _model : _localList) {
 			getEvent(_model.getId(), Status.OK);
 		}
-		for (EventsModel _model : _localList) {
+		for (EventModel _model : _localList) {
 			deleteEvent(_model.getId(), Status.NO_CONTENT);
 		}
 	}
 		
 	@Test
 	public void testCreate() {
-		EventsModel _model1 = postEvent(new EventsModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		EventsModel _model2 = postEvent(new EventsModel("John", "Doe", "john.doe@test.com"), Status.OK);
+		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		EventModel _model2 = postEvent(new EventModel("John", "Doe", "john.doe@test.com"), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
 		assertNotNull("ID should be set", _model2.getId());
 		assertThat(_model1.getId(), not(equalTo(_model2.getId())));
@@ -358,7 +358,7 @@ public class EventsTest extends AbstractTestClient {
 	
 	@Test
 	public void testDoubleCreate() {
-		EventsModel _model = postEvent(new EventsModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		EventModel _model = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		assertNotNull("ID should be set", _model.getId());
 		postEvent(_model, Status.CONFLICT);
 		deleteEvent(_model.getId(), Status.NO_CONTENT);
@@ -366,29 +366,29 @@ public class EventsTest extends AbstractTestClient {
 
 	@Test
 	public void testRead() {
-		ArrayList<EventsModel> _localList = new ArrayList<EventsModel>();
+		ArrayList<EventModel> _localList = new ArrayList<EventModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postEvent(new EventsModel("Hans" + i, "Muster", "hans.muster@test.com"), Status.OK));
+			_localList.add(postEvent(new EventModel("Hans" + i, "Muster", "hans.muster@test.com"), Status.OK));
 		}
 		// test read on each local element
-		for (EventsModel _model : _localList) {
+		for (EventModel _model : _localList) {
 			getEvent(_model.getId(), Status.OK);
 		}
 		// test read on each listed element
-		for (EventsModel _model : listEvents(null, Status.OK)) {
+		for (EventModel _model : listEvents(null, Status.OK)) {
 			assertEquals("ID should be unchanged when reading a event", _model.getId(), getEvent(_model.getId(), Status.OK).getId());
 		}
-		for (EventsModel _model : _localList) {
+		for (EventModel _model : _localList) {
 			deleteEvent(_model.getId(), Status.NO_CONTENT);
 		}
 	}	
 
 	@Test
 	public void testMultiRead() {
-		EventsModel _model1 = postEvent(new EventsModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		EventsModel _model2 = getEvent(_model1.getId(), Status.OK);
+		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		EventModel _model2 = getEvent(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read", _model1.getId(), _model2.getId());		
-		EventsModel _model3 = getEvent(_model1.getId(), Status.OK);
+		EventModel _model3 = getEvent(_model1.getId(), Status.OK);
 		
 		assertEquals("ID should be the same", _model3.getId(), _model2.getId());
 		assertEquals("firstName should be the same", _model3.getFirstName(), _model2.getFirstName());
@@ -403,12 +403,12 @@ public class EventsTest extends AbstractTestClient {
 	@Test
 	public void testUpdate(
 	) {
-		EventsModel _model1 = postEvent(new EventsModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 
 		_model1.setFirstName("John");
 		_model1.setLastName("Doe");
 		_model1.setEmail("john.doe@test.com");
-		EventsModel _model2 = putEvent(_model1, Status.OK);
+		EventModel _model2 = putEvent(_model1, Status.OK);
 		assertNotNull("ID should be set", _model2.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model2.getId());	
 		assertEquals("firstName should have changed", "John", _model2.getFirstName());
@@ -418,7 +418,7 @@ public class EventsTest extends AbstractTestClient {
 		_model1.setFirstName("Hans");
 		_model1.setLastName("Muster");
 		_model1.setEmail("hans.muster@test.com");
-		EventsModel _model3 = putEvent(_model1, Status.OK);
+		EventModel _model3 = putEvent(_model1, Status.OK);
 		assertNotNull("ID should be set", _model3.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model3.getId());	
 		assertEquals("firstName should have changed", "Hans", _model3.getFirstName());
@@ -430,8 +430,8 @@ public class EventsTest extends AbstractTestClient {
 	
 	@Test
 	public void testDelete() {
-		EventsModel _model1 = postEvent(new EventsModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		EventsModel _model2 = getEvent(_model1.getId(), Status.OK);
+		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		EventModel _model2 = getEvent(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged when reading a event (remote):", _model1.getId(), _model2.getId());						
 		deleteEvent(_model1.getId(), Status.NO_CONTENT);
 		getEvent(_model1.getId(), Status.NOT_FOUND);
@@ -440,7 +440,7 @@ public class EventsTest extends AbstractTestClient {
 	
 	@Test
 	public void testDoubleDelete() {
-		EventsModel _model = postEvent(new EventsModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		EventModel _model = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		getEvent(_model.getId(), Status.OK);
 		deleteEvent(_model.getId(), Status.NO_CONTENT);
 		getEvent(_model.getId(), Status.NOT_FOUND);
@@ -450,7 +450,7 @@ public class EventsTest extends AbstractTestClient {
 	
 	@Test
 	public void testModifications() {
-		EventsModel _model1 = postEvent(new EventsModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
 		assertNotNull("create() should set createdBy", _model1.getCreatedBy());
 		assertNotNull("create() should set modifiedAt", _model1.getModifiedAt());
@@ -458,7 +458,7 @@ public class EventsTest extends AbstractTestClient {
 		assertEquals("createdAt and modifiedAt should be identical after create()", _model1.getCreatedAt(), _model1.getModifiedAt());
 		assertEquals("createdBy and modifiedBy should be identical after create()", _model1.getCreatedBy(), _model1.getModifiedBy());
 		_model1.setComment("updated");
-		EventsModel _model2 = putEvent(_model1, Status.OK);
+		EventModel _model2 = putEvent(_model1, Status.OK);
 		assertEquals("update() should not change createdAt", _model1.getCreatedAt(), _model2.getCreatedAt());
 		assertEquals("update() should not change createdBy", _model1.getCreatedBy(), _model2.getCreatedBy());
 		
@@ -469,23 +469,23 @@ public class EventsTest extends AbstractTestClient {
 
 		String _createdBy = _model1.getCreatedBy();
 		_model1.setCreatedBy("testModifications3");
-		EventsModel _model3 = putEvent(_model1, Status.OK);
+		EventModel _model3 = putEvent(_model1, Status.OK);
 		assertEquals("update() should not change createdBy", _createdBy, _model3.getCreatedBy());
 
 		Date _createdAt = _model1.getCreatedAt();
 		_model1.setCreatedAt(new Date(1000));
-		EventsModel _model4 = putEvent(_model1, Status.OK);
+		EventModel _model4 = putEvent(_model1, Status.OK);
 		assertEquals("update() should not change createdAt", _createdAt, _model4.getCreatedAt());
 
 		String _modifiedBy = _model1.getModifiedBy();
 		_model1.setModifiedBy("testModifications5");
-		EventsModel _model5 = putEvent(_model1, Status.OK);
+		EventModel _model5 = putEvent(_model1, Status.OK);
 		assertEquals("update() should not change modifiedBy", _modifiedBy, _model5.getModifiedBy());
 
 		Date _modifiedAt = _model1.getModifiedAt();
 		Date _modifiedAt2 = new Date(1000);
 		_model1.setModifiedAt(_modifiedAt2);
-		EventsModel _model6 = putEvent(_model1, Status.OK);
+		EventModel _model6 = putEvent(_model1, Status.OK);
 		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt)));
 		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt2)));
 
@@ -500,7 +500,7 @@ public class EventsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return a List of EventsModel object in JSON format
 	 */
-	public List<EventsModel> listEvents(
+	public List<EventModel> listEvents(
 			String query, 
 			Status expectedStatus) {
 		return listEvents(eventWC, query, -1, -1, expectedStatus);
@@ -515,7 +515,7 @@ public class EventsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return a List of EventsModel objects in JSON format
 	 */
-	public static List<EventsModel> listEvents(
+	public static List<EventModel> listEvents(
 			WebClient webClient, 
 			String query, 
 			int position,
@@ -553,12 +553,12 @@ public class EventsTest extends AbstractTestClient {
 				}				
 			}
 		}
-		List<EventsModel> _events = null;
+		List<EventModel> _events = null;
 		if (expectedStatus != null) {
 			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			_events = new ArrayList<EventsModel>(webClient.getCollection(EventsModel.class));
+			_events = new ArrayList<EventModel>(webClient.getCollection(EventModel.class));
 			System.out.println("listEvents(eventWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _events.size());
 		}
 		return _events;
@@ -570,15 +570,15 @@ public class EventsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created EventsModel
 	 */
-	public EventsModel postEvent(
-			EventsModel model, 
+	public EventModel postEvent(
+			EventModel model, 
 			Status expectedStatus) {
 		Response _response = eventWC.replacePath("/").post(model);
 		if (expectedStatus != null) {
 			assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(EventsModel.class);
+			return _response.readEntity(EventModel.class);
 		} else {
 			return null;
 		}
@@ -591,16 +591,16 @@ public class EventsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created EventsModel
 	 */
-	public static EventsModel postEvent(
+	public static EventModel postEvent(
 			WebClient webClient,
-			EventsModel model,
+			EventModel model,
 			Status expectedStatus) {
 		Response _response = webClient.replacePath("/").post(model);
 		if (expectedStatus != null) {
 			assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(EventsModel.class);
+			return _response.readEntity(EventModel.class);
 		} else {
 			return null;
 		}
@@ -612,14 +612,14 @@ public class EventsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created EventsModel
 	 */
-	public static EventsModel createEvent(
+	public static EventModel createEvent(
 			WebClient webClient, 
 			String firstName, 
 			String lastName,
 			String email,
 			Status expectedStatus) 
 	{
-		return postEvent(webClient, new EventsModel(firstName, lastName, email), expectedStatus);
+		return postEvent(webClient, new EventModel(firstName, lastName, email), expectedStatus);
 	}
 	
 	/**
@@ -628,7 +628,7 @@ public class EventsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the retrieved EventsModel object in JSON format
 	 */
-	public EventsModel getEvent(
+	public EventModel getEvent(
 			String eventId, 
 			Status expectedStatus) {
 		return getEvent(eventWC, eventId, expectedStatus);
@@ -641,7 +641,7 @@ public class EventsTest extends AbstractTestClient {
 	 * @param expectedStatus  the expected HTTP status to test on
 	 * @return the retrieved EventsModel object in JSON format
 	 */
-	public static EventsModel getEvent(
+	public static EventModel getEvent(
 			WebClient webClient,
 			String eventId,
 			Status expectedStatus) {
@@ -650,7 +650,7 @@ public class EventsTest extends AbstractTestClient {
 			assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(EventsModel.class);
+			return _response.readEntity(EventModel.class);
 		} else {
 			return null;
 		}
@@ -662,8 +662,8 @@ public class EventsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated EventsModel object in JSON format
 	 */
-	public EventsModel putEvent(
-			EventsModel model, 
+	public EventModel putEvent(
+			EventModel model, 
 			Status expectedStatus) {
 		return putEvent(eventWC, model, expectedStatus);
 	}
@@ -675,9 +675,9 @@ public class EventsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated EventsModel object in JSON format
 	 */
-	public static EventsModel putEvent(
+	public static EventModel putEvent(
 			WebClient webClient,
-			EventsModel model,
+			EventModel model,
 			Status expectedStatus) {
 		webClient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 		Response _response = webClient.replacePath("/").path(model.getId()).put(model);
@@ -685,7 +685,7 @@ public class EventsTest extends AbstractTestClient {
 			assertEquals("PUT should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(EventsModel.class);
+			return _response.readEntity(EventModel.class);
 		} else {
 			return null;
 		}

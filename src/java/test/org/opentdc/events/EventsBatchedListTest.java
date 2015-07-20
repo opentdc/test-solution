@@ -35,7 +35,7 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opentdc.events.EventsModel;
+import org.opentdc.events.EventModel;
 import org.opentdc.events.EventsService;
 import org.opentdc.service.GenericService;
 import org.opentdc.service.ServiceUtil;
@@ -61,7 +61,7 @@ public class EventsBatchedListTest extends AbstractTestClient {
 
 	@Test
 	public void testEventBatchedList() {
-		ArrayList<EventsModel> _localList = new ArrayList<EventsModel>();		
+		ArrayList<EventModel> _localList = new ArrayList<EventModel>();		
 		Response _response = null;
 		System.out.println("***** testEventBatchedList:");
 		eventWC.replacePath("/");
@@ -69,20 +69,20 @@ public class EventsBatchedListTest extends AbstractTestClient {
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		EventsModel _res = null;
+		EventModel _res = null;
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_res = new EventsModel();
+			_res = new EventModel();
 			_res.setFirstName("Hans" + i);
 			_res.setLastName("Muster");
 			_res.setEmail("hans.muster@test.com");
 			_response = eventWC.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(EventsModel.class));
+			_localList.add(_response.readEntity(EventModel.class));
 			System.out.println("posted EventsModel " + _res.getFirstName() + " " + _res.getLastName());
 		}
 		System.out.println("****** locallist:");
-		for (EventsModel _rm : _localList) {
+		for (EventModel _rm : _localList) {
 			System.out.println(_rm.getFirstName() + " " + _rm.getLastName());
 		}
 
@@ -90,10 +90,10 @@ public class EventsBatchedListTest extends AbstractTestClient {
 		// list(position=0, size=25) -> elements 0 .. 24
 		eventWC.resetQuery();
 		_response = eventWC.replacePath("/").get();
-		List<EventsModel> _remoteList1 = new ArrayList<EventsModel>(eventWC.getCollection(EventsModel.class));
+		List<EventModel> _remoteList1 = new ArrayList<EventModel>(eventWC.getCollection(EventModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 1st Batch:");
-		for (EventsModel _rm : _remoteList1) {
+		for (EventModel _rm : _remoteList1) {
 			System.out.println(_rm.getFirstName() + " " + _rm.getLastName());
 		}
 		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
@@ -102,11 +102,11 @@ public class EventsBatchedListTest extends AbstractTestClient {
 		// list(position=25, size=25) -> elements 25 .. 49
 		eventWC.resetQuery();
 		_response = eventWC.replacePath("/").query("position", 25).get();
-		List<EventsModel> _remoteList2 = new ArrayList<EventsModel>(eventWC.getCollection(EventsModel.class));
+		List<EventModel> _remoteList2 = new ArrayList<EventModel>(eventWC.getCollection(EventModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
-		for (EventsModel _rm : _remoteList2) {
+		for (EventModel _rm : _remoteList2) {
 			System.out.println(_rm.getFirstName() + " " + _rm.getLastName());
 		}
 		
@@ -114,10 +114,10 @@ public class EventsBatchedListTest extends AbstractTestClient {
 		// list(position=50, size=25) ->   elements 50 .. 54
 		eventWC.resetQuery();
 		_response = eventWC.replacePath("/").query("position", 50).get();
-		List<EventsModel> _remoteList3 = new ArrayList<EventsModel>(eventWC.getCollection(EventsModel.class));
+		List<EventModel> _remoteList3 = new ArrayList<EventModel>(eventWC.getCollection(EventModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 3rd Batch:");
-		for (EventsModel _rm : _remoteList3) {
+		for (EventModel _rm : _remoteList3) {
 			System.out.println(_rm.getFirstName() + " " + _rm.getLastName());
 		}
 		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
@@ -126,12 +126,12 @@ public class EventsBatchedListTest extends AbstractTestClient {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<EventsModel> _remoteList = null;
+		List<EventModel> _remoteList = null;
 		while(true) {
 			_numberOfBatches++;
 			eventWC.resetQuery();
 			_response = eventWC.replacePath("/").query("position", _position).get();
-			_remoteList = new ArrayList<EventsModel>(eventWC.getCollection(EventsModel.class));
+			_remoteList = new ArrayList<EventModel>(eventWC.getCollection(EventModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_numberOfReturnedObjects += _remoteList.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
@@ -149,26 +149,26 @@ public class EventsBatchedListTest extends AbstractTestClient {
 		eventWC.resetQuery();
 		// get next 5 elements from position 5
 		_response = eventWC.replacePath("/").query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<EventsModel>(eventWC.getCollection(EventsModel.class));
+		_remoteList = new ArrayList<EventModel>(eventWC.getCollection(EventModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// get last 4 elements 
 		eventWC.resetQuery();
 		_response = eventWC.replacePath("/").query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<EventsModel>(eventWC.getCollection(EventsModel.class));
+		_remoteList = new ArrayList<EventModel>(eventWC.getCollection(EventModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
 		
 		// read over end of list
 		eventWC.resetQuery();
 		_response = eventWC.replacePath("/").query("position", _limit2-5).query("size", 10).get();
-		_remoteList = new ArrayList<EventsModel>(eventWC.getCollection(EventsModel.class));
+		_remoteList = new ArrayList<EventModel>(eventWC.getCollection(EventModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// removing all test objects
-		for (EventsModel _c : _localList) {
+		for (EventModel _c : _localList) {
 			_response = eventWC.replacePath("/").path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
