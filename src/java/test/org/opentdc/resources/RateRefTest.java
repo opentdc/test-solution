@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
-import org.opentdc.rates.RatesModel;
+import org.opentdc.rates.RateModel;
 import org.opentdc.rates.RatesService;
 import org.opentdc.resources.RateRefModel;
 import org.opentdc.resources.ResourceModel;
@@ -62,7 +62,7 @@ public class RateRefTest extends AbstractTestClient {
 	private AddressbookModel adb = null;
 	private ContactModel contact = null;
 	private ResourceModel resource = null;
-	private RatesModel rate = null;
+	private RateModel rate = null;
 
 	@Before
 	public void initializeTests() {

@@ -35,7 +35,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.tags.TagTextModel;
-import org.opentdc.tags.TagsModel;
+import org.opentdc.tags.TagModel;
 import org.opentdc.tags.TagsService;
 import org.opentdc.util.LanguageCode;
 import org.opentdc.service.GenericService;
@@ -60,14 +60,14 @@ public class TagsBatchedListTest extends AbstractTestClient {
 
 	@Test
 	public void testTagBatchedList() {
-		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();		
+		ArrayList<TagModel> _localList = new ArrayList<TagModel>();		
 		System.out.println("***** testTagBatchedList:");
 		tagWC.replacePath("/");
 		// we want to allocate more than double the amount of default list size objects
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		TagsModel _res = null;
+		TagModel _res = null;
 		for (int i = 0; i < _limit2; i++) {
 			_res = TagsTest.createTag(tagWC, Status.OK);
 			_localList.add(_res);
@@ -134,7 +134,7 @@ public class TagsBatchedListTest extends AbstractTestClient {
 		assertTrue("list() should return correct number of elements", _remoteList.size() >= 5);
 		
 		// removing all test objects
-		for (TagsModel _tm : _localList) {
+		for (TagModel _tm : _localList) {
 			TagsTest.deleteTag(tagWC, _tm.getId(), Status.NO_CONTENT);
 		}		
 	}

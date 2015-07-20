@@ -41,7 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opentdc.service.LocalizedTextModel;
 import org.opentdc.service.ServiceUtil;
-import org.opentdc.tags.TagsModel;
+import org.opentdc.tags.TagModel;
 import org.opentdc.tags.TagsService;
 import org.opentdc.util.LanguageCode;
 
@@ -50,7 +50,7 @@ import test.org.opentdc.AbstractTestClient;
 public class LocalizedTextTest extends AbstractTestClient {
 	public static final String PATH_EL_LANG = "lang";
 	private WebClient tagWC = null;
-	private TagsModel tag = null;
+	private TagModel tag = null;
 
 	@Before
 	public void initializeTests() {
@@ -429,7 +429,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 
 	public static LocalizedTextModel postLocalizedText(
 			WebClient tagWC,
-			TagsModel tag,
+			TagModel tag,
 			LocalizedTextModel model,
 			Status expectedStatus) 
 	{
@@ -458,7 +458,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 
 	public static LocalizedTextModel getLocalizedText(
 			WebClient tagWC,
-			TagsModel tag,
+			TagModel tag,
 			String localizedTextId,
 			Status expectedStatus) 
 	{
@@ -479,7 +479,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 	
 	public static LocalizedTextModel putLocalizedText(
 			WebClient tagWC,
-			TagsModel tag,
+			TagModel tag,
 			LocalizedTextModel model,
 			Status expectedStatus) {
 		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
@@ -503,7 +503,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 
 	public static void deleteLocalizedText(
 			WebClient tagWC,
-			TagsModel tag,
+			TagModel tag,
 			String id,
 			Status expectedStatus) 
 	{

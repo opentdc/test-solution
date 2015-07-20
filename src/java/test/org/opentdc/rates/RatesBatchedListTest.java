@@ -35,7 +35,7 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opentdc.rates.RatesModel;
+import org.opentdc.rates.RateModel;
 import org.opentdc.rates.RatesService;
 import org.opentdc.service.GenericService;
 import org.opentdc.service.ServiceUtil;
@@ -57,7 +57,7 @@ public class RatesBatchedListTest extends AbstractTestClient {
 
 	@Test
 	public void testRateBatchedList() {
-		ArrayList<RatesModel> _localList = new ArrayList<RatesModel>();		
+		ArrayList<RateModel> _localList = new ArrayList<RateModel>();		
 		Response _response = null;
 		System.out.println("***** testRateBatchedList:");
 		rateWC.replacePath("/");
@@ -65,18 +65,18 @@ public class RatesBatchedListTest extends AbstractTestClient {
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		RatesModel _res = null;
+		RateModel _res = null;
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_res = new RatesModel();
+			_res = new RateModel();
 			_res.setTitle(String.format("%2d", i));
 			_response = rateWC.post(_res);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(RatesModel.class));
+			_localList.add(_response.readEntity(RateModel.class));
 			System.out.println("posted RatesModel " + _res.getTitle());
 		}
 		System.out.println("****** locallist:");
-		for (RatesModel _rm : _localList) {
+		for (RateModel _rm : _localList) {
 			System.out.println(_rm.getTitle());
 		}
 
@@ -84,10 +84,10 @@ public class RatesBatchedListTest extends AbstractTestClient {
 		// list(position=0, size=25) -> elements 0 .. 24
 		rateWC.resetQuery();
 		_response = rateWC.replacePath("/").get();
-		List<RatesModel> _remoteList1 = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
+		List<RateModel> _remoteList1 = new ArrayList<RateModel>(rateWC.getCollection(RateModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 1st Batch:");
-		for (RatesModel _rm : _remoteList1) {
+		for (RateModel _rm : _remoteList1) {
 			System.out.println(_rm.getTitle());
 		}
 		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
@@ -96,11 +96,11 @@ public class RatesBatchedListTest extends AbstractTestClient {
 		// list(position=25, size=25) -> elements 25 .. 49
 		rateWC.resetQuery();
 		_response = rateWC.replacePath("/").query("position", 25).get();
-		List<RatesModel> _remoteList2 = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
+		List<RateModel> _remoteList2 = new ArrayList<RateModel>(rateWC.getCollection(RateModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
-		for (RatesModel _rm : _remoteList2) {
+		for (RateModel _rm : _remoteList2) {
 			System.out.println(_rm.getTitle());
 		}
 		
@@ -108,10 +108,10 @@ public class RatesBatchedListTest extends AbstractTestClient {
 		// list(position=50, size=25) ->   elements 50 .. 54
 		rateWC.resetQuery();
 		_response = rateWC.replacePath("/").query("position", 50).query("size", _increment).get();
-		List<RatesModel> _remoteList3 = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
+		List<RateModel> _remoteList3 = new ArrayList<RateModel>(rateWC.getCollection(RateModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 3rd Batch:");
-		for (RatesModel _rm : _remoteList3) {
+		for (RateModel _rm : _remoteList3) {
 			System.out.println(_rm.getTitle());
 		}
 		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
@@ -120,12 +120,12 @@ public class RatesBatchedListTest extends AbstractTestClient {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<RatesModel> _remoteList = null;
+		List<RateModel> _remoteList = null;
 		while(true) {
 			_numberOfBatches++;
 			rateWC.resetQuery();
 			_response = rateWC.replacePath("/").query("position", _position).get();
-			_remoteList = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
+			_remoteList = new ArrayList<RateModel>(rateWC.getCollection(RateModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_numberOfReturnedObjects += _remoteList.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
@@ -142,26 +142,26 @@ public class RatesBatchedListTest extends AbstractTestClient {
 		rateWC.resetQuery();
 		// get next 5 elements from position 5
 		_response = rateWC.replacePath("/").query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
+		_remoteList = new ArrayList<RateModel>(rateWC.getCollection(RateModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// get last 4 elements 
 		rateWC.resetQuery();
 		_response = rateWC.replacePath("/").query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
+		_remoteList = new ArrayList<RateModel>(rateWC.getCollection(RateModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
 		
 		// read over end of list
 		rateWC.resetQuery();
 		_response = rateWC.replacePath("/").query("position", _limit2-5).query("size", 10).get();
-		_remoteList = new ArrayList<RatesModel>(rateWC.getCollection(RatesModel.class));
+		_remoteList = new ArrayList<RateModel>(rateWC.getCollection(RateModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertTrue("list() should return correct number of elements", _remoteList.size() >= 5);
 		
 		// removing all test objects
-		for (RatesModel _c : _localList) {
+		for (RateModel _c : _localList) {
 			_response = rateWC.replacePath("/").path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		

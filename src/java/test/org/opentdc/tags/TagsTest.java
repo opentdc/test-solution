@@ -42,7 +42,7 @@ import org.junit.Test;
 import org.opentdc.service.LocalizedTextModel;
 import org.opentdc.service.ServiceUtil;
 import org.opentdc.tags.TagTextModel;
-import org.opentdc.tags.TagsModel;
+import org.opentdc.tags.TagModel;
 import org.opentdc.tags.TagsService;
 import org.opentdc.util.LanguageCode;
 
@@ -78,7 +78,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testEmptyConstructor() {
-		TagsModel _model = new TagsModel();
+		TagModel _model = new TagModel();
 		assertNull("id should not be set by empty constructor", _model.getId());
 	}
 	
@@ -87,7 +87,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testId() {
-		TagsModel _model = new TagsModel();
+		TagModel _model = new TagModel();
 		assertNull("id should not be set by constructor", _model.getId());
 		_model.setId("testId");
 		assertEquals("id should have changed", "testId", _model.getId());
@@ -98,7 +98,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testCreatedBy() {
-		TagsModel _model = new TagsModel();
+		TagModel _model = new TagModel();
 		assertNull("createdBy should not be set by empty constructor", _model.getCreatedBy());
 		_model.setCreatedBy("testCreatedBy");
 		assertEquals("createdBy should have changed", "testCreatedBy", _model.getCreatedBy());	
@@ -109,7 +109,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testCreatedAt() {
-		TagsModel _model = new TagsModel();
+		TagModel _model = new TagModel();
 		assertNull("createdAt should not be set by empty constructor", _model.getCreatedAt());
 		_model.setCreatedAt(new Date());
 		assertNotNull("createdAt should have changed", _model.getCreatedAt());
@@ -120,7 +120,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testModifiedBy() {
-		TagsModel _model = new TagsModel();
+		TagModel _model = new TagModel();
 		assertNull("modifiedBy should not be set by empty constructor", _model.getModifiedBy());
 		_model.setModifiedBy("testModifiedBy");
 		assertEquals("modifiedBy should have changed", "testModifiedBy", _model.getModifiedBy());	
@@ -131,7 +131,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testModifiedAt() {
-		TagsModel _model = new TagsModel();
+		TagModel _model = new TagModel();
 		assertNull("modifiedAt should not be set by empty constructor", _model.getModifiedAt());
 		_model.setModifiedAt(new Date());
 		assertNotNull("modifiedAt should have changed", _model.getModifiedAt());
@@ -144,13 +144,13 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testCreateReadDeleteWithEmptyConstructor() 
 	{
-		TagsModel _model1 = new TagsModel();
+		TagModel _model1 = new TagModel();
 		assertNull("id should not be set by empty constructor", _model1.getId());
-		TagsModel _model2 = postTag(_model1, Status.OK);
+		TagModel _model2 = postTag(_model1, Status.OK);
 		assertNull("create() should not change the id of the local object", _model1.getId());
 		assertNotNull("create() should set a valid id on the remote object returned", _model2.getId());
 		
-		TagsModel _model3 = getTag(_model2.getId(), Status.OK);
+		TagModel _model3 = getTag(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		deleteTag(_model3.getId(), Status.NO_CONTENT);
 	}
@@ -160,7 +160,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testCreateWithClientSideId() {
-		TagsModel _model = new TagsModel();
+		TagModel _model = new TagModel();
 		_model.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _model.getId());
 		postTag(_model, Status.BAD_REQUEST);
@@ -171,9 +171,9 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testCreateWithDuplicateId() {
-		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		TagModel _model1 = postTag(new TagModel(), Status.OK);
 		getTag(_model1.getId(), Status.OK);		
-		TagsModel _model2 = new TagsModel();
+		TagModel _model2 = new TagModel();
 		_model2.setId(_model1.getId());
 		postTag(_model2, Status.CONFLICT);
 		getTag(_model1.getId(), Status.OK);
@@ -186,9 +186,9 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testListAll()
 	{
-		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
-		TagsModel _model2 = postTag(new TagsModel(), Status.OK);
-		TagsModel _model3 = postTag(new TagsModel(), Status.OK);
+		TagModel _model1 = postTag(new TagModel(), Status.OK);
+		TagModel _model2 = postTag(new TagModel(), Status.OK);
+		TagModel _model3 = postTag(new TagModel(), Status.OK);
 		LocalizedTextTest.postLocalizedText(tagWC, _model1, new LocalizedTextModel(LanguageCode.DE, "eins"), Status.OK);
 		LocalizedTextTest.postLocalizedText(tagWC, _model2, new LocalizedTextModel(LanguageCode.DE, "zwei"), Status.OK);
 		LocalizedTextTest.postLocalizedText(tagWC, _model3, new LocalizedTextModel(LanguageCode.DE, "drei"), Status.OK);
@@ -250,13 +250,13 @@ public class TagsTest extends AbstractTestClient {
 	public void testPureTagsList() 
 	{		
 		List<TagTextModel> _remoteList1 = listTags(null, Status.OK);
-		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();
+		ArrayList<TagModel> _localList = new ArrayList<TagModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postTag(new TagsModel(), Status.OK));
+			_localList.add(postTag(new TagModel(), Status.OK));
 		}
 		List<TagTextModel> _remoteList2 = listTags(null, Status.OK);
 		assertEquals("list should be empty (because no LocalizedText is saved", _remoteList1.size(), _remoteList2.size());		
-		for (TagsModel _model : _localList) {
+		for (TagModel _model : _localList) {
 			deleteTag(_model.getId(), Status.NO_CONTENT);
 		}
 	}
@@ -267,9 +267,9 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testTagsTextList() 
 	{		
-		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();
+		ArrayList<TagModel> _localList = new ArrayList<TagModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postTag(new TagsModel(), Status.OK));
+			_localList.add(postTag(new TagModel(), Status.OK));
 			LocalizedTextTest.postLocalizedText(tagWC, _localList.get(i), new LocalizedTextModel(LanguageCode.DE, "testTagsTextList" + i), Status.OK);
 		}
 		List<TagTextModel> _remoteList = listTags(null, Status.OK);
@@ -277,13 +277,13 @@ public class TagsTest extends AbstractTestClient {
 		for (TagTextModel _model : _remoteList) {
 			_remoteListIds.add(_model.getTagId());
 		}		
-		for (TagsModel _model : _localList) {
+		for (TagModel _model : _localList) {
 			assertTrue("tag <" + _model.getId() + "> should be listed", _remoteListIds.contains(_model.getId()));
 		}
-		for (TagsModel _model : _localList) {
+		for (TagModel _model : _localList) {
 			getTag(_model.getId(), Status.OK);
 		}
-		for (TagsModel _model : _localList) {
+		for (TagModel _model : _localList) {
 			deleteTag(_model.getId(), Status.NO_CONTENT);
 		}
 	}
@@ -293,8 +293,8 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testCreate() {
-		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
-		TagsModel _model2 = postTag(new TagsModel(), Status.OK);
+		TagModel _model1 = postTag(new TagModel(), Status.OK);
+		TagModel _model2 = postTag(new TagModel(), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
 		assertNotNull("ID should be set", _model2.getId());
 		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
@@ -307,7 +307,7 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testDoubleCreate() {
-		TagsModel _model = postTag(new TagsModel(), Status.OK);
+		TagModel _model = postTag(new TagModel(), Status.OK);
 		assertNotNull("ID should be set:", _model.getId());
 		postTag(_model, Status.CONFLICT);
 		deleteTag(_model.getId(), Status.NO_CONTENT);
@@ -319,11 +319,11 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testRead() 
 	{
-		ArrayList<TagsModel> _localList = new ArrayList<TagsModel>();
+		ArrayList<TagModel> _localList = new ArrayList<TagModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postTag(new TagsModel(), Status.OK));
+			_localList.add(postTag(new TagModel(), Status.OK));
 		}
-		for (TagsModel _model : _localList) {
+		for (TagModel _model : _localList) {
 			getTag(_model.getId(), Status.OK);
 		}
 		List<TagTextModel> _remoteList = listTags(null, Status.OK);
@@ -331,7 +331,7 @@ public class TagsTest extends AbstractTestClient {
 		for (TagTextModel _model : _remoteList) {
 			getTag(_model.getTagId(), Status.OK);
 		}
-		for (TagsModel _model : _localList) {
+		for (TagModel _model : _localList) {
 			deleteTag(_model.getId(), Status.NO_CONTENT);
 		}
 	}	
@@ -342,10 +342,10 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testMultiRead() 
 	{
-		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
-		TagsModel _model2 = getTag(_model1.getId(), Status.OK);
+		TagModel _model1 = postTag(new TagModel(), Status.OK);
+		TagModel _model2 = getTag(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read:", _model1.getId(), _model2.getId());		
-		TagsModel _model3 = getTag(_model1.getId(), Status.OK);
+		TagModel _model3 = getTag(_model1.getId(), Status.OK);
 		assertEquals("ID should be the same:", _model2.getId(), _model3.getId());
 		assertEquals("ID should be the same:", _model2.getId(), _model1.getId());
 		deleteTag(_model3.getId(), Status.NO_CONTENT);
@@ -357,8 +357,8 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testUpdate() 
 	{
-		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
-		TagsModel _model2 = putTag(_model1, Status.OK);
+		TagModel _model1 = postTag(new TagModel(), Status.OK);
+		TagModel _model2 = putTag(_model1, Status.OK);
 		assertNotNull("ID should be set", _model2.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model2.getId());	
 		deleteTag(_model1.getId(), Status.NO_CONTENT);
@@ -370,8 +370,8 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testDelete() 
 	{
-		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
-		TagsModel _model2 = getTag(_model1.getId(), Status.OK);
+		TagModel _model1 = postTag(new TagModel(), Status.OK);
+		TagModel _model2 = getTag(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged when reading a tag (remote):", _model1.getId(), _model2.getId());						
 		deleteTag(_model1.getId(), Status.NO_CONTENT);
 		getTag(_model1.getId(), Status.NOT_FOUND);
@@ -384,7 +384,7 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testDoubleDelete() 
 	{
-		TagsModel _model = postTag(new TagsModel(), Status.OK);
+		TagModel _model = postTag(new TagModel(), Status.OK);
 		getTag(_model.getId(), Status.OK);
 		deleteTag(_model.getId(), Status.NO_CONTENT);
 		getTag(_model.getId(), Status.NOT_FOUND);
@@ -398,7 +398,7 @@ public class TagsTest extends AbstractTestClient {
 	@Test
 	public void testModifications() 
 	{
-		TagsModel _model1 = postTag(new TagsModel(), Status.OK);
+		TagModel _model1 = postTag(new TagModel(), Status.OK);
 		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
 		assertNotNull("create() should set createdBy", _model1.getCreatedBy());
 		assertNotNull("create() should set modifiedAt", _model1.getModifiedAt());
@@ -406,7 +406,7 @@ public class TagsTest extends AbstractTestClient {
 		assertEquals("createdAt and modifiedAt should be identical after create()", _model1.getCreatedAt(), _model1.getModifiedAt());
 		assertEquals("createdBy and modifiedBy should be identical after create()", _model1.getCreatedBy(), _model1.getModifiedBy());
 
-		TagsModel _model2 = putTag(_model1, Status.OK);
+		TagModel _model2 = putTag(_model1, Status.OK);
 		assertEquals("update() should not change createdAt", _model1.getCreatedAt(), _model2.getCreatedAt());
 		assertEquals("update() should not change createdBy", _model1.getCreatedBy(), _model2.getCreatedBy());
 		// the following has a timing issue; we don't want to sleep here in order to get two different times.
@@ -416,25 +416,25 @@ public class TagsTest extends AbstractTestClient {
 
 		String _createdBy = _model1.getCreatedBy();
 		_model1.setCreatedBy("testModifications");
-		TagsModel _model3 = putTag(_model1, Status.OK);	// update should ignore client-side generated createdBy
+		TagModel _model3 = putTag(_model1, Status.OK);	// update should ignore client-side generated createdBy
 		assertEquals("update() should not change createdBy", _createdBy, _model3.getCreatedBy());
 		_model1.setCreatedBy(_createdBy);
 
 		Date _createdAt = _model1.getCreatedAt();
 		_model1.setCreatedAt(new Date());
-		TagsModel _model4 = putTag(_model1, Status.OK);	// update should ignore client-side generated createdAt
+		TagModel _model4 = putTag(_model1, Status.OK);	// update should ignore client-side generated createdAt
 		assertEquals("update() should not change createdAt", _createdAt, _model4.getCreatedAt());
 		_model1.setCreatedAt(_createdAt);
 		
 		String _modifiedBy = _model1.getModifiedBy();
 		_model1.setModifiedBy("testModifications");
-		TagsModel _model5 = putTag(_model1, Status.OK);	// update should ignore client-side generated modifiedBy
+		TagModel _model5 = putTag(_model1, Status.OK);	// update should ignore client-side generated modifiedBy
 		assertEquals("update() should not change modifiedBy", _modifiedBy, _model5.getModifiedBy());
 
 		Date _modifiedAt = _model1.getModifiedAt();
 		Date _modifiedAt2 = new Date(1000);
 		_model1.setModifiedAt(_modifiedAt2);
-		TagsModel _model6 = putTag(_model1, Status.OK);	// update should ignore client-side generated modifiedAt
+		TagModel _model6 = putTag(_model1, Status.OK);	// update should ignore client-side generated modifiedAt
 		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt)));
 		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt2)));
 		
@@ -519,15 +519,15 @@ public class TagsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created TagsModel
 	 */
-	public TagsModel postTag(
-			TagsModel model, 
+	public TagModel postTag(
+			TagModel model, 
 			Status expectedStatus) {
 		Response _response = tagWC.replacePath("/").post(model);
 		if (expectedStatus != null) {
 			assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(TagsModel.class);
+			return _response.readEntity(TagModel.class);
 		} else {
 			return null;
 		}
@@ -540,16 +540,16 @@ public class TagsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created TagsModel
 	 */
-	public static TagsModel postTag(
+	public static TagModel postTag(
 			WebClient webClient,
-			TagsModel model,
+			TagModel model,
 			Status expectedStatus) {
 		Response _response = webClient.replacePath("/").post(model);
 		if (expectedStatus != null) {
 			assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(TagsModel.class);
+			return _response.readEntity(TagModel.class);
 		} else {
 			return null;
 		}
@@ -561,11 +561,11 @@ public class TagsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created TagsModel
 	 */
-	public static TagsModel createTag(
+	public static TagModel createTag(
 			WebClient webClient,
 			Status expectedStatus) 
 	{
-		return postTag(webClient, new TagsModel(), expectedStatus);
+		return postTag(webClient, new TagModel(), expectedStatus);
 	}
 		
 	/**
@@ -574,7 +574,7 @@ public class TagsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the retrieved TagsModel object in JSON format
 	 */
-	public TagsModel getTag(
+	public TagModel getTag(
 			String tagId, 
 			Status expectedStatus) {
 		return getTag(tagWC, tagId, expectedStatus);
@@ -587,7 +587,7 @@ public class TagsTest extends AbstractTestClient {
 	 * @param expectedStatus  the expected HTTP status to test on
 	 * @return the retrieved TagsModel object in JSON format
 	 */
-	public static TagsModel getTag(
+	public static TagModel getTag(
 			WebClient webClient,
 			String tagId,
 			Status expectedStatus) {
@@ -596,7 +596,7 @@ public class TagsTest extends AbstractTestClient {
 			assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(TagsModel.class);
+			return _response.readEntity(TagModel.class);
 		} else {
 			return null;
 		}
@@ -608,8 +608,8 @@ public class TagsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated TagsModel object in JSON format
 	 */
-	public TagsModel putTag(
-			TagsModel tm, 
+	public TagModel putTag(
+			TagModel tm, 
 			Status expectedStatus) {
 		return putTag(tagWC, tm, expectedStatus);
 	}
@@ -621,9 +621,9 @@ public class TagsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated TagsModel object in JSON format
 	 */
-	public static TagsModel putTag(
+	public static TagModel putTag(
 			WebClient webClient,
-			TagsModel model,
+			TagModel model,
 			Status expectedStatus) {
 		webClient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 		Response _response = webClient.replacePath("/").path(model.getId()).put(model);
@@ -631,7 +631,7 @@ public class TagsTest extends AbstractTestClient {
 			assertEquals("PUT should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(TagsModel.class);
+			return _response.readEntity(TagModel.class);
 		} else {
 			return null;
 		}
@@ -657,7 +657,7 @@ public class TagsTest extends AbstractTestClient {
 			String tagId,
 			Status expectedStatus) {
 		Status _expectedStatusGet = expectedStatus == Status.NO_CONTENT ? Status.OK : expectedStatus;
-		TagsModel _tagModel = getTag(webClient, tagId, _expectedStatusGet);
+		TagModel _tagModel = getTag(webClient, tagId, _expectedStatusGet);
 		List<LocalizedTextModel> _localizedTextModels = LocalizedTextTest.listLocalizedTexts(webClient, tagId, _expectedStatusGet);
 		if (_localizedTextModels != null) {
 			for (LocalizedTextModel _localizedTextModel : _localizedTextModels) {
