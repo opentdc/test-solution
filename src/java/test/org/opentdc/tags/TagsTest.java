@@ -233,13 +233,13 @@ public class TagsTest extends AbstractTestClient {
 	 */
 	private void logResult(String title, List<TagTextModel> tagList) {
 		System.out.println(title);
-		System.out.println("\ttagId\t\t\t\t\tlocalizedTextId\t\t\t\ttext\tlang");
+		System.out.println("\ttagId\t\t\t\t\tlocalizedTextId\t\t\t\ttext\tlanguageCode");
 		for (TagTextModel _model : tagList) { 
 			System.out.println(
 					"\t" + _model.getTagId() + 
 					"\t" + _model.getLocalizedTextId() + 
 					"\t" + _model.getText() + 
-					"\t" + _model.getLang());
+					"\t" + _model.getLanguageCode());
 		}
 	}
 

@@ -69,7 +69,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 	public void testEmptyConstructor() {
 		LocalizedTextModel _ltm = new LocalizedTextModel();
 		assertNull("id should not be set by empty constructor", _ltm.getId());
-		assertNull("languageCode should not be set by empty constructor", _ltm.getLangCode());
+		assertNull("languageCode should not be set by empty constructor", _ltm.getLanguageCode());
 		assertNull("text should not be set by empty constructor", _ltm.getText());
 	}
 	
@@ -77,7 +77,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 	public void testConstructor() {		
 		LocalizedTextModel _ltm = new LocalizedTextModel(LanguageCode.DE, "testConstructor");
 		assertNull("id should not be set by constructor", _ltm.getId());
-		assertEquals("languageCode should be set by constructor", LanguageCode.DE, _ltm.getLangCode());
+		assertEquals("languageCode should be set by constructor", LanguageCode.DE, _ltm.getLanguageCode());
 		assertEquals("text should be set by constructor", "testConstructor", _ltm.getText());
 	}
 	
@@ -92,9 +92,9 @@ public class LocalizedTextTest extends AbstractTestClient {
 	@Test
 	public void testLanguageCodeChange() {
 		LocalizedTextModel _ltm = new LocalizedTextModel();
-		assertNull("languageCode should not be set by empty constructor", _ltm.getLangCode());
-		_ltm.setLangCode(LanguageCode.EN);
-		assertEquals("languageCode should have changed:", LanguageCode.EN, _ltm.getLangCode());
+		assertNull("languageCode should not be set by empty constructor", _ltm.getLanguageCode());
+		_ltm.setLanguageCode(LanguageCode.EN);
+		assertEquals("languageCode should have changed:", LanguageCode.EN, _ltm.getLanguageCode());
 	}
 	
 	@Test
@@ -142,27 +142,27 @@ public class LocalizedTextTest extends AbstractTestClient {
 	public void testCreateReadDeleteWithEmptyConstructor() {
 		LocalizedTextModel _ltm1 = new LocalizedTextModel();
 		assertNull("id should not be set by empty constructor", _ltm1.getId());
-		assertNull("languageCode should not be set by empty constructor", _ltm1.getLangCode());
+		assertNull("languageCode should not be set by empty constructor", _ltm1.getLanguageCode());
 		assertNull("text should not be set by empty constructor", _ltm1.getText());
 	
 		postLocalizedText(_ltm1, Status.BAD_REQUEST);
-		_ltm1.setLangCode(LanguageCode.ES);
+		_ltm1.setLanguageCode(LanguageCode.ES);
 		postLocalizedText(_ltm1, Status.BAD_REQUEST);
 		_ltm1.setText("testCreateReadDeleteWithEmptyConstructor");
 		LocalizedTextModel _ltm2 = postLocalizedText(_ltm1, Status.OK);
 
 		assertNull("create() should not change the id of the local object", _ltm1.getId());
-		assertEquals("create() should not change the languageCode of the local object", LanguageCode.ES, _ltm1.getLangCode());
+		assertEquals("create() should not change the languageCode of the local object", LanguageCode.ES, _ltm1.getLanguageCode());
 		assertEquals("create() should not change the text of the local object", "testCreateReadDeleteWithEmptyConstructor", _ltm1.getText());
 		
 		assertNotNull("create() should set a valid id on the remote object returned", _ltm2.getId());
-		assertEquals("create() should not change the languageCode", LanguageCode.ES, _ltm2.getLangCode());
+		assertEquals("create() should not change the languageCode", LanguageCode.ES, _ltm2.getLanguageCode());
 		assertEquals("create() should not change the text", "testCreateReadDeleteWithEmptyConstructor", _ltm2.getText());
 		
 		LocalizedTextModel _ltm3 = getLocalizedText(_ltm2.getId(), Status.OK);
 			
 		assertEquals("id of returned object should be the same", _ltm2.getId(), _ltm3.getId());
-		assertEquals("languageCode of returned object should be unchanged after remote create", _ltm2.getLangCode(), _ltm3.getLangCode());
+		assertEquals("languageCode of returned object should be unchanged after remote create", _ltm2.getLanguageCode(), _ltm3.getLanguageCode());
 		assertEquals("text of returned object should be unchanged after remote create", _ltm2.getText(), _ltm3.getText());
 
 		deleteLocalizedText(_ltm3.getId(), Status.NO_CONTENT);
@@ -172,21 +172,21 @@ public class LocalizedTextTest extends AbstractTestClient {
 	public void testCreateReadDelete() {
 		LocalizedTextModel _ltm1 = new LocalizedTextModel(LanguageCode.FR, "testCreateReadDelete");
 		assertNull("id should not be set by constructor", _ltm1.getId());
-		assertEquals("languageCode should be set by constructor", LanguageCode.FR, _ltm1.getLangCode());
+		assertEquals("languageCode should be set by constructor", LanguageCode.FR, _ltm1.getLanguageCode());
 		assertEquals("text should be set by constructor", "testCreateReadDelete", _ltm1.getText());
 		
 		LocalizedTextModel _ltm2 = postLocalizedText(_ltm1, Status.OK);
 		assertNull("id should still be null after remote create", _ltm1.getId());
-		assertEquals("create() should not change the languageCode", LanguageCode.FR, _ltm1.getLangCode());
+		assertEquals("create() should not change the languageCode", LanguageCode.FR, _ltm1.getLanguageCode());
 		assertEquals("craete() should not change the text", "testCreateReadDelete", _ltm1.getText());
 		
 		assertNotNull("id of returned object should be set", _ltm2.getId());
-		assertEquals("create() should not change the languageCode", LanguageCode.FR, _ltm1.getLangCode());
+		assertEquals("create() should not change the languageCode", LanguageCode.FR, _ltm1.getLanguageCode());
 		assertEquals("create() should not change the text", "testCreateReadDelete", _ltm1.getText());
 
 		LocalizedTextModel _ltm3 = getLocalizedText(_ltm2.getId(), Status.OK);
 		assertEquals("read() should not change the id", _ltm2.getId(), _ltm3.getId());
-		assertEquals("read() should not change the languageCode", _ltm2.getLangCode(), _ltm3.getLangCode());
+		assertEquals("read() should not change the languageCode", _ltm2.getLanguageCode(), _ltm3.getLanguageCode());
 		assertEquals("read() should not change the text", _ltm2.getText(), _ltm3.getText());
 		
 		deleteLocalizedText(_ltm3.getId(), Status.NO_CONTENT);
@@ -243,12 +243,12 @@ public class LocalizedTextTest extends AbstractTestClient {
 	public void testCreate() {	
 		LocalizedTextModel _ltm1 = createLocalizedText(LanguageCode.EN, "testCreate1", Status.OK);
 		assertNotNull("ID should be set", _ltm1.getId());
-		assertEquals("languageCode1 should be set correctly", LanguageCode.EN, _ltm1.getLangCode());
+		assertEquals("languageCode1 should be set correctly", LanguageCode.EN, _ltm1.getLanguageCode());
 		assertEquals("text1 should be set correctly", "testCreate1", _ltm1.getText());
 		
 		LocalizedTextModel _ltm2 = createLocalizedText(LanguageCode.DE, "testCreate2", Status.OK);
 		assertNotNull("ID should be set", _ltm2.getId());
-		assertEquals("languageCode2 should be set correctly", LanguageCode.DE, _ltm2.getLangCode());
+		assertEquals("languageCode2 should be set correctly", LanguageCode.DE, _ltm2.getLanguageCode());
 		assertEquals("text2 should be set correctly", "testCreate2", _ltm2.getText());
 
 		assertThat(_ltm2.getId(), not(equalTo(_ltm1.getId())));
@@ -316,11 +316,11 @@ public class LocalizedTextTest extends AbstractTestClient {
 		LocalizedTextModel _ltm3 = getLocalizedText(_ltm1.getId(), Status.OK);
 		
 		assertEquals("ID should be the same:", _ltm2.getId(), _ltm3.getId());
-		assertEquals("languageCode should be the same:", _ltm2.getLangCode(), _ltm3.getLangCode());
+		assertEquals("languageCode should be the same:", _ltm2.getLanguageCode(), _ltm3.getLanguageCode());
 		assertEquals("text should be the same:", _ltm2.getText(), _ltm3.getText());
 		
 		assertEquals("ID should be the same:", _ltm2.getId(), _ltm1.getId());
-		assertEquals("languageCode should be the same:", _ltm2.getLangCode(), _ltm1.getLangCode());
+		assertEquals("languageCode should be the same:", _ltm2.getLanguageCode(), _ltm1.getLanguageCode());
 		assertEquals("text should be the same:", _ltm2.getText(), _ltm1.getText());
 		
 		deleteLocalizedText(_ltm1.getId(), Status.NO_CONTENT);
@@ -329,15 +329,15 @@ public class LocalizedTextTest extends AbstractTestClient {
 	@Test
 	public void testUpdate() {
 		LocalizedTextModel _ltm1 = createLocalizedText(LanguageCode.IT, "testUpdate", Status.OK);
-		_ltm1.setLangCode(LanguageCode.RM);
+		_ltm1.setLanguageCode(LanguageCode.RM);
 		putLocalizedText(_ltm1, Status.BAD_REQUEST);  // languageCode can not be changed
-		_ltm1.setLangCode(LanguageCode.IT);
+		_ltm1.setLanguageCode(LanguageCode.IT);
 		_ltm1.setText("testUpdate2");
 		LocalizedTextModel _ltm2 = putLocalizedText(_ltm1, Status.OK);
 		
 		assertNotNull("ID should be set", _ltm2.getId());
 		assertEquals("ID should be unchanged", _ltm1.getId(), _ltm2.getId());	
-		assertEquals("languageCode should not change", LanguageCode.IT, _ltm2.getLangCode());
+		assertEquals("languageCode should not change", LanguageCode.IT, _ltm2.getLanguageCode());
 		assertEquals("text should have changed", "testUpdate2", _ltm2.getText());
 
 		_ltm2.setText("testUpdate3");
@@ -345,7 +345,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 
 		assertNotNull("ID should be set", _ltm3.getId());
 		assertEquals("ID should be unchanged", _ltm2.getId(), _ltm3.getId());	
-		assertEquals("languageCode should not change", LanguageCode.IT, _ltm3.getLangCode());
+		assertEquals("languageCode should not change", LanguageCode.IT, _ltm3.getLanguageCode());
 		assertEquals("text should have changed", "testUpdate3", _ltm3.getText());
 		
 		deleteLocalizedText(_ltm2.getId(), Status.NO_CONTENT);

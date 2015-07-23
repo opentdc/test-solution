@@ -22,6 +22,8 @@
 		<fileset dir="../${java.build.platform}/wtt-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/events-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/tags-service/lib/" includes="*.jar" />
+		<fileset dir="../${java.build.platform}/texts-service/lib/" includes="*.jar" />
+		<fileset dir="../${java.build.platform}/gifts-service/lib/" includes="*.jar" />
 		<fileset dir="../opt/google/${java.build.platform}/gson/lib/" includes="*.jar" />
 		<fileset dir="../opt/junit/${java.build.platform}/junit/lib/" includes="*.jar" />
 	<!--
