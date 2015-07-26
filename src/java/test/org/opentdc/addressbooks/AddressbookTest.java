@@ -180,18 +180,19 @@ public class AddressbookTest extends AbstractTestClient {
 	
 	@Test
 	public void testList() {
+		List<AddressbookModel> _listBefore = listAddressbooks(null, Status.OK);
 		ArrayList<AddressbookModel> _localList = new ArrayList<AddressbookModel>();	
 		for (int i = 0; i < LIMIT; i++) {
 			_localList.add(postAddressbook(new AddressbookModel("testAddressbookList" + i), Status.OK));
 		}
 		assertEquals("correct number of addressbooks should be created", LIMIT, _localList.size());
 		
-		List<AddressbookModel> _remoteList = listAddressbooks(null, Status.OK);		
-		assertTrue("list() should return the correct number of addressbooks", _remoteList.size() > (LIMIT + 1));
+		List<AddressbookModel> _listAfter = listAddressbooks(null, Status.OK);		
+		assertEquals("list() should return the correct number of addressbooks", _listBefore.size() + LIMIT, _listAfter.size());
 		// implicitly proven:  _remoteList.size() == _localList.size()
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
-		for (AddressbookModel _model : _remoteList) {
+		for (AddressbookModel _model : _listAfter) {
 			_remoteListIds.add(_model.getId());
 		}
 		for (AddressbookModel _model : _localList) {

@@ -236,19 +236,26 @@ public class TextsTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testList(
-	) {		
+	public void testList() 
+	{		
+		System.out.println("testList:");
+		System.out.println("a) creating " + LIMIT + " TextModels into _localList:");
 		ArrayList<TextModel> _localList = new ArrayList<TextModel>();
+		TextModel _tm = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postText(
-				new TextModel("testList", "testList"),
-				Status.OK));
+			_tm = postText(
+					new TextModel("testList" + i, "testList" + i),
+					Status.OK);
+			_localList.add(_tm);
+			System.out.println("\t" + _tm.getId() + ": " + _tm.getTitle());
 		}
-		List<TextModel> _remoteList = listTexts(null, Status.OK);
+		List<TextModel> _remoteList = listTexts(textWC, null, 0, 100, Status.OK);
 
+		System.out.println("b) list() -> _remoteList / _remoteListIds:");
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (TextModel _model : _remoteList) {
 			_remoteListIds.add(_model.getId());
+			System.out.println("\t" + _model.getId() + ": " + _model.getTitle());
 		}
 		
 		for (TextModel _model : _localList) {

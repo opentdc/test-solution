@@ -62,8 +62,13 @@ public class TextsBatchedListTest extends AbstractTestClient {
 	@Test
 	public void testTextBatchedList() {
 		ArrayList<TextModel> _localList = new ArrayList<TextModel>();		
-		Response _response = null;
 		System.out.println("***** testTextBatchedList:");
+		// check how many TextModel objects already exist
+		Response _response = textWC.replacePath("/").get();
+		List<TextModel> _remoteList0 = new ArrayList<TextModel>(textWC.getCollection(TextModel.class));
+		int _preexistingObjs = _remoteList0.size();
+		assertTrue("test testTextBatchedList only works if there are no more than 10 preexisting TextModel objects", _remoteList0.size() <= 10);
+
 		textWC.replacePath("/");
 		// we want to allocate more than double the amount of default list size objects
 		int _batchSize = GenericService.DEF_SIZE;
@@ -118,7 +123,7 @@ public class TextsBatchedListTest extends AbstractTestClient {
 		for (TextModel _rm : _remoteList3) {
 			System.out.println(_rm.getTitle());
 		}
-		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
+		assertEquals("size of lists should be the same", _increment + _preexistingObjs, _remoteList3.size());
 		
 		// testing the batches
 		int _numberOfBatches = 0;
@@ -140,8 +145,8 @@ public class TextsBatchedListTest extends AbstractTestClient {
 			}
 		}
 		assertEquals("number of batches should be as expected", 3, _numberOfBatches);
-		assertEquals("should have returned all objects", _limit2, _numberOfReturnedObjects);
-		assertEquals("last batch size should be as expected", _increment, _remoteList.size());
+		assertTrue("should have returned all objects", _numberOfReturnedObjects >= _limit2);
+		assertEquals("last batch size should be as expected", _increment + _preexistingObjs, _remoteList.size());
 	
 		// testing some explicit positions and sizes
 		textWC.resetQuery();
@@ -153,14 +158,14 @@ public class TextsBatchedListTest extends AbstractTestClient {
 		
 		// get last 4 elements 
 		textWC.resetQuery();
-		_response = textWC.replacePath("/").query("position", _limit2-4).query("size", 4).get();
+		_response = textWC.replacePath("/").query("position", _limit2+_preexistingObjs-4).query("size", 4).get();
 		_remoteList = new ArrayList<TextModel>(textWC.getCollection(TextModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
 		
 		// read over end of list
 		textWC.resetQuery();
-		_response = textWC.replacePath("/").query("position", _limit2-5).query("size", 10).get();
+		_response = textWC.replacePath("/").query("position", _limit2+_preexistingObjs-5).query("size", 10).get();
 		_remoteList = new ArrayList<TextModel>(textWC.getCollection(TextModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
