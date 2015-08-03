@@ -21,6 +21,7 @@
 		<fileset dir="../${java.build.platform}/workrecords-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/wtt-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/events-service/lib/" includes="*.jar" />
+		<fileset dir="../${java.build.platform}/invitations-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/tags-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/texts-service/lib/" includes="*.jar" />
 		<fileset dir="../${java.build.platform}/gifts-service/lib/" includes="*.jar" />
