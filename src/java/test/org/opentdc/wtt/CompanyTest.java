@@ -68,7 +68,9 @@ public class CompanyTest extends AbstractTestClient {
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		wttWC.close();
 	}
 
@@ -625,5 +627,9 @@ public class CompanyTest extends AbstractTestClient {
 		if (closeWC) {
 			wttWC.close();
 		}
-	}	
+	}
+	
+	protected int calculateMembers() {
+		return 1;
+	}
 }

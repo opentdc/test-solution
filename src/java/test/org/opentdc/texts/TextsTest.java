@@ -39,11 +39,15 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opentdc.texts.SingleLangText;
 import org.opentdc.texts.TextModel;
 import org.opentdc.texts.TextsService;
+import org.opentdc.util.LanguageCode;
+import org.opentdc.service.LocalizedTextModel;
 import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
+import test.org.opentdc.texts.LocalizedTextTest;
 
 /*
  * Tests the Texts-Service.
@@ -51,14 +55,14 @@ import test.org.opentdc.AbstractTestClient;
  */
 public class TextsTest extends AbstractTestClient {
 	public static final String API_URL = "api/text/";
-	private WebClient textWC = null;
+	private WebClient wc = null;
 
 	/**
 	 * Initializes the test case.
 	 */
 	@Before
 	public void initializeTest() {
-		textWC = initializeTest(ServiceUtil.TEXTS_API_URL, TextsService.class);
+		wc = initializeTest(ServiceUtil.TEXTS_API_URL, TextsService.class);
 	}
 	
 	/**
@@ -66,7 +70,7 @@ public class TextsTest extends AbstractTestClient {
 	 */
 	@After
 	public void cleanupTest() {
-		textWC.close();
+		wc.close();
 	}
 
 	/********************************** texts attributes tests *********************************/	
@@ -177,10 +181,10 @@ public class TextsTest extends AbstractTestClient {
 		assertNull("title should not be set by empty constructor", _model1.getTitle());
 		assertNull("description should not be set by empty constructor", _model1.getDescription());
 
-		postText(_model1, Status.BAD_REQUEST);
+		post(_model1, Status.BAD_REQUEST);
 		_model1.setTitle("testCreateReadDeleteWithEmptyConstructor");
 		
-		TextModel _model2 = postText(_model1, Status.OK);
+		TextModel _model2 = post(_model1, Status.OK);
 		assertNull("create() should not change the id of the local object", _model1.getId());
 		assertEquals("create() should not change the title of the local object", "testCreateReadDeleteWithEmptyConstructor", _model1.getTitle());
 		assertNull("create() should not change the description of the local object", _model1.getDescription());
@@ -189,11 +193,11 @@ public class TextsTest extends AbstractTestClient {
 		assertEquals("create() should not change the title", "testCreateReadDeleteWithEmptyConstructor", _model2.getTitle());
 		assertNull("create() should not change the description", _model2.getDescription());
 		
-		TextModel _model3 = getText(_model2.getId(), Status.OK);
+		TextModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		assertEquals("title of returned object should be unchanged", _model2.getTitle(), _model3.getTitle());
 		assertEquals("description of returned object should be unchanged", _model2.getDescription(), _model3.getDescription());
-		deleteText(_model3.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -203,7 +207,7 @@ public class TextsTest extends AbstractTestClient {
 		assertEquals("title should be set by constructor", "testCreateReadDelete", _model1.getTitle());
 		assertEquals("description should be set by constructor", "testCreateReadDelete", _model1.getDescription());
 
-		TextModel _model2 = postText(_model1, Status.OK);
+		TextModel _model2 = post(_model1, Status.OK);
 		assertNull("id should be still null after remote create", _model1.getId());
 		assertEquals("title should be unchanged after remote create", "testCreateReadDelete", _model1.getTitle());
 		assertEquals("description should be unchanged after remote create", "testCreateReadDelete", _model1.getDescription());
@@ -211,11 +215,11 @@ public class TextsTest extends AbstractTestClient {
 		assertEquals("title of returned object should be unchanged after remote create", "testCreateReadDelete", _model2.getTitle());
 		assertEquals("description of returned object should be unchanged after remote create", "testCreateReadDelete", _model2.getDescription());
 
-		TextModel _model3 = getText(_model2.getId(), Status.OK);
+		TextModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		assertEquals("title of returned object should be unchanged after remote create", _model2.getTitle(), _model3.getTitle());
 		assertEquals("description of returned object should be unchanged after remote create", _model2.getDescription(), _model3.getDescription());
-		deleteText(_model3.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -223,56 +227,122 @@ public class TextsTest extends AbstractTestClient {
 		TextModel _model = new TextModel("testCreateWithClientSideId", "testCreateWithClientSideId");
 		_model.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _model.getId());
-		postText(_model, Status.BAD_REQUEST);
+		post(_model, Status.BAD_REQUEST);
 	}
 	
 	@Test
 	public void testCreateWithDuplicateId() {
-		TextModel _model1 = postText(new TextModel("testCreateWithDuplicateId1", "testCreateWithDuplicateId1"), Status.OK);
-		TextModel _model2 = postText(new TextModel("testCreateWithDuplicateId2", "testCreateWithDuplicateId2"), Status.OK);
+		TextModel _model1 = post(new TextModel("testCreateWithDuplicateId1", "testCreateWithDuplicateId1"), Status.OK);
+		TextModel _model2 = post(new TextModel("testCreateWithDuplicateId2", "testCreateWithDuplicateId2"), Status.OK);
+		String _model2Id = _model2.getId();
 		_model2.setId(_model1.getId());		// wrongly create a 2nd TextModel object with the same ID
-		postText(_model2, Status.CONFLICT);
-		deleteText(_model1.getId(), Status.NO_CONTENT);
+		post(_model2, Status.CONFLICT);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		delete(_model2Id, Status.NO_CONTENT);
 	}
 	
+	/**
+	 * Test list() operation filtered by LanguageCode.
+	 */
 	@Test
-	public void testList() 
-	{		
-		System.out.println("testList:");
-		System.out.println("a) creating " + LIMIT + " TextModels into _localList:");
-		ArrayList<TextModel> _localList = new ArrayList<TextModel>();
-		TextModel _tm = null;
-		for (int i = 0; i < LIMIT; i++) {
-			_tm = postText(
-					new TextModel("testList" + i, "testList" + i),
-					Status.OK);
-			_localList.add(_tm);
-			System.out.println("\t" + _tm.getId() + ": " + _tm.getTitle());
-		}
-		List<TextModel> _remoteList = listTexts(textWC, null, 0, 100, Status.OK);
+	public void testListAll()
+	{
+		TextModel _model1 = post(new TextModel("testListAll1", "MY_DESC"), Status.OK);
+		TextModel _model2 = post(new TextModel("testListAll2", "MY_DESC"), Status.OK);
+		TextModel _model3 = post(new TextModel("testListAll3", "MY_DESC"), Status.OK);
+		LocalizedTextTest.post(wc, _model1, new LocalizedTextModel(LanguageCode.DE, "eins"), Status.OK);
+		LocalizedTextTest.post(wc, _model2, new LocalizedTextModel(LanguageCode.DE, "zwei"), Status.OK);
+		LocalizedTextTest.post(wc, _model3, new LocalizedTextModel(LanguageCode.DE, "drei"), Status.OK);
+		LocalizedTextTest.post(wc, _model1, new LocalizedTextModel(LanguageCode.EN, "one"), Status.OK);
+		LocalizedTextTest.post(wc, _model2, new LocalizedTextModel(LanguageCode.EN, "two"), Status.OK);
+		LocalizedTextTest.post(wc, _model3, new LocalizedTextModel(LanguageCode.FR, "trois"), Status.OK);
 
-		System.out.println("b) list() -> _remoteList / _remoteListIds:");
-		ArrayList<String> _remoteListIds = new ArrayList<String>();
-		for (TextModel _model : _remoteList) {
-			_remoteListIds.add(_model.getId());
-			System.out.println("\t" + _model.getId() + ": " + _model.getTitle());
-		}
+		List<SingleLangText> _tagList = list(null, Status.OK);
+		printSingleLangTextList("all tags (no query):", _tagList);
+		assertTrue("amount of returned tags must be correct", _tagList.size() >= 6);
 		
-		for (TextModel _model : _localList) {
-			assertTrue("text <" + _model.getId() + "> should be listed", _remoteListIds.contains(_model.getId()));
+		_tagList = list("lang=" + LanguageCode.DE, Status.OK);
+		printSingleLangTextList("DE texts:", _tagList);
+		assertTrue("amount of returned tags must be correct", _tagList.size() >= 3);
+		
+		_tagList = list("lang=" + LanguageCode.EN, Status.OK);
+		printSingleLangTextList("EN texts:", _tagList);
+		assertTrue("amount of returned tags must be correct", _tagList.size() >= 2);
+		assertEquals("tag text must be correct", "one", _tagList.get(0).getText());
+		
+		_tagList = list("lang=" + LanguageCode.FR, Status.OK);
+		printSingleLangTextList("FR texts:", _tagList);
+		assertTrue("amount of returned tags must be correct", _tagList.size() >= 1);
+		assertEquals("tag text must be correct", "trois", _tagList.get(0).getText());
+		
+		_tagList = list("lang=" + LanguageCode.IT, Status.OK);
+		printSingleLangTextList("IT texts:", _tagList);
+		assertEquals("amount of returned tags must be correct", 0, _tagList.size());
+		
+		list("language=DE", Status.BAD_REQUEST);
+		list("lang=OB", Status.BAD_REQUEST);
+		
+		delete(_model1.getId(), Status.NO_CONTENT);
+		delete(_model2.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
+	}
+
+	/**
+	 * Print the result of the list() operation onto stdout.
+	 * @param title  the title of the log section
+	 * @param list a list of SingleLangText objects
+	 */
+	public static void printSingleLangTextList(String title, List<SingleLangText> list) {
+		System.out.println(title);
+		System.out.println("\ttextId\t\t\t\t\tlocalizedTextId\t\t\t\ttext\tlanguageCode");
+		for (SingleLangText _model : list) { 
+			System.out.println(
+					"\t" + _model.getTextId() + 
+					"\t" + _model.getLocalizedTextId() + 
+					"\t" + _model.getText() + 
+					"\t" + _model.getLanguageCode());
 		}
-		for (TextModel _model : _localList) {
-			getText(_model.getId(), Status.OK);
+		System.out.println("\ttotal:\t" + list.size() + " elements");
+	}
+
+	/**
+	 * Print the result of the list() operation onto stdout.
+	 * @param title  the title of the log section
+	 * @param list a list of TextModel objects
+	 */
+	public static void printModelList(String title, List<TextModel> list) {
+		System.out.println("***** " + title);
+		System.out.println("\ttextId\t\t\t\t\tlocalizedTextId\t\t\t\ttext\tlanguageCode");
+		for (TextModel _model : list) { 
+			System.out.println(
+					"\t" + _model.getId() + 
+					"\t" + _model.getTitle());
 		}
+		System.out.println("\ttotal:\t" + list.size() + " elements");
+	}
+
+	/**
+	 * Test list() operation on TextModels not containing LocalizedTextModels.
+	 */
+	@Test
+	public void testPureTextList() 
+	{		
+		List<SingleLangText> _remoteList1 = list(null, Status.OK);
+		ArrayList<TextModel> _localList = new ArrayList<TextModel>();
+		for (int i = 0; i < LIMIT; i++) {
+			_localList.add(post(new TextModel("testPureTextList" + i, "MY_DESC"), Status.OK));
+		}
+		List<SingleLangText> _remoteList2 = list(null, Status.OK);
+		assertEquals("list should be empty (because no LocalizedText is saved", _remoteList1.size(), _remoteList2.size());		
 		for (TextModel _model : _localList) {
-			deleteText(_model.getId(), Status.NO_CONTENT);
+			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}
-		
+			
 	@Test
 	public void testCreate() {
-		TextModel _model1 = postText(new TextModel("testCreate1", "testCreate2"), Status.OK);
-		TextModel _model2 = postText(new TextModel("testCreate3", "testCreate4"), Status.OK);
+		TextModel _model1 = post(new TextModel("testCreate1", "testCreate2"), Status.OK);
+		TextModel _model2 = post(new TextModel("testCreate3", "testCreate4"), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
 		assertNotNull("ID should be set", _model2.getId());
 		assertThat(_model1.getId(), not(equalTo(_model2.getId())));
@@ -282,43 +352,44 @@ public class TextsTest extends AbstractTestClient {
 		assertEquals("title should be set correctly", "testCreate3", _model2.getTitle());
 		assertEquals("description should be set correctly", "testCreate4", _model2.getDescription());
 
-		deleteText(_model1.getId(), Status.NO_CONTENT);
-		deleteText(_model2.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		delete(_model2.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDoubleCreate() {
-		TextModel _model = postText(new TextModel("testDoubleCreate1", "testDoubleCreate2"), Status.OK);
+		TextModel _model = post(new TextModel("testDoubleCreate1", "testDoubleCreate2"), Status.OK);
 		assertNotNull("ID should be set", _model.getId());
-		postText(_model, Status.CONFLICT);
-		deleteText(_model.getId(), Status.NO_CONTENT);
+		post(_model, Status.CONFLICT);
+		delete(_model.getId(), Status.NO_CONTENT);
 	}
 
 	@Test
 	public void testRead() {
 		ArrayList<TextModel> _localList = new ArrayList<TextModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postText(new TextModel("testRead" + i, "testRead"), Status.OK));
+			_localList.add(post(new TextModel("testRead" + i, "testRead"), Status.OK));
 		}
 		// test read on each local element
 		for (TextModel _model : _localList) {
-			getText(_model.getId(), Status.OK);
+			get(_model.getId(), Status.OK);
 		}
-		// test read on each listed element
-		for (TextModel _model : listTexts(null, Status.OK)) {
-			assertEquals("ID should be unchanged when reading a text", _model.getId(), getText(_model.getId(), Status.OK).getId());
+		List<SingleLangText> _remoteList = list(null, Status.OK);
+		
+		for (SingleLangText _singleLangText : _remoteList) {
+			get(_singleLangText.getTextId(), Status.OK);
 		}
 		for (TextModel _model : _localList) {
-			deleteText(_model.getId(), Status.NO_CONTENT);
+			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}	
 
 	@Test
 	public void testMultiRead() {
-		TextModel _model1 = postText(new TextModel("testMultiRead", "testMultiRead"), Status.OK);
-		TextModel _model2 = getText(_model1.getId(), Status.OK);
+		TextModel _model1 = post(new TextModel("testMultiRead", "testMultiRead"), Status.OK);
+		TextModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read", _model1.getId(), _model2.getId());		
-		TextModel _model3 = getText(_model1.getId(), Status.OK);
+		TextModel _model3 = get(_model1.getId(), Status.OK);
 		
 		assertEquals("ID should be the same", _model3.getId(), _model2.getId());
 		assertEquals("title should be the same", _model3.getTitle(), _model2.getTitle());
@@ -327,17 +398,17 @@ public class TextsTest extends AbstractTestClient {
 		assertEquals("ID should be the same:", _model1.getId(), _model2.getId());
 		assertEquals("title should be the same:", _model1.getTitle(), _model2.getTitle());
 		assertEquals("description should be the same:", _model1.getDescription(), _model2.getDescription());
-		deleteText(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testUpdate(
 	) {
-		TextModel _model1 = postText(new TextModel("testUpdate1", "testUpdate2"), Status.OK);
+		TextModel _model1 = post(new TextModel("testUpdate1", "testUpdate2"), Status.OK);
 
 		_model1.setTitle("testUpdate3");
 		_model1.setDescription("testUpdate4");
-		TextModel _model2 = putText(_model1, Status.OK);
+		TextModel _model2 = put(_model1, Status.OK);
 		assertNotNull("ID should be set", _model2.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model2.getId());	
 		assertEquals("title should have changed", "testUpdate3", _model2.getTitle());
@@ -345,38 +416,38 @@ public class TextsTest extends AbstractTestClient {
 
 		_model1.setTitle("testUpdate5");
 		_model1.setDescription("testUpdate6");
-		TextModel _model3 = putText(_model1, Status.OK);
+		TextModel _model3 = put(_model1, Status.OK);
 		assertNotNull("ID should be set", _model3.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model3.getId());	
 		assertEquals("title should have changed", "testUpdate5", _model3.getTitle());
 		assertEquals("description should have changed", "testUpdate6", _model3.getDescription());
 
-		deleteText(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDelete() {
-		TextModel _model1 = postText(new TextModel("testDelete", "testDelete"), Status.OK);
-		TextModel _model2 = getText(_model1.getId(), Status.OK);
+		TextModel _model1 = post(new TextModel("testDelete", "testDelete"), Status.OK);
+		TextModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged when reading a text (remote):", _model1.getId(), _model2.getId());						
-		deleteText(_model1.getId(), Status.NO_CONTENT);
-		getText(_model1.getId(), Status.NOT_FOUND);
-		getText(_model1.getId(), Status.NOT_FOUND);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		get(_model1.getId(), Status.NOT_FOUND);
+		get(_model1.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testDoubleDelete() {
-		TextModel _model = postText(new TextModel("testDoubleDelete", "testDoubleDelete"), Status.OK);
-		getText(_model.getId(), Status.OK);
-		deleteText(_model.getId(), Status.NO_CONTENT);
-		getText(_model.getId(), Status.NOT_FOUND);
-		deleteText(_model.getId(), Status.NOT_FOUND);
-		getText(_model.getId(), Status.NOT_FOUND);
+		TextModel _model = post(new TextModel("testDoubleDelete", "testDoubleDelete"), Status.OK);
+		get(_model.getId(), Status.OK);
+		delete(_model.getId(), Status.NO_CONTENT);
+		get(_model.getId(), Status.NOT_FOUND);
+		delete(_model.getId(), Status.NOT_FOUND);
+		get(_model.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testModifications() {
-		TextModel _model1 = postText(new TextModel("testModifications", "testModifications"), Status.OK);
+		TextModel _model1 = post(new TextModel("testModifications", "testModifications"), Status.OK);
 		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
 		assertNotNull("create() should set createdBy", _model1.getCreatedBy());
 		assertNotNull("create() should set modifiedAt", _model1.getModifiedAt());
@@ -384,7 +455,7 @@ public class TextsTest extends AbstractTestClient {
 		assertEquals("createdAt and modifiedAt should be identical after create()", _model1.getCreatedAt(), _model1.getModifiedAt());
 		assertEquals("createdBy and modifiedBy should be identical after create()", _model1.getCreatedBy(), _model1.getModifiedBy());
 		_model1.setDescription("updated");
-		TextModel _model2 = putText(_model1, Status.OK);
+		TextModel _model2 = put(_model1, Status.OK);
 		assertEquals("update() should not change createdAt", _model1.getCreatedAt(), _model2.getCreatedAt());
 		assertEquals("update() should not change createdBy", _model1.getCreatedBy(), _model2.getCreatedBy());
 		// next test fails because of timing issue; but we do not want to introduce a sleep() here
@@ -394,59 +465,58 @@ public class TextsTest extends AbstractTestClient {
 
 		String _createdBy = _model1.getCreatedBy();
 		_model1.setCreatedBy("testModifications3");
-		TextModel _model3 = putText(_model1, Status.OK);
+		TextModel _model3 = put(_model1, Status.OK);
 		assertEquals("update() should not change createdBy", _createdBy, _model3.getCreatedBy());
 
 		Date _createdAt = _model1.getCreatedAt();
 		_model1.setCreatedAt(new Date(1000));
-		TextModel _model4 = putText(_model1, Status.OK);
+		TextModel _model4 = put(_model1, Status.OK);
 		assertEquals("update() should not change createdAt", _createdAt, _model4.getCreatedAt());
 
 		String _modifiedBy = _model1.getModifiedBy();
 		_model1.setModifiedBy("testModifications5");
-		TextModel _model5 = putText(_model1, Status.OK);
+		TextModel _model5 = put(_model1, Status.OK);
 		assertEquals("update() should not change modifiedBy", _modifiedBy, _model5.getModifiedBy());
 
 		Date _modifiedAt = _model1.getModifiedAt();
 		Date _modifiedAt2 = new Date(1000);
 		_model1.setModifiedAt(_modifiedAt2);
-		TextModel _model6 = putText(_model1, Status.OK);
+		TextModel _model6 = put(_model1, Status.OK);
 		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt)));
 		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt2)));
 
-		deleteText(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	/********************************* helper methods *********************************/	
 	/**
-	 * Retrieve a list of TextModel from TextsService by executing a HTTP GET request.
+	 * Retrieve a list of SingleLangText from TextsService by executing a HTTP GET request.
 	 * This uses neither position nor size queries.
 	 * @param query the URL query to use
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return a List of TextModel object in JSON format
+	 * @return a List of SingleLangText object in JSON format
 	 */
-	public List<TextModel> listTexts(
+	public List<SingleLangText> list(
 			String query, 
 			Status expectedStatus) {
-		return listTexts(textWC, query, -1, -1, expectedStatus);
+		return list(wc, query, -1, -1, expectedStatus);
 	}
 	
 	/**
-	 * Retrieve a list of TextModel from TextsService by executing a HTTP GET request.
+	 * Retrieve a list of SingleLangText from TextsService by executing a HTTP GET request.
 	 * @param webClient the WebClient for the TextsService
 	 * @param query the URL query to use
 	 * @param position the position to start a batch with
 	 * @param size the size of a batch
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return a List of TextModel objects in JSON format
+	 * @return a List of SingleLangText objects in JSON format
 	 */
-	public static List<TextModel> listTexts(
+	public static List<SingleLangText> list(
 			WebClient webClient, 
 			String query, 
 			int position,
 			int size,
 			Status expectedStatus) {
-		System.out.println("listTexts(textWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ")");
 		Response _response = null;
 		webClient.resetQuery();
 		if (query == null) {
@@ -478,13 +548,18 @@ public class TextsTest extends AbstractTestClient {
 				}				
 			}
 		}
-		List<TextModel> _texts = null;
+		List<SingleLangText> _texts = null;
 		if (expectedStatus != null) {
 			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			_texts = new ArrayList<TextModel>(webClient.getCollection(TextModel.class));
-			System.out.println("listTexts(textWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _texts.size());
+			_texts = new ArrayList<SingleLangText>(webClient.getCollection(SingleLangText.class));
+			System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + 
+					") ->" + _texts.size() + " objects");
+		}
+		else {
+			System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + 
+					") -> Status: " + _response.getStatus());
 		}
 		return _texts;
 	}
@@ -495,18 +570,10 @@ public class TextsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created TextModel
 	 */
-	public TextModel postText(
+	public TextModel post(
 			TextModel model, 
 			Status expectedStatus) {
-		Response _response = textWC.replacePath("/").post(model);
-		if (expectedStatus != null) {
-			assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
-		}
-		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return _response.readEntity(TextModel.class);
-		} else {
-			return null;
-		}
+		return post(wc, model, expectedStatus);
 	}
 
 	/**
@@ -516,7 +583,7 @@ public class TextsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created TextModel
 	 */
-	public static TextModel postText(
+	public static TextModel post(
 			WebClient webClient,
 			TextModel model,
 			Status expectedStatus) {
@@ -537,13 +604,13 @@ public class TextsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created TextModel
 	 */
-	public static TextModel createText(
+	public static TextModel create(
 			WebClient webClient, 
 			String title, 
 			String description,
 			Status expectedStatus) 
 	{
-		return postText(webClient, new TextModel(title, description), expectedStatus);
+		return post(webClient, new TextModel(title, description), expectedStatus);
 	}
 	
 	/**
@@ -552,10 +619,10 @@ public class TextsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the retrieved TextModel object in JSON format
 	 */
-	public TextModel getText(
+	public TextModel get(
 			String textId, 
 			Status expectedStatus) {
-		return getText(textWC, textId, expectedStatus);
+		return get(wc, textId, expectedStatus);
 	}
 	
 	/**
@@ -565,7 +632,7 @@ public class TextsTest extends AbstractTestClient {
 	 * @param expectedStatus  the expected HTTP status to test on
 	 * @return the retrieved TextModel object in JSON format
 	 */
-	public static TextModel getText(
+	public static TextModel get(
 			WebClient webClient,
 			String textId,
 			Status expectedStatus) {
@@ -586,10 +653,10 @@ public class TextsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated TextModel object in JSON format
 	 */
-	public TextModel putText(
+	public TextModel put(
 			TextModel model, 
 			Status expectedStatus) {
-		return putText(textWC, model, expectedStatus);
+		return put(wc, model, expectedStatus);
 	}
 	
 	/**
@@ -599,7 +666,7 @@ public class TextsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated TextModel object in JSON format
 	 */
-	public static TextModel putText(
+	public static TextModel put(
 			WebClient webClient,
 			TextModel model,
 			Status expectedStatus) {
@@ -620,8 +687,8 @@ public class TextsTest extends AbstractTestClient {
 	 * @param id the id of the TextModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
-	public void deleteText(String id, Status expectedStatus) {
-		deleteText(textWC, id, expectedStatus);
+	public void delete(String id, Status expectedStatus) {
+		delete(wc, id, expectedStatus);
 	}
 	
 	/**
@@ -630,7 +697,7 @@ public class TextsTest extends AbstractTestClient {
 	 * @param textId the id of the TextModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
-	public static void deleteText(
+	public static void delete(
 			WebClient webClient,
 			String textId,
 			Status expectedStatus) {
@@ -638,5 +705,9 @@ public class TextsTest extends AbstractTestClient {
 		if (expectedStatus != null) {
 			assertEquals("DELETE should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
+	}
+	
+	protected int calculateMembers() {
+		return 0;
 	}
 }

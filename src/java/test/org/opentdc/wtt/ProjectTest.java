@@ -67,7 +67,9 @@ public class ProjectTest extends AbstractTestClient {
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
 	}
 	
@@ -591,5 +593,9 @@ public class ProjectTest extends AbstractTestClient {
 		Response _response = wttWC.replacePath("/").path(companyId).path(PATH_EL_PROJECT).post(_pm);
 		assertEquals("post() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		return _response.readEntity(ProjectModel.class);
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 }

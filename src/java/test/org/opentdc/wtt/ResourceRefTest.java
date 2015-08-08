@@ -80,7 +80,9 @@ public class ResourceRefTest extends AbstractTestClient {
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
 		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
 	}
@@ -434,5 +436,9 @@ public class ResourceRefTest extends AbstractTestClient {
 				path(PATH_EL_RESOURCE).post(new ResourceRefModel(resourceId));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		return _response.readEntity(ResourceRefModel.class);	
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 }

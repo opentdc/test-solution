@@ -66,7 +66,9 @@ public class UserTest extends AbstractTestClient {
 	
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), "UserTest");
+		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		userWC.close();
 	}
 	
@@ -636,5 +638,9 @@ public class UserTest extends AbstractTestClient {
 	/********************************* helper methods *********************************/	
 	public UserModel createUser(String loginId, int suffix) {
 		return new UserModel(loginId + suffix, contact.getId());
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 }

@@ -63,7 +63,9 @@ public class ProjectBatchedListTest extends AbstractTestClient {
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
 	}
 
@@ -186,5 +188,9 @@ public class ProjectBatchedListTest extends AbstractTestClient {
 					path(ProjectTest.PATH_EL_PROJECT).path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 }

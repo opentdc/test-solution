@@ -34,7 +34,7 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opentdc.tags.TagTextModel;
+import org.opentdc.tags.SingleLangTag;
 import org.opentdc.tags.TagModel;
 import org.opentdc.tags.TagsService;
 import org.opentdc.util.LanguageCode;
@@ -78,27 +78,27 @@ public class TagsBatchedListTest extends AbstractTestClient {
 
 		// get first batch
 		// list(position=0, size=25) -> elements 0 .. 24
-		List<TagTextModel> _remoteList1 = TagsTest.listTags(tagWC, null, -1, -1, Status.OK);
+		List<SingleLangTag> _remoteList1 = TagsTest.listTags(tagWC, null, -1, -1, Status.OK);
 		System.out.println("****** 1st Batch:");
-		for (TagTextModel _ttm : _remoteList1) {
+		for (SingleLangTag _ttm : _remoteList1) {
 			System.out.println(_ttm.getTagId());
 		}
 		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
 			
 		// get second batch
 		// list(position=25, size=25) -> elements 25 .. 49
-		List<TagTextModel> _remoteList2 = TagsTest.listTags(tagWC, null, 25, -1, Status.OK);
+		List<SingleLangTag> _remoteList2 = TagsTest.listTags(tagWC, null, 25, -1, Status.OK);
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
-		for (TagTextModel _rm : _remoteList2) {
+		for (SingleLangTag _rm : _remoteList2) {
 			System.out.println(_rm.getTagId());
 		}
 		
 		// get rest 
 		// list(position=50, size=25) ->   elements 50 .. 54
-		List<TagTextModel> _remoteList3 = TagsTest.listTags(tagWC, null, 50, _increment, Status.OK);
+		List<SingleLangTag> _remoteList3 = TagsTest.listTags(tagWC, null, 50, _increment, Status.OK);
 		System.out.println("****** 3rd Batch:");
-		for (TagTextModel _rm : _remoteList3) {
+		for (SingleLangTag _rm : _remoteList3) {
 			System.out.println(_rm.getTagId());
 		}
 		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
@@ -107,7 +107,7 @@ public class TagsBatchedListTest extends AbstractTestClient {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<TagTextModel> _remoteList = null;
+		List<SingleLangTag> _remoteList = null;
 		while(true) {
 			_numberOfBatches++;
 			_remoteList = TagsTest.listTags(tagWC, null, _position, -1, Status.OK);
@@ -137,5 +137,9 @@ public class TagsBatchedListTest extends AbstractTestClient {
 		for (TagModel _tm : _localList) {
 			TagsTest.deleteTag(tagWC, _tm.getId(), Status.NO_CONTENT);
 		}		
+	}
+	
+	protected int calculateMembers() {
+		return 0;
 	}
 }

@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opentdc.events.EventModel;
 import org.opentdc.events.EventsService;
@@ -223,8 +224,12 @@ public class EventsTest extends AbstractTestClient {
 		assertNotNull("modifiedAt should have changed", _model.getModifiedAt());
 	}
 
-	/********************************* REST service tests *********************************/	
-	@Test
+	/********************************* REST service tests *********************************/
+	// most of the tests are disabled because EventsService will be replaced by InvitationService
+	// EventsService only exists for backwards compatibility reasons (Arbalo Event invitations)
+	// and does not not support any CRUD-operations with the exception of read(), register(), deregister()
+	// Create() is not supported, that's why none of theses tests can work.
+	@Ignore @Test
 	public void testCreateReadDeleteWithEmptyConstructor() {
 		EventModel _model1 = new EventModel();
 		assertNull("id should not be set by empty constructor", _model1.getId());
@@ -269,7 +274,7 @@ public class EventsTest extends AbstractTestClient {
 		deleteEvent(_model3.getId(), Status.NO_CONTENT);
 	}
 	
-	@Test
+	@Ignore @Test
 	public void testCreateReadDelete() {
 		EventModel _model1 = new EventModel("Hans", "Muster", "hans.muster@test.com");
 		assertNull("id should not be set by constructor", _model1.getId());
@@ -293,7 +298,7 @@ public class EventsTest extends AbstractTestClient {
 		deleteEvent(_model3.getId(), Status.NO_CONTENT);
 	}
 	
-	@Test
+	@Ignore @Test
 	public void testCreateWithClientSideId() {
 		EventModel _model = new EventModel("Hans", "Muster", "hans.muster@test.com");
 		_model.setId("abc123");
@@ -311,7 +316,7 @@ public class EventsTest extends AbstractTestClient {
 	}
 	*/
 	
-	@Test
+	@Ignore @Test
 	public void testCreateWithDuplicateId() {
 		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		EventModel _model2 = postEvent(new EventModel("John", "Doe", "john.doe@test.com"), Status.OK);
@@ -322,7 +327,7 @@ public class EventsTest extends AbstractTestClient {
 		deleteEvent(_id, Status.NO_CONTENT);
 	}
 	
-	@Test
+	@Ignore @Test
 	public void testList(
 	) {		
 		ArrayList<EventModel> _localList = new ArrayList<EventModel>();
@@ -349,7 +354,7 @@ public class EventsTest extends AbstractTestClient {
 		}
 	}
 		
-	@Test
+	@Ignore @Test
 	public void testCreate() {
 		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		EventModel _model2 = postEvent(new EventModel("John", "Doe", "john.doe@test.com"), Status.OK);
@@ -366,7 +371,7 @@ public class EventsTest extends AbstractTestClient {
 		deleteEvent(_model2.getId(), Status.NO_CONTENT);
 	}
 	
-	@Test
+	@Ignore @Test
 	public void testDoubleCreate() {
 		EventModel _model = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		assertNotNull("ID should be set", _model.getId());
@@ -374,7 +379,7 @@ public class EventsTest extends AbstractTestClient {
 		deleteEvent(_model.getId(), Status.NO_CONTENT);
 	}
 
-	@Test
+	@Ignore @Test
 	public void testRead() {
 		ArrayList<EventModel> _localList = new ArrayList<EventModel>();
 		for (int i = 0; i < LIMIT; i++) {
@@ -393,7 +398,7 @@ public class EventsTest extends AbstractTestClient {
 		}
 	}	
 
-	@Test
+	@Ignore @Test
 	public void testMultiRead() {
 		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		EventModel _model2 = getEvent(_model1.getId(), Status.OK);
@@ -410,7 +415,7 @@ public class EventsTest extends AbstractTestClient {
 		deleteEvent(_model1.getId(), Status.NO_CONTENT);
 	}
 	
-	@Test
+	@Ignore @Test
 	public void testUpdate(
 	) {
 		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
@@ -438,7 +443,7 @@ public class EventsTest extends AbstractTestClient {
 		deleteEvent(_model1.getId(), Status.NO_CONTENT);
 	}
 	
-	@Test
+	@Ignore @Test
 	public void testDelete() {
 		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		EventModel _model2 = getEvent(_model1.getId(), Status.OK);
@@ -448,7 +453,7 @@ public class EventsTest extends AbstractTestClient {
 		getEvent(_model1.getId(), Status.NOT_FOUND);
 	}
 	
-	@Test
+	@Ignore @Test
 	public void testDoubleDelete() {
 		EventModel _model = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		getEvent(_model.getId(), Status.OK);
@@ -458,7 +463,7 @@ public class EventsTest extends AbstractTestClient {
 		getEvent(_model.getId(), Status.NOT_FOUND);
 	}
 	
-	@Test
+	@Ignore @Test
 	public void testModifications() {
 		EventModel _model1 = postEvent(new EventModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
@@ -655,6 +660,12 @@ public class EventsTest extends AbstractTestClient {
 			WebClient webClient,
 			String eventId,
 			Status expectedStatus) {
+		if (webClient == null) {
+			System.out.println("webClient is null");
+		}
+		if (eventId == null || eventId.isEmpty()) {
+			System.out.println("eventId is null or empty");
+		}
 		Response _response = webClient.replacePath("/").path(eventId).get();
 		if (expectedStatus != null) {
 			assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
@@ -724,5 +735,9 @@ public class EventsTest extends AbstractTestClient {
 		if (expectedStatus != null) {
 			assertEquals("DELETE should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
+	}
+	
+	protected int calculateMembers() {
+		return 0;
 	}
 }

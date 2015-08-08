@@ -48,17 +48,18 @@ import test.org.opentdc.AbstractTestClient;
 public class ContactTest extends AbstractTestClient {
 		public static final String PATH_EL_CONTACT = "contact";
 		private static AddressbookModel adb = null;
-		private WebClient addressbookWC = null;
+		private WebClient wc = null;
 				
 		@Before
 		public void initializeTests() {
-			addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-			adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
+			wc = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
+			adb = AddressbookTest.createAddressbook(wc, this.getClass().getName(), Status.OK);
 		}
 		
 		@After
 		public void cleanupTest() {
-			AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
+			AddressbookTest.delete(wc, adb.getId(), Status.NO_CONTENT);
+			wc.close();
 		}
 
 		/********************************** contact attribute tests *********************************/	
@@ -282,13 +283,13 @@ public class ContactTest extends AbstractTestClient {
 			assertNull("suffix should not be set by empty constructor", _cm1.getSuffix());
 			
 			// create(_cm1) -> BAD_REQUEST (because of empty firstName / lastName)
-			Response _response = addressbookWC.replacePath("/").post(_cm1);
+			Response _response = wc.replacePath("/").post(_cm1);
 			assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 
 			// _cm1.setFirstName() -> create(_cm1) -> _cm2
 			_cm1.setFirstName("testContactCreateReadDeleteWithEmptyConstructor");
 			_cm1.setLastName("Test");
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm2 = _response.readEntity(ContactModel.class);
 			
@@ -327,7 +328,7 @@ public class ContactTest extends AbstractTestClient {
 			assertNull("suffix of returned object should still be null after remote create", _cm2.getSuffix());
 
 			// read(_cm2) -> _cm3
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).get();
 			assertEquals("read(" + _cm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm3 = _response.readEntity(ContactModel.class);
 			assertEquals("id of returned object should be the same", _cm2.getId(), _cm3.getId());
@@ -346,7 +347,7 @@ public class ContactTest extends AbstractTestClient {
 			assertEquals("prefix of returned object should be unchanged after remote create", _cm2.getPrefix(), _cm3.getPrefix());
 			assertEquals("suffix of returned object should be unchanged after remote create", _cm2.getSuffix(), _cm3.getSuffix());
 			// delete(_p3)
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();
 			assertEquals("delete(" + _cm3.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -371,7 +372,7 @@ public class ContactTest extends AbstractTestClient {
 			assertEquals("suffix should be set correctly", "MY_SUFFIX", _cm1.getSuffix());
 			
 			// create(_cm1) -> _cm2
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm2 = _response.readEntity(ContactModel.class);
 			
@@ -410,7 +411,7 @@ public class ContactTest extends AbstractTestClient {
 			assertEquals("suffix should be unchanged", "MY_SUFFIX", _cm2.getSuffix());
 			
 			// read(_cm2)  -> _cm3
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).get();
 			assertEquals("read(" + _cm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm3 = _response.readEntity(ContactModel.class);
 			assertEquals("id of returned object should be the same", _cm2.getId(), _cm3.getId());
@@ -429,7 +430,7 @@ public class ContactTest extends AbstractTestClient {
 			assertEquals("prefix should be the same", _cm2.getPrefix(), _cm3.getPrefix());
 			assertEquals("suffix should be the same", _cm2.getSuffix(), _cm3.getSuffix());
 			// delete(_cm3)
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();
 			assertEquals("delete(" + _cm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -442,7 +443,7 @@ public class ContactTest extends AbstractTestClient {
 			_cm1.setId("LOCAL_ID");
 			assertEquals("id should have changed", "LOCAL_ID", _cm1.getId());
 			// create(_cm1) -> BAD_REQUEST
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
 			assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		}
 		
@@ -452,7 +453,7 @@ public class ContactTest extends AbstractTestClient {
 			ContactModel _cm = new ContactModel();
 			_cm.setFirstName("testContactProjectWithDuplicateId");
 			_cm.setLastName("Test");
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
 
@@ -463,7 +464,7 @@ public class ContactTest extends AbstractTestClient {
 			_cm2.setId(_cm1.getId());		// wrongly create a 2nd ContactModel object with the same ID
 			
 			// create(_cm2) -> CONFLICT
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm2);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm2);
 			assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -471,22 +472,22 @@ public class ContactTest extends AbstractTestClient {
 		public void testContactList() {
 			ArrayList<ContactModel> _localList = new ArrayList<ContactModel>();		
 			Response _response = null;
-			addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT);
+			wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT);
 			ContactModel _c = null;
 			for (int i = 0; i < LIMIT; i++) {
 				// create(new()) -> _localList
 				_c = new ContactModel();
 				_c.setFirstName("testContactList" + i);
 				_c.setLastName("Test");
-				_response = addressbookWC.post(_c);
+				_response = wc.post(_c);
 				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_localList.add(_response.readEntity(ContactModel.class));
 			}
 			assertEquals("size of lists should be the same", LIMIT, _localList.size());
 			
 			// list(/) -> _remoteList
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).get();
-			List<ContactModel> _remoteList = new ArrayList<ContactModel>(addressbookWC.getCollection(ContactModel.class));
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).get();
+			List<ContactModel> _remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			assertEquals("size of lists should be the same", LIMIT, _remoteList.size());
 			// implicit proof: _localList.size() = _remoteList.size = LIMIT
@@ -501,13 +502,13 @@ public class ContactTest extends AbstractTestClient {
 			}
 			
 			for (ContactModel _cm : _localList) {
-				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).get();
+				_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).get();
 				assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_response.readEntity(ContactModel.class);
 			}
 			
 			for (ContactModel _cm : _localList) {
-				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).delete();
+				_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).delete();
 				assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			}
 		}
@@ -526,12 +527,12 @@ public class ContactTest extends AbstractTestClient {
 			_cm2.setLastName("MY_LNAME2");
 			
 			// create(_cm1)  -> _cm3
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm3 = _response.readEntity(ContactModel.class);
 
 			// create(_cm2) -> _cm4
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm2);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm2);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm4 = _response.readEntity(ContactModel.class);		
 			assertNotNull("ID should be set", _cm3.getId());
@@ -571,11 +572,11 @@ public class ContactTest extends AbstractTestClient {
 			assertEquals("suffix should be unchanged", "MY_SUFFIX2", _cm4.getSuffix());
 
 			// delete(_cm3) -> NO_CONTENT
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 			// delete(_cm4) -> NO_CONTENT
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm4.getId()).delete();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm4.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -585,17 +586,17 @@ public class ContactTest extends AbstractTestClient {
 			ContactModel _c = new ContactModel();
 			_c.setFirstName("testContactCreateDouble");
 			_c.setLastName("Test");
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_c);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_c);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm = _response.readEntity(ContactModel.class);
 			assertNotNull("ID should be set:", _cm.getId());		
 			
 			// create(_cm) -> CONFLICT
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 			// delete(_cm) -> NO_CONTENT
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).delete();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -603,39 +604,39 @@ public class ContactTest extends AbstractTestClient {
 		public void testContactRead() {
 			ArrayList<ContactModel> _localList = new ArrayList<ContactModel>();
 			Response _response = null;
-			addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT);
+			wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT);
 			ContactModel _c = null;
 			for (int i = 0; i < LIMIT; i++) {
 				_c = new ContactModel();
 				_c.setFirstName("testContactRead" + i);
 				_c.setLastName("Test");
-				_response = addressbookWC.post(_c);
+				_response = wc.post(_c);
 				assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_localList.add(_response.readEntity(ContactModel.class));
 			}
 		
 			// test read on each local element
 			for (ContactModel _cm : _localList) {
-				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).get();
+				_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).get();
 				assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_response.readEntity(ContactModel.class);
 			}
 
 			// test read on each listed element
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).get();
-			List<ContactModel> _remoteList = new ArrayList<ContactModel>(addressbookWC.getCollection(ContactModel.class));
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).get();
+			List<ContactModel> _remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 			ContactModel _tmpObj = null;
 			for (ContactModel _cm : _remoteList) {
-				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).get();
+				_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).get();
 				assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 				_tmpObj = _response.readEntity(ContactModel.class);
 				assertEquals("ID should be unchanged when reading a project", _cm.getId(), _tmpObj.getId());						
 			}
 
 			for (ContactModel _cm : _localList) {
-				_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).delete();
+				_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm.getId()).delete();
 				assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			}
 		}
@@ -649,17 +650,17 @@ public class ContactTest extends AbstractTestClient {
 			_cm1.setLastName("Test");
 			
 			// create(_cm1) -> _cm2
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm1);
 			ContactModel _cm2 = _response.readEntity(ContactModel.class);
 
 			// read(_cm2) -> _cm3
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm3 = _response.readEntity(ContactModel.class);
 			assertEquals("ID should be unchanged after read:", _cm2.getId(), _cm3.getId());		
 
 			// read(_cm2) -> _cm4
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm4 = _response.readEntity(ContactModel.class);
 			
@@ -698,7 +699,7 @@ public class ContactTest extends AbstractTestClient {
 			assertEquals("suffix should be the same", _cm3.getSuffix(), _cm2.getSuffix());
 			
 			// delete(_p2)
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).delete();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -708,14 +709,14 @@ public class ContactTest extends AbstractTestClient {
 			ContactModel _cm = new ContactModel();
 			_cm.setFirstName("testContactUpdate");
 			_cm.setLastName("Test");
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
 			
 			// change the attributes
 			// update(_cm1) -> _cm2
 			Date _bdate3 = new Date(3000);
-			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(setDefaultValues(_cm1, _bdate3, "3"));
+			wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(setDefaultValues(_cm1, _bdate3, "3"));
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm2 = _response.readEntity(ContactModel.class);
 
@@ -739,8 +740,8 @@ public class ContactTest extends AbstractTestClient {
 			// reset the attributes
 			// update(_cm1) -> _cm3
 			Date _bdate4 = new Date(4000);
-			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(setDefaultValues(_cm1, _bdate4, "4"));
+			wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(setDefaultValues(_cm1, _bdate4, "4"));
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm3 = _response.readEntity(ContactModel.class);
 
@@ -761,7 +762,7 @@ public class ContactTest extends AbstractTestClient {
 			assertEquals("prefix should be set correctly", "MY_PREFIX4", _cm3.getPrefix());
 			assertEquals("suffix should be set correctly", "MY_SUFFIX4", _cm3.getSuffix());
 			
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 
@@ -772,32 +773,32 @@ public class ContactTest extends AbstractTestClient {
 			ContactModel _cm = new ContactModel();
 			_cm.setFirstName("testContactDelete");
 			_cm.setLastName("Test");
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
 			
 			// read(_cm1) -> _tmpObj
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _tmpObj = _response.readEntity(ContactModel.class);
 			assertEquals("ID should be unchanged when reading a project (remote):", _cm1.getId(), _tmpObj.getId());						
 
 			// read(_cm1) -> _tmpObj
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(ContactModel.class);
 			assertEquals("ID should be unchanged when reading a project (remote):", _cm1.getId(), _tmpObj.getId());						
 			
 			// delete(_cm1) -> OK
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 			// read the deleted object twice
 			// read(_cm1) -> NOT_FOUND
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 			
 			// read(_cm1) -> NOT_FOUND
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		}
 		
@@ -808,27 +809,27 @@ public class ContactTest extends AbstractTestClient {
 			_cm.setLastName("Test");
 			
 			// create() -> _cm1
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
 
 			// read(_cm1) -> OK
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			
 			// delete(_cm1) -> OK
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();		
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();		
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			
 			// read(_cm1) -> NOT_FOUND
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 			
 			// delete _cm1 -> NOT_FOUND
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();		
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();		
 			assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 			
 			// read _cm1 -> NOT_FOUND
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).get();
 			assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		}
 		
@@ -839,7 +840,7 @@ public class ContactTest extends AbstractTestClient {
 			_cm.setFirstName("testContactModifications");
 			_cm.setLastName("Test");
 
-			Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
+			Response _response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 			ContactModel _cm1 = _response.readEntity(ContactModel.class);
 			
 			// test createdAt and createdBy
@@ -854,8 +855,8 @@ public class ContactTest extends AbstractTestClient {
 			// update(_cm1)  -> _cm2
 			_cm1.setFirstName("MY_NAME2");
 			_cm1.setLastName("Test");
-			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(_cm1);
+			wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(_cm1);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm2 = _response.readEntity(ContactModel.class);
 
@@ -871,8 +872,8 @@ public class ContactTest extends AbstractTestClient {
 			// update(_cm1) with modifiedBy/At set on client side -> ignored by server
 			_cm1.setModifiedBy("MYSELF");
 			_cm1.setModifiedAt(new Date(1000));
-			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(_cm1);
+			wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).put(_cm1);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _o3 = _response.readEntity(ContactModel.class);
 			
@@ -882,7 +883,7 @@ public class ContactTest extends AbstractTestClient {
 			assertThat(_cm1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 			
 			// delete(_cm1) -> NO_CONTENT
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();		
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();		
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 		
@@ -927,8 +928,8 @@ public class ContactTest extends AbstractTestClient {
 			
 			// test 3:  update on firstName -> should not change fn and lastName
 			_cm5.setFirstName("FirstName2");
-			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm5.getId()).put(_cm5);
+			wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm5.getId()).put(_cm5);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm7 = _response.readEntity(ContactModel.class);
 			assertNotNull("create() should not change the fn", _cm7.getFn());
@@ -937,8 +938,8 @@ public class ContactTest extends AbstractTestClient {
 			
 			// test 4:  update on lastName -> should not change fn and firstName
 			_cm7.setLastName("LastName2");
-			addressbookWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm7.getId()).put(_cm7);
+			wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm7.getId()).put(_cm7);
 			assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			ContactModel _cm8 = _response.readEntity(ContactModel.class);
 			assertNotNull("create() should not change the fn", _cm8.getFn());
@@ -946,13 +947,13 @@ public class ContactTest extends AbstractTestClient {
 			assertEquals("create() should change the lastName", "LastName2", _cm8.getLastName());
 			
 			// delete all created contacts -> NO_CONTENT
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();		
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm1.getId()).delete();		
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 			
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).delete();		
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm2.getId()).delete();		
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
-			_response = addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();		
+			_response = wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).path(_cm3.getId()).delete();		
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 
@@ -978,7 +979,7 @@ public class ContactTest extends AbstractTestClient {
 			ContactModel _cm = new ContactModel();
 			_cm.setFirstName(fName);
 			_cm.setLastName(lName);
-			return addressbookWC.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
+			return wc.replacePath("/").path(adb.getId()).path(PATH_EL_CONTACT).post(_cm);
 		}
 		
 		public static ContactModel createContact(WebClient abWC, String aid, String fName, String lName) {
@@ -987,5 +988,9 @@ public class ContactTest extends AbstractTestClient {
 			_cm.setLastName(lName);
 			Response _response = abWC.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).post(_cm);
 			return _response.readEntity(ContactModel.class);
+		}
+		
+		protected int calculateMembers() {
+			return 1;
 		}
 }

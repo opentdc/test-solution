@@ -83,7 +83,9 @@ public class WorkRecordBatchedListTest extends AbstractTestClient {
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
 		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
 		workRecordWC.close();
@@ -203,5 +205,9 @@ public class WorkRecordBatchedListTest extends AbstractTestClient {
 			_response = workRecordWC.replacePath(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 }

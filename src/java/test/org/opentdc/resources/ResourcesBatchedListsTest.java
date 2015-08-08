@@ -61,7 +61,9 @@ public class ResourcesBatchedListsTest extends AbstractTestClient {
 	
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		resourceWC.close();
 	}
 
@@ -181,6 +183,10 @@ public class ResourcesBatchedListsTest extends AbstractTestClient {
 		_cm.setLastName(lName);
 		Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(ContactTest.PATH_EL_CONTACT).post(_cm);
 		return _response.readEntity(ContactModel.class);
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 
 }

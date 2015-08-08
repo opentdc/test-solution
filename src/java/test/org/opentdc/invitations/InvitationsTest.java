@@ -53,14 +53,14 @@ import test.org.opentdc.AbstractTestClient;
  */
 public class InvitationsTest extends AbstractTestClient {
 	public static final String API_URL = "api/invitation/";
-	private WebClient invitationWC = null;
+	private WebClient wc = null;
 
 	/**
 	 * Initializes the test case.
 	 */
 	@Before
 	public void initializeTest() {
-		invitationWC = initializeTest(ServiceUtil.INVITATIONS_API_URL, InvitationsService.class);
+		wc = initializeTest(ServiceUtil.INVITATIONS_API_URL, InvitationsService.class);
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public class InvitationsTest extends AbstractTestClient {
 	 */
 	@After
 	public void cleanupTest() {
-		invitationWC.close();
+		wc.close();
 	}
 
 	/********************************** invitations attributes tests *********************************/	
@@ -235,13 +235,13 @@ public class InvitationsTest extends AbstractTestClient {
 		assertNull("salutation should not be set by empty constructor", _model1.getSalutation());
 		assertNull("invitationState should not be set by empty constructor", _model1.getInvitationState());
 
-		postInvitation(_model1, Status.BAD_REQUEST);
+		post(_model1, Status.BAD_REQUEST);
 		_model1.setFirstName("Hans");
-		postInvitation(_model1, Status.BAD_REQUEST);
+		post(_model1, Status.BAD_REQUEST);
 		_model1.setLastName("Muster");
-		postInvitation(_model1, Status.BAD_REQUEST);
+		post(_model1, Status.BAD_REQUEST);
 		_model1.setEmail("hans.muster@test.com");
-		InvitationModel _model2 = postInvitation(_model1, Status.OK);
+		InvitationModel _model2 = post(_model1, Status.OK);
 		assertNull("create() should not change the id of the local object", _model1.getId());
 		assertEquals("create() should not change the firstName of the local object", "Hans", _model1.getFirstName());
 		assertEquals("create() should not change the lastName of the local object", "Muster", _model1.getLastName());
@@ -258,7 +258,7 @@ public class InvitationsTest extends AbstractTestClient {
 		assertEquals("create() should not change the salutation", SalutationType.DU_M, _model2.getSalutation());
 		assertEquals("create() should not change the invitationState", InvitationState.INITIAL, _model2.getInvitationState());
 		
-		InvitationModel _model3 = getInvitation(_model2.getId(), Status.OK);
+		InvitationModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		assertEquals("firstName should be unchanged", _model2.getFirstName(), _model3.getFirstName());
 		assertEquals("lastName should be unchanged", _model2.getLastName(), _model3.getLastName());
@@ -266,7 +266,7 @@ public class InvitationsTest extends AbstractTestClient {
 		assertEquals("comment should be unchanged", _model2.getComment(), _model3.getComment());
 		assertEquals("salutation should be unchanged", _model2.getSalutation(), _model3.getSalutation());
 		assertEquals("invitationState should be unchanged", _model2.getInvitationState(), _model3.getInvitationState());
-		deleteInvitation(_model3.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -277,7 +277,7 @@ public class InvitationsTest extends AbstractTestClient {
 		assertEquals("lastName should be set by constructor", "Muster", _model1.getLastName());
 		assertEquals("email should be set by constructor", "hans.muster@test.com", _model1.getEmail());
 
-		InvitationModel _model2 = postInvitation(_model1, Status.OK);
+		InvitationModel _model2 = post(_model1, Status.OK);
 		assertNull("id should be still null after remote create", _model1.getId());
 		assertEquals("firstName should be unchanged", "Hans", _model1.getFirstName());
 		assertEquals("lastName should be unchanged", "Muster", _model1.getLastName());
@@ -286,11 +286,11 @@ public class InvitationsTest extends AbstractTestClient {
 		assertEquals("firstName should be unchanged", "Hans", _model2.getFirstName());
 		assertEquals("lastName should be unchanged", "Muster", _model2.getLastName());
 
-		InvitationModel _model3 = getInvitation(_model2.getId(), Status.OK);
+		InvitationModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id should be the same", _model2.getId(), _model3.getId());
 		assertEquals("firstName should be unchanged", _model2.getFirstName(), _model3.getFirstName());
 		assertEquals("lastName be unchanged", _model2.getLastName(), _model3.getLastName());
-		deleteInvitation(_model3.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -298,7 +298,7 @@ public class InvitationsTest extends AbstractTestClient {
 		InvitationModel _model = new InvitationModel("Hans", "Muster", "hans.muster@test.com");
 		_model.setId("abc123");
 		assertEquals("id should have changed", "abc123", _model.getId());
-		postInvitation(_model, Status.BAD_REQUEST);
+		post(_model, Status.BAD_REQUEST);
 	}
 	
 	/* only works with mongo impl
@@ -312,13 +312,13 @@ public class InvitationsTest extends AbstractTestClient {
 	*/
 	@Test
 	public void testCreateWithDuplicateId() {
-		InvitationModel _model1 = postInvitation(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		InvitationModel _model2 = postInvitation(new InvitationModel("John", "Doe", "john.doe@test.com"), Status.OK);
-		String _id = _model2.getId();
+		InvitationModel _model1 = post(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		InvitationModel _model2 = post(new InvitationModel("John", "Doe", "john.doe@test.com"), Status.OK);
+		String _model2Id = _model2.getId();
 		_model2.setId(_model1.getId());		// wrongly create a 2nd InvitationModel object with the same ID
-		postInvitation(_model2, Status.CONFLICT);
-		deleteInvitation(_model1.getId(), Status.NO_CONTENT);
-		deleteInvitation(_id, Status.NO_CONTENT);
+		post(_model2, Status.CONFLICT);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		delete(_model2Id, Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -326,11 +326,11 @@ public class InvitationsTest extends AbstractTestClient {
 	) {		
 		ArrayList<InvitationModel> _localList = new ArrayList<InvitationModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postInvitation(
+			_localList.add(post(
 				new InvitationModel("Hans", "Muster", "hans.muster@test.com"),
 				Status.OK));
 		}
-		List<InvitationModel> _remoteList = listInvitations(null, Status.OK);
+		List<InvitationModel> _remoteList = list(null, Status.OK);
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (InvitationModel _model : _remoteList) {
@@ -341,17 +341,17 @@ public class InvitationsTest extends AbstractTestClient {
 			assertTrue("invitation <" + _model.getId() + "> should be listed", _remoteListIds.contains(_model.getId()));
 		}
 		for (InvitationModel _model : _localList) {
-			getInvitation(_model.getId(), Status.OK);
+			get(_model.getId(), Status.OK);
 		}
 		for (InvitationModel _model : _localList) {
-			deleteInvitation(_model.getId(), Status.NO_CONTENT);
+			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}
 		
 	@Test
 	public void testCreate() {
-		InvitationModel _model1 = postInvitation(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		InvitationModel _model2 = postInvitation(new InvitationModel("John", "Doe", "john.doe@test.com"), Status.OK);
+		InvitationModel _model1 = post(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		InvitationModel _model2 = post(new InvitationModel("John", "Doe", "john.doe@test.com"), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
 		assertNotNull("ID should be set", _model2.getId());
 		assertThat(_model1.getId(), not(equalTo(_model2.getId())));
@@ -361,43 +361,43 @@ public class InvitationsTest extends AbstractTestClient {
 		assertEquals("firstName should be set correctly", "John", _model2.getFirstName());
 		assertEquals("lastName should be set correctly", "Doe", _model2.getLastName());
 
-		deleteInvitation(_model1.getId(), Status.NO_CONTENT);
-		deleteInvitation(_model2.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		delete(_model2.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDoubleCreate() {
-		InvitationModel _model = postInvitation(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		InvitationModel _model = post(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		assertNotNull("ID should be set", _model.getId());
-		postInvitation(_model, Status.CONFLICT);
-		deleteInvitation(_model.getId(), Status.NO_CONTENT);
+		post(_model, Status.CONFLICT);
+		delete(_model.getId(), Status.NO_CONTENT);
 	}
 
 	@Test
 	public void testRead() {
 		ArrayList<InvitationModel> _localList = new ArrayList<InvitationModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postInvitation(new InvitationModel("Hans" + i, "Muster", "hans.muster@test.com"), Status.OK));
+			_localList.add(post(new InvitationModel("Hans" + i, "Muster", "hans.muster@test.com"), Status.OK));
 		}
 		// test read on each local element
 		for (InvitationModel _model : _localList) {
-			getInvitation(_model.getId(), Status.OK);
+			get(_model.getId(), Status.OK);
 		}
 		// test read on each listed element
-		for (InvitationModel _model : listInvitations(null, Status.OK)) {
-			assertEquals("ID should be unchanged when reading a invitation", _model.getId(), getInvitation(_model.getId(), Status.OK).getId());
+		for (InvitationModel _model : list(null, Status.OK)) {
+			assertEquals("ID should be unchanged when reading a invitation", _model.getId(), get(_model.getId(), Status.OK).getId());
 		}
 		for (InvitationModel _model : _localList) {
-			deleteInvitation(_model.getId(), Status.NO_CONTENT);
+			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}	
 
 	@Test
 	public void testMultiRead() {
-		InvitationModel _model1 = postInvitation(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		InvitationModel _model2 = getInvitation(_model1.getId(), Status.OK);
+		InvitationModel _model1 = post(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		InvitationModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read", _model1.getId(), _model2.getId());		
-		InvitationModel _model3 = getInvitation(_model1.getId(), Status.OK);
+		InvitationModel _model3 = get(_model1.getId(), Status.OK);
 		
 		assertEquals("ID should be the same", _model3.getId(), _model2.getId());
 		assertEquals("firstName should be the same", _model3.getFirstName(), _model2.getFirstName());
@@ -406,18 +406,18 @@ public class InvitationsTest extends AbstractTestClient {
 		assertEquals("ID should be the same:", _model1.getId(), _model2.getId());
 		assertEquals("firstName should be the same:", _model1.getFirstName(), _model2.getFirstName());
 		assertEquals("lastName should be the same:", _model1.getLastName(), _model2.getLastName());
-		deleteInvitation(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testUpdate(
 	) {
-		InvitationModel _model1 = postInvitation(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		InvitationModel _model1 = post(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 
 		_model1.setFirstName("John");
 		_model1.setLastName("Doe");
 		_model1.setEmail("john.doe@test.com");
-		InvitationModel _model2 = putInvitation(_model1, Status.OK);
+		InvitationModel _model2 = put(_model1, Status.OK);
 		assertNotNull("ID should be set", _model2.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model2.getId());	
 		assertEquals("firstName should have changed", "John", _model2.getFirstName());
@@ -427,39 +427,39 @@ public class InvitationsTest extends AbstractTestClient {
 		_model1.setFirstName("Hans");
 		_model1.setLastName("Muster");
 		_model1.setEmail("hans.muster@test.com");
-		InvitationModel _model3 = putInvitation(_model1, Status.OK);
+		InvitationModel _model3 = put(_model1, Status.OK);
 		assertNotNull("ID should be set", _model3.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model3.getId());	
 		assertEquals("firstName should have changed", "Hans", _model3.getFirstName());
 		assertEquals("lastName should have changed", "Muster", _model3.getLastName());
 		assertEquals("email should have changed", "hans.muster@test.com", _model3.getEmail());
 
-		deleteInvitation(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDelete() {
-		InvitationModel _model1 = postInvitation(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		InvitationModel _model2 = getInvitation(_model1.getId(), Status.OK);
+		InvitationModel _model1 = post(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		InvitationModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged when reading a invitation (remote):", _model1.getId(), _model2.getId());						
-		deleteInvitation(_model1.getId(), Status.NO_CONTENT);
-		getInvitation(_model1.getId(), Status.NOT_FOUND);
-		getInvitation(_model1.getId(), Status.NOT_FOUND);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		get(_model1.getId(), Status.NOT_FOUND);
+		get(_model1.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testDoubleDelete() {
-		InvitationModel _model = postInvitation(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
-		getInvitation(_model.getId(), Status.OK);
-		deleteInvitation(_model.getId(), Status.NO_CONTENT);
-		getInvitation(_model.getId(), Status.NOT_FOUND);
-		deleteInvitation(_model.getId(), Status.NOT_FOUND);
-		getInvitation(_model.getId(), Status.NOT_FOUND);
+		InvitationModel _model = post(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		get(_model.getId(), Status.OK);
+		delete(_model.getId(), Status.NO_CONTENT);
+		get(_model.getId(), Status.NOT_FOUND);
+		delete(_model.getId(), Status.NOT_FOUND);
+		get(_model.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testModifications() {
-		InvitationModel _model1 = postInvitation(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
+		InvitationModel _model1 = post(new InvitationModel("Hans", "Muster", "hans.muster@test.com"), Status.OK);
 		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
 		assertNotNull("create() should set createdBy", _model1.getCreatedBy());
 		assertNotNull("create() should set modifiedAt", _model1.getModifiedAt());
@@ -467,7 +467,7 @@ public class InvitationsTest extends AbstractTestClient {
 		assertEquals("createdAt and modifiedAt should be identical after create()", _model1.getCreatedAt(), _model1.getModifiedAt());
 		assertEquals("createdBy and modifiedBy should be identical after create()", _model1.getCreatedBy(), _model1.getModifiedBy());
 		_model1.setComment("updated");
-		InvitationModel _model2 = putInvitation(_model1, Status.OK);
+		InvitationModel _model2 = put(_model1, Status.OK);
 		assertEquals("update() should not change createdAt", _model1.getCreatedAt(), _model2.getCreatedAt());
 		assertEquals("update() should not change createdBy", _model1.getCreatedBy(), _model2.getCreatedBy());
 		
@@ -478,41 +478,41 @@ public class InvitationsTest extends AbstractTestClient {
 
 		String _createdBy = _model1.getCreatedBy();
 		_model1.setCreatedBy("testModifications3");
-		InvitationModel _model3 = putInvitation(_model1, Status.OK);
+		InvitationModel _model3 = put(_model1, Status.OK);
 		assertEquals("update() should not change createdBy", _createdBy, _model3.getCreatedBy());
 
 		Date _createdAt = _model1.getCreatedAt();
 		_model1.setCreatedAt(new Date(1000));
-		InvitationModel _model4 = putInvitation(_model1, Status.OK);
+		InvitationModel _model4 = put(_model1, Status.OK);
 		assertEquals("update() should not change createdAt", _createdAt, _model4.getCreatedAt());
 
 		String _modifiedBy = _model1.getModifiedBy();
 		_model1.setModifiedBy("testModifications5");
-		InvitationModel _model5 = putInvitation(_model1, Status.OK);
+		InvitationModel _model5 = put(_model1, Status.OK);
 		assertEquals("update() should not change modifiedBy", _modifiedBy, _model5.getModifiedBy());
 
 		Date _modifiedAt = _model1.getModifiedAt();
 		Date _modifiedAt2 = new Date(1000);
 		_model1.setModifiedAt(_modifiedAt2);
-		InvitationModel _model6 = putInvitation(_model1, Status.OK);
+		InvitationModel _model6 = put(_model1, Status.OK);
 		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt)));
 		assertThat(_model6.getModifiedAt(), not(equalTo(_modifiedAt2)));
 
-		deleteInvitation(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	/********************************* helper methods *********************************/	
 	/**
 	 * Retrieve a list of InvitationModel from InvitationsService by executing a HTTP GET request.
-	 * This uses neither position nor size queries.
+	 * This uses neither position nor size queries, ie it returns all members of the list.
 	 * @param query the URL query to use
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return a List of InvitationModel object in JSON format
 	 */
-	public List<InvitationModel> listInvitations(
+	public List<InvitationModel> list(
 			String query, 
 			Status expectedStatus) {
-		return listInvitations(invitationWC, query, -1, -1, expectedStatus);
+		return list(wc, query, 0, Integer.MAX_VALUE, expectedStatus);
 	}
 	
 	/**
@@ -524,13 +524,13 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return a List of InvitationModel objects in JSON format
 	 */
-	public static List<InvitationModel> listInvitations(
+	public static List<InvitationModel> list(
 			WebClient webClient, 
 			String query, 
 			int position,
 			int size,
 			Status expectedStatus) {
-		System.out.println("listInvitations(invitationWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ")");
+		System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ")");
 		Response _response = null;
 		webClient.resetQuery();
 		if (query == null) {
@@ -568,7 +568,7 @@ public class InvitationsTest extends AbstractTestClient {
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			_invitations = new ArrayList<InvitationModel>(webClient.getCollection(InvitationModel.class));
-			System.out.println("listInvitations(invitationWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _invitations.size());
+			System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _invitations.size());
 		}
 		return _invitations;
 	}
@@ -579,10 +579,10 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created InvitationModel
 	 */
-	public InvitationModel postInvitation(
+	public InvitationModel post(
 			InvitationModel model, 
 			Status expectedStatus) {
-		Response _response = invitationWC.replacePath("/").post(model);
+		Response _response = wc.replacePath("/").post(model);
 		if (expectedStatus != null) {
 			assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
@@ -600,7 +600,7 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created InvitationModel
 	 */
-	public static InvitationModel postInvitation(
+	public static InvitationModel post(
 			WebClient webClient,
 			InvitationModel model,
 			Status expectedStatus) {
@@ -621,14 +621,14 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created InvitationModel
 	 */
-	public static InvitationModel createInvitation(
+	public static InvitationModel create(
 			WebClient webClient, 
 			String firstName, 
 			String lastName,
 			String email,
 			Status expectedStatus) 
 	{
-		return postInvitation(webClient, new InvitationModel(firstName, lastName, email), expectedStatus);
+		return post(webClient, new InvitationModel(firstName, lastName, email), expectedStatus);
 	}
 	
 	/**
@@ -637,10 +637,10 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the retrieved InvitationModel object in JSON format
 	 */
-	public InvitationModel getInvitation(
+	public InvitationModel get(
 			String invitationId, 
 			Status expectedStatus) {
-		return getInvitation(invitationWC, invitationId, expectedStatus);
+		return get(wc, invitationId, expectedStatus);
 	}
 	
 	/**
@@ -650,7 +650,7 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param expectedStatus  the expected HTTP status to test on
 	 * @return the retrieved InvitationModel object in JSON format
 	 */
-	public static InvitationModel getInvitation(
+	public static InvitationModel get(
 			WebClient webClient,
 			String invitationId,
 			Status expectedStatus) {
@@ -671,10 +671,10 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated InvitationModel object in JSON format
 	 */
-	public InvitationModel putInvitation(
+	public InvitationModel put(
 			InvitationModel model, 
 			Status expectedStatus) {
-		return putInvitation(invitationWC, model, expectedStatus);
+		return put(wc, model, expectedStatus);
 	}
 	
 	/**
@@ -684,7 +684,7 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the updated InvitationModel object in JSON format
 	 */
-	public static InvitationModel putInvitation(
+	public static InvitationModel put(
 			WebClient webClient,
 			InvitationModel model,
 			Status expectedStatus) {
@@ -705,8 +705,8 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param id the id of the InvitationModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
-	public void deleteInvitation(String id, Status expectedStatus) {
-		deleteInvitation(invitationWC, id, expectedStatus);
+	public void delete(String id, Status expectedStatus) {
+		delete(wc, id, expectedStatus);
 	}
 	
 	/**
@@ -715,7 +715,7 @@ public class InvitationsTest extends AbstractTestClient {
 	 * @param invitationId the id of the InvitationModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
-	public static void deleteInvitation(
+	public static void delete(
 			WebClient webClient,
 			String invitationId,
 			Status expectedStatus) {
@@ -723,5 +723,9 @@ public class InvitationsTest extends AbstractTestClient {
 		if (expectedStatus != null) {
 			assertEquals("DELETE should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
+	}
+	
+	protected int calculateMembers() {
+		return list(wc, null, 0, Integer.MAX_VALUE, Status.OK).size();
 	}
 }

@@ -61,7 +61,9 @@ public class UserBatchedListTest extends AbstractTestClient {
 	
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		userWC.close();
 	}
 
@@ -182,5 +184,9 @@ public class UserBatchedListTest extends AbstractTestClient {
 			_response = userWC.replacePath(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 }

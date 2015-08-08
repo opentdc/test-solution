@@ -61,8 +61,11 @@ public class GiftsBatchedListTest extends AbstractTestClient {
 
 	@Test
 	public void testGiftBatchedList() {
-		ArrayList<GiftModel> _localList = new ArrayList<GiftModel>();		
+		int _numberOfBatches = 0;
+		int _numberOfReturnedObjects = 0;
+		int _position = 0;
 		Response _response = null;
+		ArrayList<GiftModel> _localList = new ArrayList<GiftModel>();		
 		System.out.println("***** testGiftBatchedList:");
 		giftWC.replacePath("/");
 		// we want to allocate more than double the amount of default list size objects
@@ -84,47 +87,8 @@ public class GiftsBatchedListTest extends AbstractTestClient {
 			System.out.println(_rm.getTitle());
 		}
 
-		// get first batch
-		// list(position=0, size=25) -> elements 0 .. 24
-		giftWC.resetQuery();
-		_response = giftWC.replacePath("/").get();
-		List<GiftModel> _remoteList1 = new ArrayList<GiftModel>(giftWC.getCollection(GiftModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 1st Batch:");
-		for (GiftModel _rm : _remoteList1) {
-			System.out.println(_rm.getTitle());
-		}
-		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
-		
-		// get second batch
-		// list(position=25, size=25) -> elements 25 .. 49
-		giftWC.resetQuery();
-		_response = giftWC.replacePath("/").query("position", 25).get();
-		List<GiftModel> _remoteList2 = new ArrayList<GiftModel>(giftWC.getCollection(GiftModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
-		System.out.println("****** 2nd Batch:");
-		for (GiftModel _rm : _remoteList2) {
-			System.out.println(_rm.getTitle());
-		}
-		
-		// get rest 
-		// list(position=50, size=25) ->   elements 50 .. 54
-		giftWC.resetQuery();
-		_response = giftWC.replacePath("/").query("position", 50).get();
-		List<GiftModel> _remoteList3 = new ArrayList<GiftModel>(giftWC.getCollection(GiftModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 3rd Batch:");
-		for (GiftModel _rm : _remoteList3) {
-			System.out.println(_rm.getTitle());
-		}
-		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
-		
-		// testing the batches
-		int _numberOfBatches = 0;
-		int _numberOfReturnedObjects = 0;
-		int _position = 0;
 		List<GiftModel> _remoteList = null;
+		// printCounters("testGiftBatchedList");
 		while(true) {
 			_numberOfBatches++;
 			giftWC.resetQuery();
@@ -139,9 +103,7 @@ public class GiftsBatchedListTest extends AbstractTestClient {
 				_position += GenericService.DEF_SIZE;					
 			}
 		}
-		assertEquals("number of batches should be as expected", 3, _numberOfBatches);
-		assertEquals("should have returned all objects", _limit2, _numberOfReturnedObjects);
-		assertEquals("last batch size should be as expected", _increment, _remoteList.size());
+		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _remoteList.size());
 	
 		// testing some explicit positions and sizes
 		giftWC.resetQuery();
@@ -170,5 +132,9 @@ public class GiftsBatchedListTest extends AbstractTestClient {
 			_response = giftWC.replacePath("/").path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
+	}
+	
+	protected int calculateMembers() {
+		return 2 * GenericService.DEF_SIZE + 5;
 	}
 }

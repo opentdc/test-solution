@@ -78,9 +78,12 @@ public class RateRefTest extends AbstractTestClient {
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, adb.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
 		RatesTest.deleteRate(rateWC, rate.getId(), Status.NO_CONTENT);
 		rateWC.close();
+		System.out.println("deleted 1 rate");
 		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
 	}
 	
@@ -430,5 +433,9 @@ public class RateRefTest extends AbstractTestClient {
 		Response _response = webClient.replacePath("/").
 				path(resourceModel.getId()).path(PATH_EL_RATEREF).path(rateRefId).delete();
 		assertEquals("delete should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 }

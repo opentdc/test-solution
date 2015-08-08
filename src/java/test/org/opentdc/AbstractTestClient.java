@@ -23,15 +23,27 @@
  */
 package test.org.opentdc;
 
+import static org.junit.Assert.assertEquals;
+
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.opentdc.service.GenericService;
 import org.opentdc.service.ServiceUtil;
 
+/**
+ * @author Bruno Kaiser
+ *
+ */
 public abstract class AbstractTestClient {
 	protected static int LIMIT;			// when testing lists, this defined the number of elements in a list
 	protected int status;
 	
-	protected WebClient initializeTest(
+	/**
+	 * Initializes the test environment
+	 * @param apiUrl the url used to call the test service
+	 * @param serviceClass the tested class
+	 * @return the webclient that represents the test service
+	 */
+	protected static WebClient initializeTest(
 		String apiUrl,
 		Class<?> serviceClass)
 	{
@@ -49,7 +61,43 @@ public abstract class AbstractTestClient {
 		return _webclient;
 	}
 	
+	/**
+	 * Create a webclient.
+	 * @param apiUrl the url used to call the test service
+	 * @param serviceClass the tested class
+	 * @return the webclient that represents the test service
+	 */
 	protected static WebClient createWebClient(String apiUrl, Class<?> serviceClass) {
 		return ServiceUtil.createWebClient(apiUrl, serviceClass);
+	}
+	
+	/**
+	 * Retrieve the number of members of the testobject list
+	 * @return
+	 */
+	abstract protected int calculateMembers();
+	
+	/**
+	 * @param nrBatches
+	 * @param nrObjects
+	 * @param lastBatchSize
+	 */
+	protected void validateBatches(int nrBatches, int nrObjects, int lastBatchSize) {
+		int _totalMembers = calculateMembers();
+		int _nrFullBatches = (_totalMembers / GenericService.DEF_SIZE) + 1;
+		int _lastIncrement = _totalMembers % GenericService.DEF_SIZE;
+		System.out.println("Estimated:");
+		System.out.println("\tlistSize:\t\t" + _totalMembers);
+		System.out.println("\tbatchSize:\t\t" + GenericService.DEF_SIZE);
+		System.out.println("\tnrBatches:\t\t" + _nrFullBatches);
+		System.out.println("\tlastBatchSize:\t\t" + _lastIncrement);
+		System.out.println("Measured:");
+		System.out.println("\tlistSize:\t\t" + nrObjects);
+		System.out.println("\tbatchSize:\t\t" + GenericService.DEF_SIZE);
+		System.out.println("\tnrBatches:\t\t" + nrBatches);
+		System.out.println("\tlastBatchSize:\t\t" + lastBatchSize);
+		assertEquals("number of batches should be as expected", _nrFullBatches, nrBatches);
+		assertEquals("should have returned all objects", _totalMembers, nrObjects);
+		assertEquals("last batch size should be as expected", _lastIncrement, lastBatchSize);		
 	}
 }

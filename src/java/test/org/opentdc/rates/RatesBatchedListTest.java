@@ -166,4 +166,8 @@ public class RatesBatchedListTest extends AbstractTestClient {
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
 	}
+	
+	protected int calculateMembers() {
+		return 2 * GenericService.DEF_SIZE + 5;
+	}
 }

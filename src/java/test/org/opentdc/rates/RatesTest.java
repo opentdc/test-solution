@@ -653,4 +653,8 @@ public class RatesTest extends AbstractTestClient {
 		Response _response = webClient.replacePath("/").path(rateId).delete();		
 		assertEquals("DELETE should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 	}
+	
+	protected int calculateMembers() {
+		return 0;
+	}
 }

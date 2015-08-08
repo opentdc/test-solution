@@ -93,7 +93,9 @@ public class WorkRecordsTest extends AbstractTestClient {
 	
 	@After
 	public void cleanupTest() {
-		AddressbookTest.cleanup(addressbookWC, addressbook.getId(), this.getClass().getName());
+		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook with 1 contact");
+		addressbookWC.close();
 		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName(), false);
 		ResourcesTest.cleanup(resourceWC, resource2.getId(), this.getClass().getName(), true);
 		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName(), false);
@@ -755,5 +757,9 @@ public class WorkRecordsTest extends AbstractTestClient {
 	private void deleteWorkRecord(String id, Status expectedStatus) {
 		Response _response = workRecordWC.replacePath("/").path(id).delete();
 		assertEquals("delete(" + id + ") should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());	
+	}
+	
+	protected int calculateMembers() {
+		return 1;
 	}
 }
