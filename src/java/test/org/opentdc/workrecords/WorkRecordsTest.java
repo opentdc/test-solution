@@ -45,6 +45,7 @@ import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
 import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.ServiceUtil;
+import org.opentdc.tags.TagModel;
 import org.opentdc.workrecords.WorkRecordModel;
 import org.opentdc.workrecords.WorkRecordsService;
 import org.opentdc.wtt.CompanyModel;
@@ -720,13 +721,23 @@ public class WorkRecordsTest extends AbstractTestClient {
 		}
 	}
 
-	private WorkRecordModel postWorkRecord(WorkRecordModel wrm, Status expectedStatus) {
-		Response _response = workRecordWC.replacePath("/").post(wrm);
-		assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+	private WorkRecordModel postWorkRecord(
+			WorkRecordModel wrm, 
+			Status expectedStatus) {
+		return postWorkRecord(workRecordWC, wrm, expectedStatus);
+	}
+	
+	public static WorkRecordModel postWorkRecord(
+			WebClient webClient,
+			WorkRecordModel model,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").post(model);
+		if (expectedStatus != null) {
+			assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(WorkRecordModel.class);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
