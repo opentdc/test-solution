@@ -45,7 +45,6 @@ import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
-import test.org.opentdc.addressbooks.ContactTest;
 
 public class ResourcesBatchedListsTest extends AbstractTestClient {
 	private static AddressbookModel adb = null;
@@ -181,7 +180,7 @@ public class ResourcesBatchedListsTest extends AbstractTestClient {
 		ContactModel _cm = new ContactModel();
 		_cm.setFirstName(fName);
 		_cm.setLastName(lName);
-		Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(ContactTest.PATH_EL_CONTACT).post(_cm);
+		Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(ServiceUtil.CONTACT_PATH_EL).post(_cm);
 		return _response.readEntity(ContactModel.class);
 	}
 	

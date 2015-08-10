@@ -64,7 +64,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		ArrayList<ContactModel> _localList = new ArrayList<ContactModel>();		
 		Response _response = null;
 		System.out.println("***** testContactBatchedList:");
-		wc.replacePath("/").path(adb.getId()).path(ContactTest.PATH_EL_CONTACT);
+		wc.replacePath("/").path(adb.getId()).path(ServiceUtil.CONTACT_PATH_EL);
 		// we want to allocate more than double the amount of default list size objects
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
@@ -89,7 +89,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		// list(position=0, size=25) -> elements 0 .. 24
 		wc.resetQuery();
 		_response = wc.replacePath("/").path(adb.getId()).
-				path(ContactTest.PATH_EL_CONTACT).get();
+				path(ServiceUtil.CONTACT_PATH_EL).get();
 		List<ContactModel> _remoteList1 = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 1st Batch:");
@@ -102,7 +102,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		// list(position=25, size=25) -> elements 25 .. 49
 		wc.resetQuery();
 		_response = wc.replacePath("/").path(adb.getId()).
-				path(ContactTest.PATH_EL_CONTACT).query("position", 25).get();
+				path(ServiceUtil.CONTACT_PATH_EL).query("position", 25).get();
 		List<ContactModel> _remoteList2 = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
@@ -115,7 +115,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		// list(position=50, size=25) ->   elements 50 .. 54
 		wc.resetQuery();
 		_response = wc.replacePath("/").path(adb.getId()).
-				path(ContactTest.PATH_EL_CONTACT).query("position", 50).get();
+				path(ServiceUtil.CONTACT_PATH_EL).query("position", 50).get();
 		List<ContactModel> _remoteList3 = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 3rd Batch:");
@@ -133,7 +133,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 			_numberOfBatches++;
 			wc.resetQuery();
 			_response = wc.replacePath("/").path(adb.getId()).
-					path(ContactTest.PATH_EL_CONTACT).query("position", _position).get();
+					path(ServiceUtil.CONTACT_PATH_EL).query("position", _position).get();
 			_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_numberOfReturnedObjects += _remoteList.size();
@@ -152,7 +152,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		wc.resetQuery();
 		// get next 5 elements from position 5
 		_response = wc.replacePath("/").path(adb.getId()).
-				path(ContactTest.PATH_EL_CONTACT).query("position", 5).query("size", 5).get();
+				path(ServiceUtil.CONTACT_PATH_EL).query("position", 5).query("size", 5).get();
 		_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
@@ -160,7 +160,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		// get last 4 elements 
 		wc.resetQuery();
 		_response = wc.replacePath("/").path(adb.getId()).
-				path(ContactTest.PATH_EL_CONTACT).query("position", _limit2-4).query("size", 4).get();
+				path(ServiceUtil.CONTACT_PATH_EL).query("position", _limit2-4).query("size", 4).get();
 		_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
@@ -168,7 +168,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		// read over end of list
 		wc.resetQuery();
 		_response = wc.replacePath("/").path(adb.getId()).
-				path(ContactTest.PATH_EL_CONTACT).query("position", _limit2-5).query("size", 10).get();
+				path(ServiceUtil.CONTACT_PATH_EL).query("position", _limit2-5).query("size", 10).get();
 		_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
@@ -176,7 +176,7 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		// removing all test objects
 		for (ContactModel _c : _localList) {
 			_response = wc.replacePath("/").path(adb.getId()).
-					path(ContactTest.PATH_EL_CONTACT).path(_c.getId()).delete();
+					path(ServiceUtil.CONTACT_PATH_EL).path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
 	}

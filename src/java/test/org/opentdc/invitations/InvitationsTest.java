@@ -52,7 +52,6 @@ import test.org.opentdc.AbstractTestClient;
  * @author Bruno Kaiser
  */
 public class InvitationsTest extends AbstractTestClient {
-	public static final String API_URL = "api/invitation/";
 	private WebClient wc = null;
 
 	/**

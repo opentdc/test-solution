@@ -53,7 +53,6 @@ import test.org.opentdc.AbstractTestClient;
  * @author Bruno Kaiser
  */
 public class EventsTest extends AbstractTestClient {
-	public static final String API_URL = "api/event/";
 	private WebClient eventWC = null;
 
 	/**

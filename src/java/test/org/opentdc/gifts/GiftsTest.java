@@ -50,7 +50,6 @@ import test.org.opentdc.AbstractTestClient;
  * @author Bruno Kaiser
  */
 public class GiftsTest extends AbstractTestClient {
-	public static final String API_URL = "api/gift/";
 	private WebClient giftWC = null;
 
 	/**

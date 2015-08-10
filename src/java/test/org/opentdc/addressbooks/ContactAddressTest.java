@@ -50,7 +50,6 @@ import org.opentdc.service.ServiceUtil;
 import test.org.opentdc.AbstractTestClient;
 
 public class ContactAddressTest extends AbstractTestClient {
-	public static final String PATH_EL_ADDRESS = "address";
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
 	private WebClient wc = null;
@@ -336,8 +335,8 @@ public class ContactAddressTest extends AbstractTestClient {
 		ArrayList<AddressModel> _localList = new ArrayList<AddressModel>();		
 		Response _response = null;
 		wc.replacePath("/").path(adb.getId()).
-			path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
-			path(PATH_EL_ADDRESS);
+			path(ServiceUtil.CONTACT_PATH_EL).path(contact.getId()).
+			path(ServiceUtil.ADDRESS_PATH_EL);
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
 			_response = wc.post(createUrlAddress(AttributeType.HOME, "testList" + i));
@@ -347,8 +346,8 @@ public class ContactAddressTest extends AbstractTestClient {
 		
 		// list(/) -> _remoteList
 		_response = wc.replacePath("/").path(adb.getId()).
-				path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
-				path(PATH_EL_ADDRESS).get();
+				path(ServiceUtil.CONTACT_PATH_EL).path(contact.getId()).
+				path(ServiceUtil.ADDRESS_PATH_EL).get();
 		List<AddressModel> _remoteList = new ArrayList<AddressModel>(wc.getCollection(AddressModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
@@ -363,16 +362,16 @@ public class ContactAddressTest extends AbstractTestClient {
 		
 		for (AddressModel _model : _localList) {
 			_response = wc.replacePath("/").path(adb.getId()).
-					path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
-					path(PATH_EL_ADDRESS).path(_model.getId()).get();
+					path(ServiceUtil.CONTACT_PATH_EL).path(contact.getId()).
+					path(ServiceUtil.ADDRESS_PATH_EL).path(_model.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(AddressModel.class);
 		}
 		
 		for (AddressModel _model : _localList) {
 			_response = wc.replacePath("/").path(adb.getId()).
-					path(ContactTest.PATH_EL_CONTACT).path(contact.getId()).
-					path(PATH_EL_ADDRESS).path(_model.getId()).delete();
+					path(ServiceUtil.CONTACT_PATH_EL).path(contact.getId()).
+					path(ServiceUtil.ADDRESS_PATH_EL).path(_model.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -744,32 +743,33 @@ public class ContactAddressTest extends AbstractTestClient {
 			Status expectedStatus) {
 		Response _response = null;
 		webClient.resetQuery();
+		webClient.replacePath("/").path(aid).path(ServiceUtil.CONTACT_PATH_EL).path(cid).path(ServiceUtil.ADDRESS_PATH_EL);
 		if (query == null) {
 			if (position >= 0) {
 				if (size >= 0) {
-					_response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).query("position", position).query("size", size).get();
+					_response = webClient.query("position", position).query("size", size).get();
 				} else {
-					_response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).query("position", position).get();
+					_response = webClient.query("position", position).get();
 				}
 			} else {
 				if (size >= 0) {
-					_response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).query("size", size).get();
+					_response = webClient.query("size", size).get();
 				} else {
-					_response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).get();
+					_response = webClient.get();
 				}
 			}
 		} else {
 			if (position >= 0) {
 				if (size >= 0) {
-					_response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).query("query", query).query("position", position).query("size", size).get();					
+					_response = webClient.query("query", query).query("position", position).query("size", size).get();					
 				} else {
-					_response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).query("query", query).query("position", position).get();					
+					_response = webClient.query("query", query).query("position", position).get();					
 				}
 			} else {
 				if (size >= 0) {
-					_response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).query("query", query).query("size", size).get();					
+					_response = webClient.query("query", query).query("size", size).get();					
 				} else {
-					_response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).query("query", query).get();					
+					_response = webClient.query("query", query).get();					
 				}				
 			}
 		}
@@ -816,7 +816,7 @@ public class ContactAddressTest extends AbstractTestClient {
 			String cid,
 			AddressModel model,
 			Status expectedStatus) {
-		Response _response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).post(model);
+		Response _response = webClient.replacePath("/").path(aid).path(ServiceUtil.CONTACT_PATH_EL).path(cid).path(ServiceUtil.ADDRESS_PATH_EL).post(model);
 		if (expectedStatus != null) {
 			assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
@@ -854,7 +854,7 @@ public class ContactAddressTest extends AbstractTestClient {
 			String cid,
 			String adrId,
 			Status expectedStatus) {
-		Response _response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).path(adrId).get();
+		Response _response = webClient.replacePath("/").path(aid).path(ServiceUtil.CONTACT_PATH_EL).path(cid).path(ServiceUtil.ADDRESS_PATH_EL).path(adrId).get();
 		if (expectedStatus != null) {
 			assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
@@ -893,7 +893,7 @@ public class ContactAddressTest extends AbstractTestClient {
 			AddressModel model,
 			Status expectedStatus) {
 		webClient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response _response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).path(model.getId()).put(model);
+		Response _response = webClient.replacePath("/").path(aid).path(ServiceUtil.CONTACT_PATH_EL).path(cid).path(ServiceUtil.ADDRESS_PATH_EL).path(model.getId()).put(model);
 		if (expectedStatus != null) {
 			assertEquals("PUT should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
@@ -927,7 +927,7 @@ public class ContactAddressTest extends AbstractTestClient {
 			String cid,
 			String adrId,
 			Status expectedStatus) {
-		Response _response = webClient.replacePath("/").path(aid).path(ContactTest.PATH_EL_CONTACT).path(cid).path(PATH_EL_ADDRESS).path(adrId).delete();	
+		Response _response = webClient.replacePath("/").path(aid).path(ServiceUtil.CONTACT_PATH_EL).path(cid).path(ServiceUtil.ADDRESS_PATH_EL).path(adrId).delete();	
 		if (expectedStatus != null) {
 			assertEquals("DELETE should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}

@@ -54,7 +54,6 @@ import test.org.opentdc.addressbooks.ContactTest;
 import test.org.opentdc.rates.RatesTest;
 
 public class RateRefTest extends AbstractTestClient {
-	public static final String PATH_EL_RATEREF = "rateref";
 	private WebClient resourceWC = null;
 	private WebClient addressbookWC = null;
 	private WebClient rateWC = null;
@@ -225,7 +224,7 @@ public class RateRefTest extends AbstractTestClient {
 	@Test
 	public void testList() {
 		ArrayList<RateRefModel> _localList = new ArrayList<RateRefModel>();		
-		resourceWC.replacePath("/").path(resource.getId()).path(PATH_EL_RATEREF);
+		resourceWC.replacePath("/").path(resource.getId()).path(ServiceUtil.RATEREF_PATH_EL);
 		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
 		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
 		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
@@ -282,7 +281,7 @@ public class RateRefTest extends AbstractTestClient {
 	@Test
 	public void testRead() {
 		ArrayList<RateRefModel> _localList = new ArrayList<RateRefModel>();
-		resourceWC.replacePath("/").path(resource.getId()).path(PATH_EL_RATEREF);
+		resourceWC.replacePath("/").path(resource.getId()).path(ServiceUtil.RATEREF_PATH_EL);
 		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
 		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
 		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
@@ -364,7 +363,7 @@ public class RateRefTest extends AbstractTestClient {
 			String resourceId,
 			Status expectedStatus) 
 	{
-		Response _response = webClient.replacePath("/").path(resourceId).path(PATH_EL_RATEREF).get();
+		Response _response = webClient.replacePath("/").path(resourceId).path(ServiceUtil.RATEREF_PATH_EL).get();
 		assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return new ArrayList<RateRefModel>(webClient.getCollection(RateRefModel.class));
@@ -386,7 +385,7 @@ public class RateRefTest extends AbstractTestClient {
 			RateRefModel rateRefModel,
 			Status expectedStatus) 
 	{
-		Response _response = webClient.replacePath("/").path(resourceModel.getId()).path(PATH_EL_RATEREF).post(rateRefModel);
+		Response _response = webClient.replacePath("/").path(resourceModel.getId()).path(ServiceUtil.RATEREF_PATH_EL).post(rateRefModel);
 		assertEquals("post should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(RateRefModel.class);
@@ -408,7 +407,7 @@ public class RateRefTest extends AbstractTestClient {
 			String rateRefId,
 			Status expectedStatus) 
 	{
-		Response _response = webClient.replacePath("/").path(resourceModel.getId()).path(PATH_EL_RATEREF).path(rateRefId).get();
+		Response _response = webClient.replacePath("/").path(resourceModel.getId()).path(ServiceUtil.RATEREF_PATH_EL).path(rateRefId).get();
 		assertEquals("get should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(RateRefModel.class);
@@ -431,7 +430,7 @@ public class RateRefTest extends AbstractTestClient {
 			Status expectedStatus) 
 	{
 		Response _response = webClient.replacePath("/").
-				path(resourceModel.getId()).path(PATH_EL_RATEREF).path(rateRefId).delete();
+				path(resourceModel.getId()).path(ServiceUtil.RATEREF_PATH_EL).path(rateRefId).delete();
 		assertEquals("delete should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 	}
 	

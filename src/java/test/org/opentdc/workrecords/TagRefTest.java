@@ -68,7 +68,6 @@ import test.org.opentdc.wtt.CompanyTest;
 import test.org.opentdc.wtt.ProjectTest;
 
 public class TagRefTest extends AbstractTestClient {
-	public static final String PATH_EL_TAGREF = "tagref";
 	private WebClient workRecordWC = null;
 	private WebClient tagWC = null;
 	private WebClient wttWC = null;
@@ -258,7 +257,7 @@ public class TagRefTest extends AbstractTestClient {
 	@Test
 	public void testList() {
 		ArrayList<TagRefModel> _localList = new ArrayList<TagRefModel>();		
-		workRecordWC.replacePath("/").path(resource.getId()).path(PATH_EL_TAGREF);
+		workRecordWC.replacePath("/").path(resource.getId()).path(ServiceUtil.TAGREF_PATH_EL);
 		_localList.add(postTagRef(new TagRefModel(tag.getId()), Status.OK));
 		_localList.add(postTagRef(new TagRefModel(tag.getId()), Status.OK));
 		_localList.add(postTagRef(new TagRefModel(tag.getId()), Status.OK));
@@ -315,7 +314,7 @@ public class TagRefTest extends AbstractTestClient {
 	@Test
 	public void testRead() {
 		ArrayList<TagRefModel> _localList = new ArrayList<TagRefModel>();
-		workRecordWC.replacePath("/").path(resource.getId()).path(PATH_EL_TAGREF);
+		workRecordWC.replacePath("/").path(resource.getId()).path(ServiceUtil.TAGREF_PATH_EL);
 		_localList.add(postTagRef(new TagRefModel(tag.getId()), Status.OK));
 		_localList.add(postTagRef(new TagRefModel(tag.getId()), Status.OK));
 		_localList.add(postTagRef(new TagRefModel(tag.getId()), Status.OK));
@@ -397,7 +396,7 @@ public class TagRefTest extends AbstractTestClient {
 			String resourceId,
 			Status expectedStatus) 
 	{
-		Response _response = webClient.replacePath("/").path(resourceId).path(PATH_EL_TAGREF).get();
+		Response _response = webClient.replacePath("/").path(resourceId).path(ServiceUtil.TAGREF_PATH_EL).get();
 		assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return new ArrayList<TagRefModel>(webClient.getCollection(TagRefModel.class));
@@ -419,7 +418,7 @@ public class TagRefTest extends AbstractTestClient {
 			TagRefModel TagRefModel,
 			Status expectedStatus) 
 	{
-		Response _response = webClient.replacePath("/").path(workRecordModel.getId()).path(PATH_EL_TAGREF).post(TagRefModel);
+		Response _response = webClient.replacePath("/").path(workRecordModel.getId()).path(ServiceUtil.TAGREF_PATH_EL).post(TagRefModel);
 		assertEquals("post should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(TagRefModel.class);
@@ -441,7 +440,7 @@ public class TagRefTest extends AbstractTestClient {
 			String tagRefId,
 			Status expectedStatus) 
 	{
-		Response _response = webClient.replacePath("/").path(workRecordModel.getId()).path(PATH_EL_TAGREF).path(tagRefId).get();
+		Response _response = webClient.replacePath("/").path(workRecordModel.getId()).path(ServiceUtil.TAGREF_PATH_EL).path(tagRefId).get();
 		assertEquals("get should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(TagRefModel.class);
@@ -464,7 +463,7 @@ public class TagRefTest extends AbstractTestClient {
 			Status expectedStatus) 
 	{
 		Response _response = webClient.replacePath("/").
-				path(workRecordModel.getId()).path(PATH_EL_TAGREF).path(tagRefId).delete();
+				path(workRecordModel.getId()).path(ServiceUtil.TAGREF_PATH_EL).path(tagRefId).delete();
 		assertEquals("delete should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 	}
 	

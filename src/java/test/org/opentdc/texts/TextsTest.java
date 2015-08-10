@@ -54,7 +54,6 @@ import test.org.opentdc.texts.LocalizedTextTest;
  * @author Bruno Kaiser
  */
 public class TextsTest extends AbstractTestClient {
-	public static final String API_URL = "api/text/";
 	private WebClient wc = null;
 
 	/**

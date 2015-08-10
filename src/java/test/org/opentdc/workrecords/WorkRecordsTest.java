@@ -45,7 +45,6 @@ import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.resources.ResourceModel;
 import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.ServiceUtil;
-import org.opentdc.tags.TagModel;
 import org.opentdc.workrecords.WorkRecordModel;
 import org.opentdc.workrecords.WorkRecordsService;
 import org.opentdc.wtt.CompanyModel;

@@ -208,7 +208,7 @@ public class OrgAllListTest extends AbstractTestClient {
 		_om.setName(name);
 		_om.setOrgType(OrgType.getDefaultOrgType());
 		Response _response = wc.replacePath("/").path(aid).
-				path(OrgTest.PATH_EL_ORG).post(_om);
+				path(ServiceUtil.ORG_PATH_EL).post(_om);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("posted OrgModel " + _om.getName() + " in addressbook " + aid);
 		return _om;

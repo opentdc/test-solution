@@ -48,7 +48,6 @@ import org.opentdc.util.LanguageCode;
 import test.org.opentdc.AbstractTestClient;
 
 public class LocalizedTextTest extends AbstractTestClient {
-	public static final String PATH_EL_LANG = "lang";
 	private WebClient tagWC = null;
 	private TagModel tag = null;
 
@@ -211,7 +210,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 	@Test
 	public void testList() {
 		ArrayList<LocalizedTextModel> _localList = new ArrayList<LocalizedTextModel>();		
-		tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG);
+		tagWC.replacePath("/").path(tag.getId()).path(ServiceUtil.LANG_PATH_EL);
 		_localList.add(createLocalizedText(LanguageCode.DE, "testList1", Status.OK));
 		_localList.add(createLocalizedText(LanguageCode.EN, "testList2", Status.OK));
 		_localList.add(createLocalizedText(LanguageCode.ES, "testList3", Status.OK));
@@ -286,7 +285,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 	@Test
 	public void testRead() {
 		ArrayList<LocalizedTextModel> _localList = new ArrayList<LocalizedTextModel>();
-		tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG);
+		tagWC.replacePath("/").path(tag.getId()).path(ServiceUtil.LANG_PATH_EL);
 		_localList.add(createLocalizedText(LanguageCode.DE, "testRead1", Status.OK));
 		_localList.add(createLocalizedText(LanguageCode.EN, "testRead2", Status.OK));
 		_localList.add(createLocalizedText(LanguageCode.ES, "testRead3", Status.OK));
@@ -411,7 +410,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 			String tagId,
 			Status expectedStatus) 
 	{
-		Response _response = tagWC.replacePath("/").path(tagId).path(PATH_EL_LANG).get();
+		Response _response = tagWC.replacePath("/").path(tagId).path(ServiceUtil.LANG_PATH_EL).get();
 		assertEquals("get should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return new ArrayList<LocalizedTextModel>(tagWC.getCollection(LocalizedTextModel.class));
@@ -433,7 +432,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 			LocalizedTextModel model,
 			Status expectedStatus) 
 	{
-		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).post(model);
+		Response _response = tagWC.replacePath("/").path(tag.getId()).path(ServiceUtil.LANG_PATH_EL).post(model);
 		assertEquals("post should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(LocalizedTextModel.class);
@@ -462,7 +461,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 			String localizedTextId,
 			Status expectedStatus) 
 	{
-		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).path(localizedTextId).get();
+		Response _response = tagWC.replacePath("/").path(tag.getId()).path(ServiceUtil.LANG_PATH_EL).path(localizedTextId).get();
 		assertEquals("get should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(LocalizedTextModel.class);
@@ -483,7 +482,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 			LocalizedTextModel model,
 			Status expectedStatus) {
 		tagWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).path(model.getId()).put(model);
+		Response _response = tagWC.replacePath("/").path(tag.getId()).path(ServiceUtil.LANG_PATH_EL).path(model.getId()).put(model);
 		assertEquals("update() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(LocalizedTextModel.class);
@@ -507,7 +506,7 @@ public class LocalizedTextTest extends AbstractTestClient {
 			String id,
 			Status expectedStatus) 
 	{
-		Response _response = tagWC.replacePath("/").path(tag.getId()).path(PATH_EL_LANG).path(id).delete();
+		Response _response = tagWC.replacePath("/").path(tag.getId()).path(ServiceUtil.LANG_PATH_EL).path(id).delete();
 		assertEquals("delete should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 	}
 	
