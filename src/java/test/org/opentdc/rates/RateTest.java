@@ -52,7 +52,7 @@ import test.org.opentdc.AbstractTestClient;
  * @author Bruno Kaiser
  *
  */
-public class RatesTest extends AbstractTestClient {
+public class RateTest extends AbstractTestClient {
 	private WebClient rateWC = null;
 
 	@Before
@@ -185,13 +185,13 @@ public class RatesTest extends AbstractTestClient {
 		assertNull("currency should not be set by empty constructor", _model1.getCurrency());
 		assertNull("description should not be set by empty constructor", _model1.getDescription());
 		
-		postRate(_model1, Status.BAD_REQUEST);
+		post(_model1, Status.BAD_REQUEST);
 		_model1.setTitle("testCreateReadDeleteWithEmptyConstructor");
 		_model1.setRate(-1);		// negative rates are not allowed
-		postRate(_model1, Status.BAD_REQUEST);
+		post(_model1, Status.BAD_REQUEST);
 		int _rate = 100;
 		_model1.setRate(_rate);
-		RateModel _model2 = postRate(_model1, Status.OK);
+		RateModel _model2 = post(_model1, Status.OK);
 		
 		assertNull("create() should not change the id of the local object", _model1.getId());
 		assertEquals("create() should not change the title of the local object", "testCreateReadDeleteWithEmptyConstructor", _model1.getTitle());
@@ -206,14 +206,14 @@ public class RatesTest extends AbstractTestClient {
 		assertEquals("create() should set the default type", RateType.getDefaultRateType(), _model2.getType());
 		assertNull("create() should not change the description", _model2.getDescription());
 		
-		RateModel _model3 = getRate(_model2.getId(), Status.OK);
+		RateModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		assertEquals("title of returned object should be unchanged", _model2.getTitle(), _model3.getTitle());
 		assertEquals("rate of returned object should be unchanged", _model2.getRate(), _model3.getRate());
 		assertEquals("currency of returned object should be unchanged", _model2.getCurrency(), _model3.getCurrency());
 		assertEquals("description of returned object should be unchanged", _model2.getDescription(), _model3.getDescription());
 		
-		deleteRate(_model3.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -226,7 +226,7 @@ public class RatesTest extends AbstractTestClient {
 		assertEquals("type should be set to the default", RateType.getDefaultRateType(), _model1.getType());
 		assertEquals("currency should be set to the default", Currency.getDefaultCurrency(), _model1.getCurrency());
 		
-		RateModel _model2 = postRate(_model1, Status.OK);
+		RateModel _model2 = post(_model1, Status.OK);
 		assertNull("id should be still null after remote create", _model1.getId());
 		assertEquals("title should be unchanged after remote create", "testCreateReadDelete", _model1.getTitle());
 		assertEquals("rate should be unchanged after remote create", _rate, _model1.getRate());
@@ -241,7 +241,7 @@ public class RatesTest extends AbstractTestClient {
 		assertEquals("type should be unchanged after remote create", RateType.getDefaultRateType(), _model2.getType());
 		assertEquals("description of returned object should be unchanged after remote create", "testCreateReadDelete", _model2.getDescription());
 
-		RateModel _model3 = getRate(_model2.getId(), Status.OK);
+		RateModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		assertEquals("title of returned object should be unchanged after remote create", _model2.getTitle(), _model3.getTitle());
 		assertEquals("rate should be unchanged after remote create", _model2.getRate(), _model3.getRate());
@@ -249,7 +249,7 @@ public class RatesTest extends AbstractTestClient {
 		assertEquals("type should be unchanged after remote create", _model2.getType(), _model3.getType());
 		assertEquals("description of returned object should be unchanged after remote create", _model2.getDescription(), _model3.getDescription());
 
-		deleteRate(_model3.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -257,16 +257,16 @@ public class RatesTest extends AbstractTestClient {
 		RateModel _model = new RateModel("testCreateWithClientSideId", 100, "testCreateWithClientSideId");
 		_model.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _model.getId());
-		postRate(_model, Status.BAD_REQUEST);
+		post(_model, Status.BAD_REQUEST);
 	}
 	
 	@Test
 	public void testCreateWithDuplicateId() {
-		RateModel _model1 = postRate(new RateModel("testCreateWithDuplicateId", 100, "MY_DESC"), Status.OK);
+		RateModel _model1 = post(new RateModel("testCreateWithDuplicateId", 100, "MY_DESC"), Status.OK);
 		RateModel _model2 = new RateModel("DuplicateRatesModel", 100, "MY_DESC");
 		_model2.setId(_model1.getId());		// wrongly create a 2nd RatesModel object with the same ID
-		postRate(_model2, Status.CONFLICT);
-		deleteRate(_model1.getId(), Status.NO_CONTENT);
+		post(_model2, Status.CONFLICT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -274,9 +274,9 @@ public class RatesTest extends AbstractTestClient {
 	) {		
 		ArrayList<RateModel> _localList = new ArrayList<RateModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postRate(new RateModel("testList" + i, 100+i, "MY_DESC"), Status.OK));
+			_localList.add(post(new RateModel("testList" + i, 100+i, "MY_DESC"), Status.OK));
 		}
-		List<RateModel> _remoteList = listRates(Status.OK);
+		List<RateModel> _remoteList = list(Status.OK);
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (RateModel _model : _remoteList) {
@@ -287,17 +287,17 @@ public class RatesTest extends AbstractTestClient {
 			assertTrue("rate <" + _model.getId() + "> should be listed", _remoteListIds.contains(_model.getId()));
 		}
 		for (RateModel _model : _localList) {
-			getRate(_model.getId(), Status.OK);
+			get(_model.getId(), Status.OK);
 		}
 		for (RateModel _model : _localList) {
-			deleteRate(_model.getId(), Status.NO_CONTENT);
+			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}
 		
 	@Test
 	public void testCreate() {
-		RateModel _model1 = postRate(new RateModel("testCreate1", 100, "MY_DESC1"), Status.OK);
-		RateModel _model2 = postRate(new RateModel("testCreate2", 200, "MY_DESC2"), Status.OK);
+		RateModel _model1 = post(new RateModel("testCreate1", 100, "MY_DESC1"), Status.OK);
+		RateModel _model2 = post(new RateModel("testCreate2", 200, "MY_DESC2"), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
 		assertNotNull("ID should be set", _model2.getId());
 		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
@@ -313,48 +313,48 @@ public class RatesTest extends AbstractTestClient {
 		assertEquals("currency should be set to default value by constructor", Currency.getDefaultCurrency(), _model2.getCurrency());
 		assertEquals("type should be set to default value by constructor", RateType.getDefaultRateType(), _model2.getType());
 
-		deleteRate(_model1.getId(), Status.NO_CONTENT);
-		deleteRate(_model2.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		delete(_model2.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDoubleCreate() 
 	{
-		RateModel _model = postRate(new RateModel("testDoubleCreate", 100, "MY_DESC"), Status.OK);
+		RateModel _model = post(new RateModel("testDoubleCreate", 100, "MY_DESC"), Status.OK);
 		assertNotNull("ID should be set:", _model.getId());	
-		postRate(_model, Status.CONFLICT);
-		deleteRate(_model.getId(), Status.NO_CONTENT);
+		post(_model, Status.CONFLICT);
+		delete(_model.getId(), Status.NO_CONTENT);
 	}
 
 	@Test
 	public void testRead() {
 		ArrayList<RateModel> _localList = new ArrayList<RateModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postRate(new RateModel("testRead" + i, 100 + i, "MY_DESC"), Status.OK));
+			_localList.add(post(new RateModel("testRead" + i, 100 + i, "MY_DESC"), Status.OK));
 		}
 	
 		// test read on each local element
 		for (RateModel _model : _localList) {
-			getRate(_model.getId(), Status.OK);
+			get(_model.getId(), Status.OK);
 		}
 
 		// test read on each listed element
-		for (RateModel _model : listRates(Status.OK)) {
-			assertEquals("ID should be unchanged when reading a rate", _model.getId(), getRate(_model.getId(), Status.OK).getId());						
+		for (RateModel _model : list(Status.OK)) {
+			assertEquals("ID should be unchanged when reading a rate", _model.getId(), get(_model.getId(), Status.OK).getId());						
 		}
 
 		for (RateModel _model : _localList) {
-			deleteRate(_model.getId(), Status.NO_CONTENT);
+			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}	
 
 	@Test
 	public void testMultiRead() 
 	{
-		RateModel _model1 = postRate(new RateModel("testMultiRead", 100, "MY_DESC"), Status.OK);
-		RateModel _model2 = getRate(_model1.getId(), Status.OK);
+		RateModel _model1 = post(new RateModel("testMultiRead", 100, "MY_DESC"), Status.OK);
+		RateModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read:", _model1.getId(), _model2.getId());		
-		RateModel _model3 = getRate(_model1.getId(), Status.OK);
+		RateModel _model3 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be the same:", _model2.getId(), _model3.getId());
 		assertEquals("title should be the same:", _model2.getTitle(), _model3.getTitle());
 		assertEquals("description should be the same:", _model2.getDescription(), _model3.getDescription());
@@ -367,19 +367,19 @@ public class RatesTest extends AbstractTestClient {
 		assertEquals("currency should be the same:", _model1.getCurrency(), _model3.getCurrency());
 		assertEquals("type should be the same:", _model1.getType(), _model3.getType());
 		
-		deleteRate(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testUpdate() 
 	{
-		RateModel _model1 = postRate(new RateModel("testUpdate", 100, "MY_DESC"), Status.OK);
+		RateModel _model1 = post(new RateModel("testUpdate", 100, "MY_DESC"), Status.OK);
 		_model1.setTitle("testUpdate1");
 		_model1.setRate(300);
 		_model1.setCurrency(Currency.USD);
 		_model1.setType(RateType.STANDARD_EXTERNAL_ON_SITE);
 		_model1.setDescription("testUpdate1");
-		RateModel _model2 = putRate(_model1, Status.OK);
+		RateModel _model2 = put(_model1, Status.OK);
 		assertNotNull("ID should be set", _model2.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model2.getId());	
 		assertEquals("title should have changed", "testUpdate1", _model2.getTitle());
@@ -393,7 +393,7 @@ public class RatesTest extends AbstractTestClient {
 		_model1.setCurrency(Currency.EUR);
 		_model1.setType(RateType.STANDARD_EXTERNAL_OFF_SITE);
 		_model1.setDescription("testUpdate2");
-		RateModel _model3 = putRate(_model1, Status.OK);
+		RateModel _model3 = put(_model1, Status.OK);
 		assertNotNull("ID should be set", _model3.getId());
 		assertEquals("ID should be unchanged", _model1.getId(), _model3.getId());	
 		assertEquals("title should have changed", "testUpdate2", _model3.getTitle());
@@ -402,32 +402,32 @@ public class RatesTest extends AbstractTestClient {
 		assertEquals("type should have changed", RateType.STANDARD_EXTERNAL_OFF_SITE, _model3.getType());
 		assertEquals("description should have changed", "testUpdate2", _model3.getDescription());
 		
-		deleteRate(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDelete() {
-		RateModel _model = postRate(new RateModel("testDelete", 100, "MY_DESC"), Status.OK);
-		RateModel _tmpObj = getRate(_model.getId(), Status.OK);
+		RateModel _model = post(new RateModel("testDelete", 100, "MY_DESC"), Status.OK);
+		RateModel _tmpObj = get(_model.getId(), Status.OK);
 		assertEquals("ID should be unchanged when reading a rate (remote):", _model.getId(), _tmpObj.getId());						
-		deleteRate(_model.getId(), Status.NO_CONTENT);
-		getRate(_model.getId(), Status.NOT_FOUND);
-		getRate(_model.getId(), Status.NOT_FOUND);
+		delete(_model.getId(), Status.NO_CONTENT);
+		get(_model.getId(), Status.NOT_FOUND);
+		get(_model.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testDoubleDelete() {
-		RateModel _model = postRate(new RateModel("testDoubleDelete", 100, "MY_DESC"), Status.OK);
-		getRate(_model.getId(), Status.OK);
-		deleteRate(_model.getId(), Status.NO_CONTENT);
-		getRate(_model.getId(), Status.NOT_FOUND);
-		deleteRate(_model.getId(), Status.NOT_FOUND);
-		getRate(_model.getId(), Status.NOT_FOUND);
+		RateModel _model = post(new RateModel("testDoubleDelete", 100, "MY_DESC"), Status.OK);
+		get(_model.getId(), Status.OK);
+		delete(_model.getId(), Status.NO_CONTENT);
+		get(_model.getId(), Status.NOT_FOUND);
+		delete(_model.getId(), Status.NOT_FOUND);
+		get(_model.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testModifications() {
-		RateModel _model1 = postRate(new RateModel("testModifications", 100, "MY_DESC"), Status.OK);
+		RateModel _model1 = post(new RateModel("testModifications", 100, "MY_DESC"), Status.OK);
 		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
 		assertNotNull("create() should set createdBy", _model1.getCreatedBy());
 		assertNotNull("create() should set modifiedAt", _model1.getModifiedAt());
@@ -435,7 +435,7 @@ public class RatesTest extends AbstractTestClient {
 		assertEquals("createdAt and modifiedAt should be identical after create()", _model1.getCreatedAt(), _model1.getModifiedAt());
 		assertEquals("createdBy and modifiedBy should be identical after create()", _model1.getCreatedBy(), _model1.getModifiedBy());
 		_model1.setTitle("testModifications1");
-		RateModel _model2 = putRate(_model1, Status.OK);
+		RateModel _model2 = put(_model1, Status.OK);
 		assertEquals("update() should not change createdAt", _model1.getCreatedAt(), _model2.getCreatedAt());
 		assertEquals("update() should not change createdBy", _model1.getCreatedBy(), _model2.getCreatedBy());
 		// timing issue: in order to test the following, we needed to introduce a sleep, what we do not want to do
@@ -455,7 +455,7 @@ public class RatesTest extends AbstractTestClient {
 		_model1.setModifiedAt(new Date(2000));
 		
 		// client-side generated createdBy should be ignored -> no Validation errors expected
-		RateModel _model3 = putRate(_model1, Status.OK);
+		RateModel _model3 = put(_model1, Status.OK);
 		assertEquals("client-side generated createdBy should be ignored", _createdBy, _model3.getCreatedBy());
 		assertEquals("client-side generated createdAt should be ignored", _createdAt, _model3.getCreatedAt());
 		// assertThat(_model1.getModifiedAt(), not(equalTo(_model3.getModifiedAt())));   timing issue, too short, don't want to introduce sleeps
@@ -467,7 +467,7 @@ public class RatesTest extends AbstractTestClient {
 		_model1.setModifiedAt(_modifiedAt);
 		_model1.setModifiedBy(_modifiedBy);
 			
-		deleteRate(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	/********************************* helper methods *********************************/	
@@ -476,10 +476,10 @@ public class RatesTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return a list of RatesModel with all rates
 	 */
-	public List<RateModel> listRates(
+	public List<RateModel> list(
 			Status expectedStatus) 
 	{
-		return listRates(rateWC, expectedStatus);
+		return list(rateWC, expectedStatus);
 	}
 
 	/**
@@ -488,7 +488,7 @@ public class RatesTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return a list of RatesModel with all rates
 	 */
-	public static List<RateModel> listRates(
+	public static List<RateModel> list(
 			WebClient webClient,
 			Status expectedStatus) 
 	{
@@ -507,10 +507,10 @@ public class RatesTest extends AbstractTestClient {
 	 * @param exceptedStatus the expected HTTP status to test on
 	 * @return the created RatesModel
 	 */
-	public RateModel postRate(
+	public RateModel post(
 			RateModel model, 
 			Status expectedStatus) {
-		return postRate(rateWC, model, expectedStatus);
+		return post(rateWC, model, expectedStatus);
 	}
 	
 	/**
@@ -520,7 +520,7 @@ public class RatesTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the created RatesModel
 	 */
-	public static RateModel postRate(
+	public static RateModel post(
 			WebClient webClient,
 			RateModel model,
 			Status expectedStatus) {
@@ -539,11 +539,11 @@ public class RatesTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the created RatesModel
 	 */
-	public static RateModel createRate(
+	public static RateModel create(
 			WebClient webClient,
 			Status expectedStatus) 
 	{
-		return postRate(webClient, new RateModel("TestRate", 100, "TEST_DESC"), expectedStatus);
+		return post(webClient, new RateModel("TestRate", 100, "TEST_DESC"), expectedStatus);
 	}
 	
 	/**
@@ -555,7 +555,7 @@ public class RatesTest extends AbstractTestClient {
 	 * @param description a description
 	 * @return
 	 */
-	public static RateModel createRate(
+	public static RateModel create(
 			WebClient webClient, 
 			String title, 
 			int rate,
@@ -567,7 +567,7 @@ public class RatesTest extends AbstractTestClient {
 		_model.setRate(rate);
 		_model.setCurrency(currency);
 		_model.setDescription(description);
-		return postRate(webClient, _model, Status.OK);
+		return post(webClient, _model, Status.OK);
 	}
 	
 	/**
@@ -576,8 +576,8 @@ public class RatesTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the retrieved RatesModel object in JSON format
 	 */
-	public RateModel getRate(String id, Status expectedStatus) {
-		return getRate(rateWC, id, expectedStatus);
+	public RateModel get(String id, Status expectedStatus) {
+		return get(rateWC, id, expectedStatus);
 	}
 	
 	/**
@@ -587,7 +587,7 @@ public class RatesTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the retrieved RatesModel object in JSON format
 	 */
-	public static RateModel getRate(WebClient rateWC, String id, Status expectedStatus) {
+	public static RateModel get(WebClient rateWC, String id, Status expectedStatus) {
 		Response _response = rateWC.replacePath("/").path(id).get();
 		assertEquals("read() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
@@ -603,10 +603,10 @@ public class RatesTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the newly updated RatesModel object in JSON format
 	 */
-	private RateModel putRate(
+	private RateModel put(
 			RateModel model, 
 			Status expectedStatus) {
-		return putRate(rateWC, model, expectedStatus);
+		return put(rateWC, model, expectedStatus);
 	}
 	
 	/**
@@ -616,7 +616,7 @@ public class RatesTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 * @return the newly updated RatesModel object in JSON format
 	 */
-	public static RateModel putRate(
+	public static RateModel put(
 			WebClient webClient,
 			RateModel model,
 			Status expectedStatus) {
@@ -636,8 +636,8 @@ public class RatesTest extends AbstractTestClient {
 	 * @param id the id of the RatesModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
-	public void deleteRate(String rateId, Status expectedStatus) {
-		deleteRate(rateWC, rateId, expectedStatus);
+	public void delete(String rateId, Status expectedStatus) {
+		delete(rateWC, rateId, expectedStatus);
 	}
 	
 	/**
@@ -646,7 +646,7 @@ public class RatesTest extends AbstractTestClient {
 	 * @param rateId the id of the RatesModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
-	public static void deleteRate(
+	public static void delete(
 			WebClient webClient,
 			String rateId,
 			Status expectedStatus) {

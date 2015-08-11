@@ -51,17 +51,17 @@ import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
 
 public class UserTest extends AbstractTestClient {
-	private WebClient userWC = null;
+	private WebClient wc = null;
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
 	private WebClient addressbookWC = null;
 
 	@Before
 	public void initializeTests() {
-		userWC = initializeTest(ServiceUtil.USERS_API_URL, UsersService.class);
+		wc = initializeTest(ServiceUtil.USERS_API_URL, UsersService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.createAddressbook(addressbookWC, "UserTest", Status.OK);
-		contact = ContactTest.createContact(addressbookWC, adb.getId(), "FNAME", "LNAME");
+		contact = ContactTest.create(addressbookWC, adb.getId(), "FNAME", "LNAME");
 	}
 	
 	@After
@@ -69,7 +69,7 @@ public class UserTest extends AbstractTestClient {
 		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
 		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		userWC.close();
+		wc.close();
 	}
 	
 	/********************************** users attributes tests *********************************/	
@@ -170,7 +170,7 @@ public class UserTest extends AbstractTestClient {
 	/********************************* REST service tests *********************************/	
 	@Test
 	public void testCreateReadDeleteWithEmptyConstructor() {
-		UserModel _um1 = createUser("testUserCreateReadDeleteWithEmptyConstructor", 1);
+		UserModel _um1 = create("testUserCreateReadDeleteWithEmptyConstructor", 1);
 		assertNull("id should not be set by constructor", _um1.getId());
 		assertEquals("loginId should be set by constructor", "testUserCreateReadDeleteWithEmptyConstructor1", _um1.getLoginId());
 		assertEquals("contactId should be set by constructor", contact.getId(), _um1.getContactId());
@@ -179,7 +179,7 @@ public class UserTest extends AbstractTestClient {
 		assertNull("authType should not be set", _um1.getAuthType());
 
 		// create(_um1) -> _um2
-		Response _response = userWC.replacePath("/").post(_um1);
+		Response _response = wc.replacePath("/").post(_um1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um2 = _response.readEntity(UserModel.class);
 		
@@ -198,7 +198,7 @@ public class UserTest extends AbstractTestClient {
 		assertNull("create() should not change the salt", _um2.getSalt());
 
 		// read(_um2) -> _um3
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read(" + _um2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um3 = _response.readEntity(UserModel.class);
 		
@@ -210,14 +210,14 @@ public class UserTest extends AbstractTestClient {
 		assertEquals("read() should not change the salt", _um2.getSalt(), _um3.getSalt());
 		
 		// delete(_um3)
-		_response = userWC.replacePath("/").path(_um3.getId()).delete();
+		_response = wc.replacePath("/").path(_um3.getId()).delete();
 		assertEquals("delete(" + _um3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testUserCreateReadDelete() {
 		// new(1) -> _um1
-		UserModel _um1 = createUser("testUserCreateReadDelete", 1);
+		UserModel _um1 = create("testUserCreateReadDelete", 1);
 		
 		// validating _um1 (before create())
 		assertNull("id should not be set by constructor", _um1.getId());
@@ -227,7 +227,7 @@ public class UserTest extends AbstractTestClient {
 		assertNull("salt should not be set by constructor", _um1.getSalt());
 		
 		// create(_um1) -> _um2
-		Response _response = userWC.replacePath("/").post(_um1);
+		Response _response = wc.replacePath("/").post(_um1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um2 = _response.readEntity(UserModel.class);
 		
@@ -246,7 +246,7 @@ public class UserTest extends AbstractTestClient {
 		assertNull("salt should be unchanged", _um2.getSalt());
 				
 		// read(_um2)  -> _um3
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read(" + _um2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um3 = _response.readEntity(UserModel.class);
 		
@@ -258,38 +258,38 @@ public class UserTest extends AbstractTestClient {
 		assertEquals("salt should be unchanged", _um2.getSalt(), _um3.getSalt());
 		
 		// delete(_um3)
-		_response = userWC.replacePath("/").path(_um3.getId()).delete();
+		_response = wc.replacePath("/").path(_um3.getId()).delete();
 		assertEquals("delete(" + _um3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateUserWithClientSideId() {
 		// new() -> _um1 -> _um1.setId()
-		UserModel _um1 = createUser("testCreateUserWithClientSideId", 1);
+		UserModel _um1 = create("testCreateUserWithClientSideId", 1);
 		_um1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _um1.getId());
 		// create(_um1) -> BAD_REQUEST
-		Response _response = userWC.replacePath("/").post(_um1);
+		Response _response = wc.replacePath("/").post(_um1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateUserWithDuplicateId() {
 		// create(new()) -> _um1
-		Response _response = userWC.replacePath("/").post(createUser("testCreateUserWithDuplicateId", 1));
+		Response _response = wc.replacePath("/").post(create("testCreateUserWithDuplicateId", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um1 = _response.readEntity(UserModel.class);
 
 		// new() -> _um2 -> _um2.setId(_um1.getId())
-		UserModel _um2 = createUser("testCreateUserWithDuplicateId", 2);
+		UserModel _um2 = create("testCreateUserWithDuplicateId", 2);
 		_um2.setId(_um1.getId());		// wrongly create a 2nd UserModel object with the same ID
 		
 		// create(_um2) -> CONFLICT
-		_response = userWC.replacePath("/").post(_um2);
+		_response = wc.replacePath("/").post(_um2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_um1)
-		_response = userWC.replacePath("/").path(_um1.getId()).delete();
+		_response = wc.replacePath("/").path(_um1.getId()).delete();
 		assertEquals("delete(" + _um1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -300,14 +300,14 @@ public class UserTest extends AbstractTestClient {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = userWC.replacePath("/").post(createUser("testUserList", i));
+			_response = wc.replacePath("/").post(create("testUserList", i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(UserModel.class));
 		}
 		
 		// list(/) -> _remoteList
-		_response = userWC.replacePath("/").get();
-		List<UserModel> _remoteList = new ArrayList<UserModel>(userWC.getCollection(UserModel.class));
+		_response = wc.replacePath("/").get();
+		List<UserModel> _remoteList = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -319,23 +319,23 @@ public class UserTest extends AbstractTestClient {
 			assertTrue("user <" + _um.getId() + "> should be listed", _remoteListIds.contains(_um.getId()));
 		}
 		for (UserModel _um : _localList) {
-			_response = userWC.replacePath("/").path(_um.getId()).get();
+			_response = wc.replacePath("/").path(_um.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(UserModel.class);
 		}
 		for (UserModel _um : _localList) {
-			_response = userWC.replacePath("/").path(_um.getId()).delete();
+			_response = wc.replacePath("/").path(_um.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
 
 	@Test
 	public void testUserCreate() {
-		Response _response = userWC.replacePath("/").post(createUser("testUserCreate", 1));
+		Response _response = wc.replacePath("/").post(create("testUserCreate", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _model1 = _response.readEntity(UserModel.class);
 
-		_response = userWC.replacePath("/").post(createUser("testUserCreate", 2));
+		_response = wc.replacePath("/").post(create("testUserCreate", 2));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _model2 = _response.readEntity(UserModel.class);
 		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
@@ -353,11 +353,11 @@ public class UserTest extends AbstractTestClient {
 		assertNull("salt should not be set by constructor", _model2.getSalt());
 		
 		// delete(_um3) -> NO_CONTENT
-		_response = userWC.replacePath("/").path(_model1.getId()).delete();
+		_response = wc.replacePath("/").path(_model1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_um4) -> NO_CONTENT
-		_response = userWC.replacePath("/").path(_model2.getId()).delete();
+		_response = wc.replacePath("/").path(_model2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -365,17 +365,17 @@ public class UserTest extends AbstractTestClient {
 	public void testUserDoubleCreate(
 	) {
 		// create(new()) -> _um
-		Response _response = userWC.replacePath("/").post(createUser("testUserDoubleCreate", 1));
+		Response _response = wc.replacePath("/").post(create("testUserDoubleCreate", 1));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um = _response.readEntity(UserModel.class);
 		assertNotNull("ID should be set:", _um.getId());		
 		
 		// create(_um) -> CONFLICT
-		_response = userWC.replacePath("/").post(_um);
+		_response = wc.replacePath("/").post(_um);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_um) -> NO_CONTENT
-		_response = userWC.replacePath("/").path(_um.getId()).delete();
+		_response = wc.replacePath("/").path(_um.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
@@ -385,33 +385,33 @@ public class UserTest extends AbstractTestClient {
 		ArrayList<UserModel> _localList = new ArrayList<UserModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = userWC.replacePath("/").post(createUser("testUserRead", i));
+			_response = wc.replacePath("/").post(create("testUserRead", i));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(UserModel.class));
 		}
 	
 		// test read on each local element
 		for (UserModel _um : _localList) {
-			_response = userWC.replacePath("/").path(_um.getId()).get();
+			_response = wc.replacePath("/").path(_um.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(UserModel.class);
 		}
 
 		// test read on each listed element
-		_response = userWC.replacePath("/").get();
-		List<UserModel> _remoteList = new ArrayList<UserModel>(userWC.getCollection(UserModel.class));
+		_response = wc.replacePath("/").get();
+		List<UserModel> _remoteList = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		UserModel _tmpObj = null;
 		for (UserModel _um : _remoteList) {
-			_response = userWC.replacePath("/").path(_um.getId()).get();
+			_response = wc.replacePath("/").path(_um.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(UserModel.class);
 			assertEquals("ID should be unchanged when reading a user", _um.getId(), _tmpObj.getId());						
 		}
 
 		for (UserModel _um : _localList) {
-			_response = userWC.replacePath("/").path(_um.getId()).delete();
+			_response = wc.replacePath("/").path(_um.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}	
@@ -420,20 +420,20 @@ public class UserTest extends AbstractTestClient {
 	public void testUserMultiRead(
 	) {
 		// new() -> _um1
-		UserModel _um1 = createUser("testUserMultiRead", 1);
+		UserModel _um1 = create("testUserMultiRead", 1);
 		
 		// create(_um1) -> _um2
-		Response _response = userWC.replacePath("/").post(_um1);
+		Response _response = wc.replacePath("/").post(_um1);
 		UserModel _um2 = _response.readEntity(UserModel.class);
 
 		// read(_um2) -> _um3
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um3 = _response.readEntity(UserModel.class);
 		assertEquals("ID should be unchanged after read", _um2.getId(), _um3.getId());		
 
 		// read(_um2) -> _um4
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um4 = _response.readEntity(UserModel.class);
 		
@@ -451,7 +451,7 @@ public class UserTest extends AbstractTestClient {
 		assertEquals("salt should be unchanged", _um2.getSalt(), _um3.getSalt());
 		
 		// delete(_um2)
-		_response = userWC.replacePath("/").path(_um2.getId()).delete();
+		_response = wc.replacePath("/").path(_um2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -459,10 +459,10 @@ public class UserTest extends AbstractTestClient {
 	public void testUserUpdate(
 	) {
 		// new() -> _c1
-		UserModel _um1 = createUser("testUserUpdate", 1);
+		UserModel _um1 = create("testUserUpdate", 1);
 		
 		// create(_c1) -> _c2
-		Response _response = userWC.replacePath("/").post(_um1);
+		Response _response = wc.replacePath("/").post(_um1);
 		UserModel _um2 = _response.readEntity(UserModel.class);
 		
 		// change the attributes
@@ -472,8 +472,8 @@ public class UserTest extends AbstractTestClient {
 		_um2.setHashedPassword("MY_PWD1");
 		_um2.setSalt("MY_SALT1");
 		
-		userWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = userWC.replacePath("/").path(_um2.getId()).put(_um2);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_um2.getId()).put(_um2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um3 = _response.readEntity(UserModel.class);
 
@@ -487,13 +487,13 @@ public class UserTest extends AbstractTestClient {
 		// reset the attributes
 		// update(_c2) -> _c4
 		_um2.setLoginId("LID2");
-		ContactModel _cm = ContactTest.createContact(addressbookWC, adb.getId(), "MY_FNAME2", "MY_LNAME2");
+		ContactModel _cm = ContactTest.create(addressbookWC, adb.getId(), "MY_FNAME2", "MY_LNAME2");
 		_um2.setContactId(_cm.getId());
 		_um2.setHashedPassword("MY_PWD2");
 		_um2.setSalt("MY_SALT2");		
 		
-		userWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = userWC.replacePath("/").path(_um2.getId()).put(_um2);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_um2.getId()).put(_um2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um4 = _response.readEntity(UserModel.class);
 
@@ -504,7 +504,7 @@ public class UserTest extends AbstractTestClient {
 		assertEquals("v should be set by constructor", "MY_PWD2", _um4.getHashedPassword());
 		assertEquals("salt should be set by constructor", "MY_SALT2", _um4.getSalt());
 		
-		_response = userWC.replacePath("/").path(_um2.getId()).delete();
+		_response = wc.replacePath("/").path(_um2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -512,28 +512,28 @@ public class UserTest extends AbstractTestClient {
 	public void testUserDelete(
 	) {
 		// new() -> _um1
-		UserModel _um1 = createUser("testUserDelete", 1);
+		UserModel _um1 = create("testUserDelete", 1);
 		// create(_um1) -> _um2
-		Response _response = userWC.replacePath("/").post(_um1);
+		Response _response = wc.replacePath("/").post(_um1);
 		UserModel _um2 = _response.readEntity(UserModel.class);
 		
 		// read(_um2) -> _um3
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um3 = _response.readEntity(UserModel.class);
 		assertEquals("ID should be unchanged when reading a user (remote):", _um2.getId(), _um3.getId());						
 		
 		// delete(_um2) -> OK
-		_response = userWC.replacePath("/").path(_um2.getId()).delete();
+		_response = wc.replacePath("/").path(_um2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
 		// read(_um2) -> NOT_FOUND
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read(_um2) -> NOT_FOUND
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
@@ -541,37 +541,37 @@ public class UserTest extends AbstractTestClient {
 	public void testUserDoubleDelete(
 	) {
 		// new() -> _um1
-		UserModel _um1 = createUser("testUserDoubleDelete", 1);
+		UserModel _um1 = create("testUserDoubleDelete", 1);
 		
 		// create(_um1) -> _um2
-		Response _response = userWC.replacePath("/").post(_um1);
+		Response _response = wc.replacePath("/").post(_um1);
 		UserModel _um2 = _response.readEntity(UserModel.class);
 
 		// read(_um2) -> OK
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
 		// delete(_um2) -> OK
-		_response = userWC.replacePath("/").path(_um2.getId()).delete();		
+		_response = wc.replacePath("/").path(_um2.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 		// read(_um2) -> NOT_FOUND
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// delete _um2 -> NOT_FOUND
-		_response = userWC.replacePath("/").path(_um2.getId()).delete();		
+		_response = wc.replacePath("/").path(_um2.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read _um2 -> NOT_FOUND
-		_response = userWC.replacePath("/").path(_um2.getId()).get();
+		_response = wc.replacePath("/").path(_um2.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testUserModifications() {
 		// create(new UserModel()) -> _um1
-		Response _response = userWC.replacePath("/").post(createUser("testUserModifications", 1));
+		Response _response = wc.replacePath("/").post(create("testUserModifications", 1));
 		UserModel _um1 = _response.readEntity(UserModel.class);
 		
 		// test createdAt and createdBy
@@ -585,8 +585,8 @@ public class UserTest extends AbstractTestClient {
 		
 		// update(_um1)  -> _um2
 		_um1.setLoginId("NEW_LOGINID");
-		userWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = userWC.replacePath("/").path(_um1.getId()).put(_um1);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_um1.getId()).put(_um1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _um2 = _response.readEntity(UserModel.class);
 
@@ -602,8 +602,8 @@ public class UserTest extends AbstractTestClient {
 		// update(_um1) with createdBy set on client side -> ignore
 		String _createdBy = _um1.getCreatedBy();
 		_um1.setCreatedBy("MYSELF");
-		userWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = userWC.replacePath("/").path(_um1.getId()).put(_um1);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_um1.getId()).put(_um1);
 		assertEquals("update() should ignore client-side generated createdBy", 
 				Status.OK.getStatusCode(), _response.getStatus());
 		_um1.setCreatedBy(_createdBy);
@@ -611,8 +611,8 @@ public class UserTest extends AbstractTestClient {
 		// update(_um1) with createdAt set on client side -> ignore
 		Date _d = _um1.getCreatedAt();
 		_um1.setCreatedAt(new Date(1000));
-		userWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = userWC.replacePath("/").path(_um1.getId()).put(_um1);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_um1.getId()).put(_um1);
 		assertEquals("update() should ignore client-side generated createdAt", 
 				Status.OK.getStatusCode(), _response.getStatus());
 		_um1.setCreatedAt(_d);
@@ -620,8 +620,8 @@ public class UserTest extends AbstractTestClient {
 		// update(_um1) with modifiedBy/At set on client side -> ignored by server
 		_um1.setModifiedBy("MYSELF");
 		_um1.setModifiedAt(new Date(1000));
-		userWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = userWC.replacePath("/").path(_um1.getId()).put(_um1);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_um1.getId()).put(_um1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		UserModel _o3 = _response.readEntity(UserModel.class);
 		
@@ -631,12 +631,12 @@ public class UserTest extends AbstractTestClient {
 		assertThat(_um1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
 		// delete(_um1) -> NO_CONTENT
-		_response = userWC.replacePath("/").path(_um1.getId()).delete();		
+		_response = wc.replacePath("/").path(_um1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	/********************************* helper methods *********************************/	
-	public UserModel createUser(String loginId, int suffix) {
+	public UserModel create(String loginId, int suffix) {
 		return new UserModel(loginId + suffix, contact.getId());
 	}
 	

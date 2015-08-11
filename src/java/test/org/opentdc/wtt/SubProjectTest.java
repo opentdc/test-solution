@@ -29,7 +29,7 @@ import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 
 public class SubProjectTest  extends AbstractTestClient {		
-	private WebClient wttWC = null;
+	private WebClient wc = null;
 	private WebClient addressbookWC = null;
 	private CompanyModel company = null;
 	private ProjectModel parentProject = null;
@@ -37,12 +37,12 @@ public class SubProjectTest  extends AbstractTestClient {
 
 	@Before
 	public void initializeTest() {
-		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
+		wc = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		parentProject = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
+		company = CompanyTest.create(wc, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
+		parentProject = ProjectTest.create(wc, company.getId(), this.getClass().getName(), "MY_DESC");
 	}
 
 	@After
@@ -50,7 +50,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
 		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wc, company.getId(), this.getClass().getName());
 	}
 	
 	/********************************** subproject attributes tests *********************************/	
@@ -67,14 +67,14 @@ public class SubProjectTest  extends AbstractTestClient {
 		ProjectModel _pm1 = new ProjectModel();
 		
 		// create(_pm1) -> BAD_REQUEST (because of empty title)
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		_pm1.setTitle("testSubProjectCreateReadDeleteWithEmptyConstructor");
 
 		// create(_pm1) -> _pm2
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -91,7 +91,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertNull("create() should not change the description", _pm2.getDescription());
 
 		// read(_pm2) -> _pm3
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).get();
 		assertEquals("read(" + _pm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -103,7 +103,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("read() should not change the description", _pm2.getDescription(), _pm3.getDescription());
 
 		// delete(_pm3)
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm3.getId()).delete();
 		assertEquals("delete(" + _pm3.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -117,7 +117,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("title should be set by constructor", "testSubProjectCreateReadDelete", _pm1.getTitle());
 		assertEquals("description should be set by constructor", "MY_DESC", _pm1.getDescription());
 		// create(_pm1) -> _pm2
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -131,7 +131,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("description of returned object should be unchanged after remote create", "MY_DESC", _pm2.getDescription());
 
 		// read(_pm2)  -> _pm3
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).get();
 		assertEquals("read(" + _pm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -141,7 +141,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("description of returned object should be unchanged after remote create", _pm2.getDescription(), _pm3.getDescription());
 
 		// delete(_pm3)
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm3.getId()).delete();
 		assertEquals("delete(" + _pm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -155,7 +155,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		_pm1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _pm1.getId());
 		// create(_pm1) -> BAD_REQUEST
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
@@ -164,7 +164,7 @@ public class SubProjectTest  extends AbstractTestClient {
 	@Test
 	public void testCreateSubProjectWithDuplicateId() {
 		// create(new()) -> _pm1
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).
 				post(new ProjectModel("testCreateSubProjectWithDuplicateId", "MY_DESC"));
@@ -177,13 +177,13 @@ public class SubProjectTest  extends AbstractTestClient {
 		_pm2.setId(_pm1.getId());		// wrongly create a 2nd ProjectModel object with the same ID
 		
 		// create(_pm2) -> CONFLICT
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_pm1)
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();
 		assertEquals("delete(" + _pm1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -197,7 +197,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).
 					post(new ProjectModel("testSubProjectList" + i, "MY_DESC" + i));
@@ -206,10 +206,10 @@ public class SubProjectTest  extends AbstractTestClient {
 		}
 		
 		// list(/) -> _remoteList
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).get();
-		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wc.getCollection(ProjectModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -222,7 +222,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		}
 		
 		for (ProjectModel _pm : _localList) {
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -230,7 +230,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		}
 		
 		for (ProjectModel _pm : _localList) {
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -245,7 +245,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		ProjectModel _pm2 = new ProjectModel("testSubProjectCreate2", "MY_DESC2");
 		
 		// create(_pm1)  -> _pm3
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -253,7 +253,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		System.out.println("testSubProjectCreate created " + _pm3.getId());
 
 		// create(_pm2) -> _pm4
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -268,14 +268,14 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("description2 should be set correctly", "MY_DESC2", _pm4.getDescription());
 
 		// delete(_p3) -> NO_CONTENT
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		System.out.println("testSubProjectCreate deleted " + _pm3.getId());
 
 		// delete(_p4) -> NO_CONTENT
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -285,7 +285,7 @@ public class SubProjectTest  extends AbstractTestClient {
 	@Test
 	public void testSubProjectCreateDouble() {		
 		// create(new()) -> _pm
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).
 				post(new ProjectModel("testSubProjectCreateDouble", "MY_DESC"));
@@ -295,13 +295,13 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertNotNull("ID should be set:", _pm.getId());		
 		
 		// create(_pm) -> CONFLICT
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_pm) -> NO_CONTENT
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -313,7 +313,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).
 					post(new ProjectModel("testSubProjectRead", "MY_DESC"));
@@ -323,7 +323,7 @@ public class SubProjectTest  extends AbstractTestClient {
 	
 		// test read on each local element
 		for (ProjectModel _pm : _localList) {
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -331,15 +331,15 @@ public class SubProjectTest  extends AbstractTestClient {
 		}
 
 		// test read on each element within list()
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).get();
-		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wc.getCollection(ProjectModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ProjectModel _tmpObj = null;
 		for (ProjectModel _pm : _remoteList) {
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -348,7 +348,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		}
 
 		for (ProjectModel _pm : _localList) {
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -362,14 +362,14 @@ public class SubProjectTest  extends AbstractTestClient {
 		ProjectModel _pm1 = new ProjectModel("testSubProjectMultiRead", "MY_DESC");
 		
 		// create(_pm1) -> _pm2
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
 		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
 		System.out.println("testSubProjectMultiRead created " + _pm2.getId());			
 
 		// read(_pm2) -> _pm3
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -377,7 +377,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("ID should be unchanged after read:", _pm2.getId(), _pm3.getId());		
 
 		// read(_pm2) -> _pm4
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -394,7 +394,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("description should be the same:", _pm3.getDescription(), _pm2.getDescription());
 		
 		// delete(_pm2)
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -404,7 +404,7 @@ public class SubProjectTest  extends AbstractTestClient {
 	@Test
 	public void testSubProjectUpdate() {
 		// create() -> _pm1
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(new ProjectModel("testSubProjectUpdate", "MY_DESC"));
 		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
@@ -413,8 +413,8 @@ public class SubProjectTest  extends AbstractTestClient {
 		// update(_pm1) -> _pm2
 		_pm1.setTitle("MY_TITLE1");
 		_pm1.setDescription("MY_DESC1");
-		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wttWC.replacePath("/").path(company.getId()).
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -429,8 +429,8 @@ public class SubProjectTest  extends AbstractTestClient {
 		// update(_pm1) -> _pm3
 		_pm1.setTitle("MY_TITLE2");
 		_pm1.setDescription("MY_DESC2");
-		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wttWC.replacePath("/").path(company.getId()).
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -441,7 +441,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("title should have changed", "MY_TITLE2", _pm3.getTitle());
 		assertEquals("description should have changed", "MY_DESC2", _pm3.getDescription());
 		
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -451,14 +451,14 @@ public class SubProjectTest  extends AbstractTestClient {
 	public void testSubProjectDelete(
 	) {
 		// create() -> _pm1
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(new ProjectModel("testSubProjectDelete", "MY_DESC"));
 		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
 		System.out.println("testSubProjectDelete created " + _pm1.getId());			
 		
 		// read(_pm1) -> _pm2
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -466,7 +466,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertEquals("ID should be unchanged when reading a project (remote):", _pm1.getId(), _pm2.getId());						
 		
 		// delete(_pm1) -> OK
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -474,13 +474,13 @@ public class SubProjectTest  extends AbstractTestClient {
 	
 		// read the deleted object twice
 		// read(_pm1) -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read(_pm1) -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
@@ -489,39 +489,39 @@ public class SubProjectTest  extends AbstractTestClient {
 	@Test
 	public void testSubProjectDoubleDelete() {		
 		// create() -> _pm1
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(new ProjectModel("testSubProjectDoubleDelete", "MY_DESC"));
 		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
 		System.out.println("testSubProjectDoubleDelete created " + _pm1.getId());			
 
 		// read(_pm1) -> OK
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
 		// delete(_pm1) -> OK
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		System.out.println("testSubProjectDoubleDelete deleted " + _pm1.getId());			
 		
 		// read(_pm1) -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// delete _pm1 -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read _pm1 -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
@@ -530,7 +530,7 @@ public class SubProjectTest  extends AbstractTestClient {
 	@Test
 	public void testSubProjectDeep() throws Exception {
 			// create() -> _parentProject
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).
 				post(new ProjectModel("parentProject", "MY_DESC"));
@@ -542,7 +542,7 @@ public class SubProjectTest  extends AbstractTestClient {
 		// creating some subprojects in a deep structure
 		for (int i = 0; i < LIMIT; i++) {
 			_parentProjectId = _parentProject.getId();
-			_parentProject = wttWC.replacePath("/").path(company.getId()).
+			_parentProject = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_parentProject.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).
 					post(new ProjectModel("testSubProjectDeep" + i, "MY_DESC" + i)).readEntity(ProjectModel.class);
@@ -559,14 +559,14 @@ public class SubProjectTest  extends AbstractTestClient {
 		while (_iter.hasNext()) {
 			_parentId = (String) _iter.next();
 			_childId = _projectTree.get(_parentId);
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_parentId).
 					path(ServiceUtil.PROJECT_PATH_EL).get();
-			List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+			List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wc.getCollection(ProjectModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			assertEquals("list() should contain one single subproject", 1, _remoteList.size());
 			// read(_p2) -> _p3
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_parentId).
 					path(ServiceUtil.PROJECT_PATH_EL).path(_childId).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -577,7 +577,7 @@ public class SubProjectTest  extends AbstractTestClient {
 			_childId = _projectTree.get(_pId);
 			// System.out.println("deleting <" + _pId + ">/<" + _childId + ">");
 			if (! _projectTree.containsKey(_childId)) {
-				_response = wttWC.replacePath("/").path(company.getId()).
+				_response = wc.replacePath("/").path(company.getId()).
 						path(ServiceUtil.PROJECT_PATH_EL).path(_pId).
 						path(ServiceUtil.PROJECT_PATH_EL).path(_childId).delete();		
 				assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -589,7 +589,7 @@ public class SubProjectTest  extends AbstractTestClient {
 	@Test
 	public void testSubProjectModifications() {
 		// create(new ProjectModel()) -> _pm1
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).post(new ProjectModel("testSubProjectModifications", "MY_DESC"));
 		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
@@ -605,8 +605,8 @@ public class SubProjectTest  extends AbstractTestClient {
 		
 		// update(_pm1)  -> _pm2
 		_pm1.setTitle("NEW_TITLE");
-		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wttWC.replacePath("/").path(company.getId()).
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -624,8 +624,8 @@ public class SubProjectTest  extends AbstractTestClient {
 		// update(_pm1) with modifiedBy/At set on client side -> ignored by server
 		_pm1.setModifiedBy("MYSELF");
 		_pm1.setModifiedAt(new Date(1000));
-		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wttWC.replacePath("/").path(company.getId()).
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).put(_pm1);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -637,14 +637,14 @@ public class SubProjectTest  extends AbstractTestClient {
 		assertThat(_pm1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
 		// delete(_pm1) -> NO_CONTENT
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	/********************************* helper methods *********************************/	
-	public static ProjectModel createSubProject(
+	public static ProjectModel create(
 			WebClient wttWC, 
 			String companyId,
 			String parentProjectId,

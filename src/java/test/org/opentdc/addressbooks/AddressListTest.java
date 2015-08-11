@@ -61,7 +61,7 @@ public class AddressListTest extends AbstractTestClient {
 	public static void initializeTests() {
 		wc = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.createAddressbook(wc, "AddressListTest", Status.OK);
-		contact = ContactTest.createContact(wc, adb.getId(), "AddressListTest", "Test");
+		contact = ContactTest.create(wc, adb.getId(), "AddressListTest", "Test");
 		System.out.println("***** AddressListTest:");
 		testObjects = new ArrayList<AddressModel>();
 		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55

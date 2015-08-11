@@ -44,17 +44,17 @@ import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class TagsBatchedListTest extends AbstractTestClient {
-	private WebClient tagWC = null;
+public class TagListTest extends AbstractTestClient {
+	private WebClient wc = null;
 
 	@Before
 	public void initializeTests() {
-		tagWC = createWebClient(ServiceUtil.TAGS_API_URL, TagsService.class);
+		wc = createWebClient(ServiceUtil.TAGS_API_URL, TagsService.class);
 	}
 
 	@After
 	public void cleanupTest() {
-		tagWC.close();
+		wc.close();
 	}
 	
 
@@ -62,44 +62,44 @@ public class TagsBatchedListTest extends AbstractTestClient {
 	public void testTagBatchedList() {
 		ArrayList<TagModel> _localList = new ArrayList<TagModel>();		
 		System.out.println("***** testTagBatchedList:");
-		tagWC.replacePath("/");
+		wc.replacePath("/");
 		// we want to allocate more than double the amount of default list size objects
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		TagModel _res = null;
+		TagModel _model1 = null;
 		for (int i = 0; i < _limit2; i++) {
-			_res = TagsTest.createTag(tagWC, Status.OK);
-			_localList.add(_res);
-			LocalizedTextTest.postLocalizedText(tagWC, _res, new LocalizedTextModel(LanguageCode.ES, "testTagBatchedList" + i), Status.OK);
-			System.out.println("posted TagsModel " + _res.getId() + " with LocalizedText <testTagBatchedList" + i + ">");
+			_model1 = TagTest.create(wc, Status.OK);
+			_localList.add(_model1);
+			LocalizedTextTest.post(wc, _model1, new LocalizedTextModel(LanguageCode.ES, "testTagBatchedList" + i), Status.OK);
+			System.out.println("posted TagsModel " + _model1.getId() + " with LocalizedText <testTagBatchedList" + i + ">");
 		}
 		assertEquals("testcase should create the right amount of Tags", _limit2, _localList.size());
 
 		// get first batch
 		// list(position=0, size=25) -> elements 0 .. 24
-		List<SingleLangTag> _remoteList1 = TagsTest.listTags(tagWC, null, -1, -1, Status.OK);
+		List<SingleLangTag> _remoteList1 = TagTest.list(wc, null, -1, -1, Status.OK);
 		System.out.println("****** 1st Batch:");
-		for (SingleLangTag _ttm : _remoteList1) {
-			System.out.println(_ttm.getTagId());
+		for (SingleLangTag _model : _remoteList1) {
+			System.out.println(_model.getTagId());
 		}
 		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
 			
 		// get second batch
 		// list(position=25, size=25) -> elements 25 .. 49
-		List<SingleLangTag> _remoteList2 = TagsTest.listTags(tagWC, null, 25, -1, Status.OK);
+		List<SingleLangTag> _remoteList2 = TagTest.list(wc, null, 25, -1, Status.OK);
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
-		for (SingleLangTag _rm : _remoteList2) {
-			System.out.println(_rm.getTagId());
+		for (SingleLangTag _model : _remoteList2) {
+			System.out.println(_model.getTagId());
 		}
 		
 		// get rest 
 		// list(position=50, size=25) ->   elements 50 .. 54
-		List<SingleLangTag> _remoteList3 = TagsTest.listTags(tagWC, null, 50, _increment, Status.OK);
+		List<SingleLangTag> _remoteList3 = TagTest.list(wc, null, 50, _increment, Status.OK);
 		System.out.println("****** 3rd Batch:");
-		for (SingleLangTag _rm : _remoteList3) {
-			System.out.println(_rm.getTagId());
+		for (SingleLangTag _model : _remoteList3) {
+			System.out.println(_model.getTagId());
 		}
 		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
 		
@@ -110,7 +110,7 @@ public class TagsBatchedListTest extends AbstractTestClient {
 		List<SingleLangTag> _remoteList = null;
 		while(true) {
 			_numberOfBatches++;
-			_remoteList = TagsTest.listTags(tagWC, null, _position, -1, Status.OK);
+			_remoteList = TagTest.list(wc, null, _position, -1, Status.OK);
 			_numberOfReturnedObjects += _remoteList.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
 			if (_remoteList.size() < GenericService.DEF_SIZE) {
@@ -124,18 +124,18 @@ public class TagsBatchedListTest extends AbstractTestClient {
 		assertTrue("last batch size should be as expected", _remoteList.size() >= _increment);
 	
 		// testing some explicit positions and sizes
-		_remoteList = TagsTest.listTags(tagWC, null, 5, 5, Status.OK);  // get next 5 elements from position 5
+		_remoteList = TagTest.list(wc, null, 5, 5, Status.OK);  // get next 5 elements from position 5
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
-		_remoteList = TagsTest.listTags(tagWC, null, _limit2-4, 4, Status.OK);  // get last 4 elements
+		_remoteList = TagTest.list(wc, null, _limit2-4, 4, Status.OK);  // get last 4 elements
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
 		
-		_remoteList = TagsTest.listTags(tagWC, null, _limit2-5, 10, Status.OK);  // read over end of list
+		_remoteList = TagTest.list(wc, null, _limit2-5, 10, Status.OK);  // read over end of list
 		assertTrue("list() should return correct number of elements", _remoteList.size() >= 5);
 		
 		// removing all test objects
-		for (TagModel _tm : _localList) {
-			TagsTest.deleteTag(tagWC, _tm.getId(), Status.NO_CONTENT);
+		for (TagModel _model : _localList) {
+			TagTest.delete(wc, _model.getId(), Status.NO_CONTENT);
 		}		
 	}
 	

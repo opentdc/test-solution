@@ -43,7 +43,7 @@ import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class OrgBatchedListTest extends AbstractTestClient {
+public class OrgListTest extends AbstractTestClient {
 	private static AddressbookModel adb = null;
 	private WebClient wc = null;
 
@@ -71,19 +71,19 @@ public class OrgBatchedListTest extends AbstractTestClient {
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		OrgModel _res = null;
+		OrgModel _model1 = null;
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_res = new OrgModel();
-			_res.setName(String.format("%2d", i));
-			_response = wc.post(_res);
+			_model1 = new OrgModel();
+			_model1.setName(String.format("%2d", i));
+			_response = wc.post(_model1);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(OrgModel.class));
-			System.out.println("posted OrgModel " + _res.getName());
+			System.out.println("posted OrgModel " + _model1.getName());
 		}
 		System.out.println("****** locallist:");
-		for (OrgModel _rm : _localList) {
-			System.out.println(_rm.getName());
+		for (OrgModel _model : _localList) {
+			System.out.println(_model.getName());
 		}
 
 		// get first batch
@@ -94,8 +94,8 @@ public class OrgBatchedListTest extends AbstractTestClient {
 		List<OrgModel> _remoteList1 = new ArrayList<OrgModel>(wc.getCollection(OrgModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 1st Batch:");
-		for (OrgModel _rm : _remoteList1) {
-			System.out.println(_rm.getName());
+		for (OrgModel _model : _remoteList1) {
+			System.out.println(_model.getName());
 		}
 		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
 		
@@ -108,8 +108,8 @@ public class OrgBatchedListTest extends AbstractTestClient {
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
-		for (OrgModel _rm : _remoteList2) {
-			System.out.println(_rm.getName());
+		for (OrgModel _model : _remoteList2) {
+			System.out.println(_model.getName());
 		}
 		
 		// get rest 
@@ -120,8 +120,8 @@ public class OrgBatchedListTest extends AbstractTestClient {
 		List<OrgModel> _remoteList3 = new ArrayList<OrgModel>(wc.getCollection(OrgModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 3rd Batch:");
-		for (OrgModel _rm : _remoteList3) {
-			System.out.println(_rm.getName());
+		for (OrgModel _model : _remoteList3) {
+			System.out.println(_model.getName());
 		}
 		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
 		

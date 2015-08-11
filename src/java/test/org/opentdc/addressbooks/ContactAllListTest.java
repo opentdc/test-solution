@@ -68,7 +68,7 @@ public class ContactAllListTest extends AbstractTestClient {
 			_abm = AddressbookTest.post(wc, new AddressbookModel("ContactAllListTest" + i), Status.OK);
 			addressbooks.add(_abm);
 			for (int j = 0; j < nrContacts; j++) {
-				ContactTest.createContact(wc, _abm.getId(), "addressbook" + i + "_contact" + j, "ContactAllListTest");
+				ContactTest.create(wc, _abm.getId(), "addressbook" + i + "_contact" + j, "ContactAllListTest");
 			}
 		}
 	}

@@ -43,7 +43,7 @@ import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
-public class ContactBatchedListTest extends AbstractTestClient {
+public class ContactListTest extends AbstractTestClient {
 	private static AddressbookModel adb = null;
 	private WebClient wc = null;
 
@@ -69,20 +69,16 @@ public class ContactBatchedListTest extends AbstractTestClient {
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		ContactModel _res = null;
+		ContactModel _model = null;
+		System.out.println("****** locallist (posts):");
 		for (int i = 0; i < _limit2; i++) {
-			// create(new()) -> _localList
-			_res = new ContactModel();
-			_res.setFirstName(String.format("%2d", i));
-			_res.setLastName("Test");
-			_response = wc.post(_res);
+			_model = new ContactModel();
+			_model.setFirstName(String.format("%2d", i));
+			_model.setLastName("Test");
+			_response = wc.post(_model);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ContactModel.class));
-			System.out.println("posted ContactModel " + _res.getFn());
-		}
-		System.out.println("****** locallist:");
-		for (ContactModel _rm : _localList) {
-			System.out.println(_rm.getFn());
+			System.out.println("\t" + _model.getFn());
 		}
 
 		// get first batch

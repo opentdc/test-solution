@@ -54,13 +54,13 @@ import org.opentdc.wtt.WttService;
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
-import test.org.opentdc.resources.ResourcesTest;
+import test.org.opentdc.resources.ResourceTest;
 import test.org.opentdc.wtt.CompanyTest;
 import test.org.opentdc.wtt.ProjectTest;
 
-public class WorkRecordsTest extends AbstractTestClient {
+public class WorkRecordTest extends AbstractTestClient {
 	private Date date;
-	private WebClient workRecordWC = null;
+	private WebClient wc = null;
 	private WebClient wttWC = null;
 	private WebClient addressbookWC = null;
 	private WebClient resourceWC = null;
@@ -76,19 +76,19 @@ public class WorkRecordsTest extends AbstractTestClient {
 	@Before
 	public void initializeTests() {
 		date = new Date();
-		workRecordWC = createWebClient(ServiceUtil.WORKRECORDS_API_URL, WorkRecordsService.class);
+		wc = createWebClient(ServiceUtil.WORKRECORDS_API_URL, WorkRecordsService.class);
 		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
 		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		company2 = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC2");
-		project = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
-		project2 = ProjectTest.createProject(wttWC, company2.getId(), this.getClass().getName(), "MY_DESC2");
-		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourcesTest.createResource(resourceWC, addressbook, contact, this.getClass().getName() + "1", Status.OK);
-		resource2 = ResourcesTest.createResource(resourceWC, addressbook, contact, this.getClass().getName() + "2", Status.OK);
+		company = CompanyTest.create(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
+		company2 = CompanyTest.create(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC2");
+		project = ProjectTest.create(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
+		project2 = ProjectTest.create(wttWC, company2.getId(), this.getClass().getName(), "MY_DESC2");
+		contact = ContactTest.create(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
+		resource = ResourceTest.create(resourceWC, addressbook, contact, this.getClass().getName() + "1", Status.OK);
+		resource2 = ResourceTest.create(resourceWC, addressbook, contact, this.getClass().getName() + "2", Status.OK);
 	}
 	
 	@After
@@ -96,11 +96,11 @@ public class WorkRecordsTest extends AbstractTestClient {
 		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
 		System.out.println("deleted 1 addressbook with 1 contact");
 		addressbookWC.close();
-		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName(), false);
-		ResourcesTest.cleanup(resourceWC, resource2.getId(), this.getClass().getName(), true);
+		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName(), false);
+		ResourceTest.cleanup(resourceWC, resource2.getId(), this.getClass().getName(), true);
 		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName(), false);
 		CompanyTest.cleanup(wttWC, company2.getId(), this.getClass().getName(), true);
-		workRecordWC.close();
+		wc.close();
 	}
 
 	/********************************** workrecord attributes tests *********************************/	
@@ -122,7 +122,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 
 	@Test
 	public void testConstructor() {		
-		WorkRecordModel _wrm = createWorkRecord(company, project, resource, date, 3, 45, false, "testConstructor1");
+		WorkRecordModel _wrm = create(company, project, resource, date, 3, 45, false, "testConstructor1");
 		assertNull("id should not be set by constructor", _wrm.getId());
 		assertEquals("companyId should be set by constructor", company.getId(), _wrm.getCompanyId());
 		assertEquals("companyTitle should be set by constructor", company.getTitle(), _wrm.getCompanyTitle());
@@ -273,26 +273,26 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertNull("comment should not be set by empty constructor", _wrm1.getComment());
 		assertEquals("isBillable should be set on default initial value", true, _wrm1.isBillable());
 		
-		postWorkRecord(_wrm1, Status.BAD_REQUEST);
+		post(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setCompanyId(company.getId());
 
-		postWorkRecord(_wrm1, Status.BAD_REQUEST);
+		post(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setCompanyTitle(company.getTitle());
 
-		postWorkRecord(_wrm1, Status.BAD_REQUEST);
+		post(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setProjectId(project.getId());
 		
-		postWorkRecord(_wrm1, Status.BAD_REQUEST);
+		post(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setProjectTitle(project.getTitle());
 
-		postWorkRecord(_wrm1, Status.BAD_REQUEST);
+		post(_wrm1, Status.BAD_REQUEST);
 		_wrm1.setResourceId(resource.getId());
 
-		postWorkRecord(_wrm1, Status.BAD_REQUEST);
+		post(_wrm1, Status.BAD_REQUEST);
 		Date _date = new Date();
 		_wrm1.setStartAt(_date);
 
-		WorkRecordModel _wrm2 = postWorkRecord(_wrm1, Status.OK);
+		WorkRecordModel _wrm2 = post(_wrm1, Status.OK);
 		
 		// validate _wrm1
 		assertNull("create() should not change the id of the local object", _wrm1.getId());
@@ -321,7 +321,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("create() should not change isBillable", true, _wrm2.isBillable());
 
 		// read(_wrm2) -> _wrm3
-		WorkRecordModel _wrm3 = getWorkRecord(_wrm2.getId(), Status.OK);
+		WorkRecordModel _wrm3 = get(_wrm2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _wrm2.getId(), _wrm3.getId());
 		assertEquals("companyId of returned object should be unchanged after remote create", _wrm2.getCompanyId(), _wrm3.getCompanyId());
 		assertEquals("companyTitle of returned object should be unchanged after remote create", _wrm2.getCompanyTitle(), _wrm3.getCompanyTitle());
@@ -334,12 +334,12 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("comment of returned object should be unchanged after remote create", _wrm2.getComment(), _wrm3.getComment());
 		assertEquals("isBillable of returned object should be unchanged after remote create", _wrm2.isBillable(), _wrm3.isBillable());
 
-		deleteWorkRecord(_wrm3.getId(), Status.NO_CONTENT);
+		delete(_wrm3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testCreateReadDelete() {
-		WorkRecordModel _wrm1 = createWorkRecord(company, project, resource, date, 4, 20, true, "testCreateReadDelete1");
+		WorkRecordModel _wrm1 = create(company, project, resource, date, 4, 20, true, "testCreateReadDelete1");
 		
 		// validate _wrm1
 		assertNull("id should not be set by constructor", _wrm1.getId());
@@ -354,7 +354,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("comment should be set by constructor", "testCreateReadDelete1", _wrm1.getComment());
 		assertEquals("isBillable should be set by constructor", true, _wrm1.isBillable());
 		
-		WorkRecordModel _wrm2 = postWorkRecord(_wrm1, Status.OK);
+		WorkRecordModel _wrm2 = post(_wrm1, Status.OK);
 		
 		// validate _wrm1 (after create())
 		assertNull("create() should not change the id of the local object", _wrm1.getId());
@@ -383,7 +383,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("create() should not change isBillable", true, _wrm2.isBillable());
 
 		// read(_wrm2)  -> _wrm3
-		WorkRecordModel _wrm3 = getWorkRecord(_wrm2.getId(), Status.OK);
+		WorkRecordModel _wrm3 = get(_wrm2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _wrm2.getId(), _wrm3.getId());
 		assertEquals("companyId of returned object should be the same", _wrm2.getCompanyId(), _wrm3.getCompanyId());
 		assertEquals("companyTitle of returned object should be the same", _wrm2.getCompanyTitle(), _wrm3.getCompanyTitle());
@@ -396,26 +396,26 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("comment of returned object should be the same", _wrm2.getComment(), _wrm3.getComment());
 		assertEquals("isBillable should be the same", _wrm2.isBillable(), _wrm3.isBillable());		
 
-		deleteWorkRecord(_wrm3.getId(), Status.NO_CONTENT);
+		delete(_wrm3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testCreateWithClientSideId() {
-		WorkRecordModel _wrm1 = createWorkRecord(company, project, resource, date, 4, 20, true, "testCreateWithClientSideId1");
+		WorkRecordModel _wrm1 = create(company, project, resource, date, 4, 20, true, "testCreateWithClientSideId1");
 		_wrm1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _wrm1.getId());
-		postWorkRecord(_wrm1, Status.BAD_REQUEST);
+		post(_wrm1, Status.BAD_REQUEST);
 	}
 	
 	@Test
 	public void testCreateWithDuplicateId() {
-		WorkRecordModel _wrm1 = postWorkRecord(
-				createWorkRecord(company, project, resource, date, 4, 20, true, "testCreateWithDuplicateId1"), 
+		WorkRecordModel _wrm1 = post(
+				create(company, project, resource, date, 4, 20, true, "testCreateWithDuplicateId1"), 
 				Status.OK);
-		WorkRecordModel _wrm2 = createWorkRecord(company2, project2, resource2, date, 1, 30, true, "testCreateWithDuplicateId2");
+		WorkRecordModel _wrm2 = create(company2, project2, resource2, date, 1, 30, true, "testCreateWithDuplicateId2");
 		_wrm2.setId(_wrm1.getId());		// wrongly create a 2nd WorkRecordModel object with the same ID
-		postWorkRecord(_wrm2, Status.CONFLICT);
-		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
+		post(_wrm2, Status.CONFLICT);
+		delete(_wrm1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -423,11 +423,11 @@ public class WorkRecordsTest extends AbstractTestClient {
 	) {		
 		ArrayList<WorkRecordModel> _localList = new ArrayList<WorkRecordModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postWorkRecord(
-					createWorkRecord(company, project, resource, date, i, i, true, "testList" + i),
+			_localList.add(post(
+					create(company, project, resource, date, i, i, true, "testList" + i),
 					Status.OK));
 		}
-		List<WorkRecordModel> _remoteList = listWorkRecords(Status.OK);
+		List<WorkRecordModel> _remoteList = list(Status.OK);
 		
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (WorkRecordModel _c : _remoteList) {
@@ -437,10 +437,10 @@ public class WorkRecordsTest extends AbstractTestClient {
 			assertTrue("workrecord <" + _c.getId() + "> should be listed", _remoteListIds.contains(_c.getId()));
 		}
 		for (WorkRecordModel _c : _localList) {
-			getWorkRecord(_c.getId(), Status.OK);
+			get(_c.getId(), Status.OK);
 		}
 		for (WorkRecordModel _c : _localList) {
-			deleteWorkRecord(_c.getId(), Status.NO_CONTENT);
+			delete(_c.getId(), Status.NO_CONTENT);
 		}
 	}
 		
@@ -448,11 +448,11 @@ public class WorkRecordsTest extends AbstractTestClient {
 	public void testCreate() {
 		Date _date1 = new Date(1000);
 		Date _date2 = new Date(2000);		
-		WorkRecordModel _wrm1 = postWorkRecord(
-				createWorkRecord(company, project, resource, _date1, 1, 10, true, "testCreate1"), 
+		WorkRecordModel _wrm1 = post(
+				create(company, project, resource, _date1, 1, 10, true, "testCreate1"), 
 				Status.OK);
-		WorkRecordModel _wrm2 = postWorkRecord(
-				createWorkRecord(company2, project2, resource2, _date2, 2, 20, false, "testCreate2"), 
+		WorkRecordModel _wrm2 = post(
+				create(company2, project2, resource2, _date2, 2, 20, false, "testCreate2"), 
 				Status.OK);
 
 		assertNotNull("ID should be set", _wrm1.getId());
@@ -483,19 +483,19 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("comment should be set correctly", "testCreate2", _wrm2.getComment());
 		assertEquals("isBillable should be set correctly", false, _wrm2.isBillable());			
 		
-		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
-		deleteWorkRecord(_wrm2.getId(), Status.NO_CONTENT);
+		delete(_wrm1.getId(), Status.NO_CONTENT);
+		delete(_wrm2.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDoubleCreate(
 	) {
-		WorkRecordModel _wrm1 = postWorkRecord(
-				createWorkRecord(company, project, resource, date, 1, 10, true, "testDoubleCreate1"),
+		WorkRecordModel _wrm1 = post(
+				create(company, project, resource, date, 1, 10, true, "testDoubleCreate1"),
 				Status.OK);
 		assertNotNull("ID should be set:", _wrm1.getId());		
-		postWorkRecord(_wrm1, Status.CONFLICT);
-		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
+		post(_wrm1, Status.CONFLICT);
+		delete(_wrm1.getId(), Status.NO_CONTENT);
 	}
 
 	@Test
@@ -503,36 +503,36 @@ public class WorkRecordsTest extends AbstractTestClient {
 	) {
 		ArrayList<WorkRecordModel> _localList = new ArrayList<WorkRecordModel>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(postWorkRecord(
-					createWorkRecord(company, project, resource, date, i, i*10, true, "testRead" + i),
+			_localList.add(post(
+					create(company, project, resource, date, i, i*10, true, "testRead" + i),
 					Status.OK));
 		}
 	
 		// test read on each local element
 		for (WorkRecordModel _wrm : _localList) {
-			getWorkRecord(_wrm.getId(), Status.OK);
+			get(_wrm.getId(), Status.OK);
 		}
 
 		// test read on each listed element
-		for (WorkRecordModel _wrm : listWorkRecords(Status.OK)) {
+		for (WorkRecordModel _wrm : list(Status.OK)) {
 			assertEquals("ID should be unchanged when reading a workrecord",
-					_wrm.getId(), getWorkRecord(_wrm.getId(), Status.OK).getId());
+					_wrm.getId(), get(_wrm.getId(), Status.OK).getId());
 		}
 
 		for (WorkRecordModel _wrm : _localList) {
-			deleteWorkRecord(_wrm.getId(), Status.NO_CONTENT);
+			delete(_wrm.getId(), Status.NO_CONTENT);
 		}
 	}	
 
 	@Test
 	public void testMultiRead(
 	) {
-		WorkRecordModel _wrm1 = postWorkRecord(
-				createWorkRecord(company, project, resource, date, 1, 10, true, "testMultiRead1"),
+		WorkRecordModel _wrm1 = post(
+				create(company, project, resource, date, 1, 10, true, "testMultiRead1"),
 				Status.OK);
-		WorkRecordModel _wrm2 = getWorkRecord(_wrm1.getId(), Status.OK);
+		WorkRecordModel _wrm2 = get(_wrm1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read", _wrm1.getId(), _wrm2.getId());
-		WorkRecordModel _wrm3 = getWorkRecord(_wrm1.getId(), Status.OK);
+		WorkRecordModel _wrm3 = get(_wrm1.getId(), Status.OK);
 		
 		// but: the two objects are not equal !
 		assertEquals("ID should be the same", _wrm3.getId(), _wrm2.getId());
@@ -559,13 +559,13 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("comment should be the same", _wrm1.getComment(), _wrm2.getComment());
 		assertEquals("isBillable should be the same", _wrm1.isBillable(), _wrm2.isBillable());		
 		
-		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
+		delete(_wrm1.getId(), Status.NO_CONTENT);
 	}
 		
 	@Test
 	public void testUpdate() {
-		WorkRecordModel _wrm1 = postWorkRecord(
-				createWorkRecord(company, project, resource, date, 1, 10, true, "testUpdate1"),
+		WorkRecordModel _wrm1 = post(
+				create(company, project, resource, date, 1, 10, true, "testUpdate1"),
 				Status.OK);
 		
 		Date _date2 = new Date(2000);
@@ -575,7 +575,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 		_wrm1.setComment("testUpdate2");
 		_wrm1.setBillable(false);
 		
-		WorkRecordModel _wrm2 = putWorkRecord(_wrm1, Status.OK);
+		WorkRecordModel _wrm2 = put(_wrm1, Status.OK);
 		
 		assertNotNull("ID should be set", _wrm2.getId());
 		assertEquals("ID should be unchanged", _wrm1.getId(), _wrm2.getId());
@@ -597,7 +597,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 		_wrm1.setComment("testUpdate4");
 		_wrm1.setBillable(true);
 		
-		WorkRecordModel _wrm3 = putWorkRecord(_wrm1, Status.OK);
+		WorkRecordModel _wrm3 = put(_wrm1, Status.OK);
 
 		assertNotNull("ID should be set", _wrm3.getId());
 		assertEquals("ID should be unchanged", _wrm1.getId(), _wrm3.getId());	
@@ -612,37 +612,37 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("comment should be set correctly", "testUpdate4", _wrm3.getComment());
 		assertEquals("isBillable should be set correctly", true, _wrm3.isBillable());			
 		
-		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
+		delete(_wrm1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDelete() {
-		WorkRecordModel _wrm1 = postWorkRecord(
-				createWorkRecord(company, project, resource, date, 1, 10, true, "testDelete"),
+		WorkRecordModel _wrm1 = post(
+				create(company, project, resource, date, 1, 10, true, "testDelete"),
 				Status.OK);
-		WorkRecordModel _wrm2 = getWorkRecord(_wrm1.getId(), Status.OK);
+		WorkRecordModel _wrm2 = get(_wrm1.getId(), Status.OK);
 		assertEquals("ID should be unchanged when reading a workrecord (remote):", _wrm1.getId(), _wrm2.getId());						
-		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
-		getWorkRecord(_wrm1.getId(), Status.NOT_FOUND);
-		getWorkRecord(_wrm1.getId(), Status.NOT_FOUND);
+		delete(_wrm1.getId(), Status.NO_CONTENT);
+		get(_wrm1.getId(), Status.NOT_FOUND);
+		get(_wrm1.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testDoubleDelete() {
-		WorkRecordModel _wrm1 = postWorkRecord(
-				createWorkRecord(company, project, resource, date, 1, 10, true, "testDoubleDelete"),
+		WorkRecordModel _wrm1 = post(
+				create(company, project, resource, date, 1, 10, true, "testDoubleDelete"),
 				Status.OK);
-		getWorkRecord(_wrm1.getId(), Status.OK);
-		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
-		getWorkRecord(_wrm1.getId(), Status.NOT_FOUND);
-		deleteWorkRecord(_wrm1.getId(), Status.NOT_FOUND);
-		getWorkRecord(_wrm1.getId(), Status.NOT_FOUND);
+		get(_wrm1.getId(), Status.OK);
+		delete(_wrm1.getId(), Status.NO_CONTENT);
+		get(_wrm1.getId(), Status.NOT_FOUND);
+		delete(_wrm1.getId(), Status.NOT_FOUND);
+		get(_wrm1.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testModifications() {
-		WorkRecordModel _wrm1 = postWorkRecord(
-				createWorkRecord(company, project, resource, date, 1, 10, true, "testModifications"),
+		WorkRecordModel _wrm1 = post(
+				create(company, project, resource, date, 1, 10, true, "testModifications"),
 				Status.OK);
 		assertNotNull("create() should set createdAt", _wrm1.getCreatedAt());
 		assertNotNull("create() should set createdBy", _wrm1.getCreatedBy());
@@ -652,7 +652,7 @@ public class WorkRecordsTest extends AbstractTestClient {
 		assertEquals("createdBy and modifiedBy should be identical after create()", _wrm1.getCreatedBy(), _wrm1.getModifiedBy());
 		
 		_wrm1.setDurationHours(2);
-		WorkRecordModel _wrm2 = putWorkRecord(_wrm1, Status.OK);
+		WorkRecordModel _wrm2 = put(_wrm1, Status.OK);
 		assertEquals("update() should not change createdAt", _wrm1.getCreatedAt(), _wrm2.getCreatedAt());
 		assertEquals("update() should not change createdBy", _wrm1.getCreatedBy(), _wrm2.getCreatedBy());
 		assertThat(_wrm2.getModifiedAt(), not(equalTo(_wrm2.getCreatedAt())));
@@ -661,33 +661,33 @@ public class WorkRecordsTest extends AbstractTestClient {
 
 		String _createdBy = _wrm1.getCreatedBy();
 		_wrm1.setCreatedBy("testModifications");
-		WorkRecordModel _wrm3 = putWorkRecord(_wrm1, Status.OK);	// update should ignore client-side generated createdBy
+		WorkRecordModel _wrm3 = put(_wrm1, Status.OK);	// update should ignore client-side generated createdBy
 		assertEquals("update() should not change createdBy", _createdBy, _wrm3.getCreatedBy());
 		_wrm1.setCreatedBy(_createdBy);
 
 		Date _createdAt = _wrm1.getCreatedAt();
 		_wrm1.setCreatedAt(new Date(1000));
-		WorkRecordModel _wrm4 = putWorkRecord(_wrm1, Status.OK);	// update should ignore client-side generated createdAt
+		WorkRecordModel _wrm4 = put(_wrm1, Status.OK);	// update should ignore client-side generated createdAt
 		assertEquals("update() should not change createdAt", _createdAt, _wrm4.getCreatedAt());
 		_wrm1.setCreatedAt(_createdAt);
 		
 		String _modifiedBy = _wrm1.getModifiedBy();
 		_wrm1.setModifiedBy("testModifications");
-		WorkRecordModel _wrm5 = putWorkRecord(_wrm1, Status.OK);	// update should ignore client-side generated modifiedBy
+		WorkRecordModel _wrm5 = put(_wrm1, Status.OK);	// update should ignore client-side generated modifiedBy
 		assertEquals("update() should not change modifiedBy", _modifiedBy, _wrm5.getModifiedBy());
 
 		Date _modifiedAt = _wrm1.getModifiedAt();
 		Date _modifiedAt2 = new Date(1000);
 		_wrm1.setModifiedAt(_modifiedAt2);
-		WorkRecordModel _wrm6 = putWorkRecord(_wrm1, Status.OK);	// update should ignore client-side generated modifiedAt
+		WorkRecordModel _wrm6 = put(_wrm1, Status.OK);	// update should ignore client-side generated modifiedAt
 		assertThat(_wrm6.getModifiedAt(), not(equalTo(_modifiedAt)));
 		assertThat(_wrm6.getModifiedAt(), not(equalTo(_modifiedAt2)));
 		
-		deleteWorkRecord(_wrm1.getId(), Status.NO_CONTENT);
+		delete(_wrm1.getId(), Status.NO_CONTENT);
 	}
 	
 	/********************************** helper methods *********************************/	
-	public static WorkRecordModel createWorkRecord(
+	public static WorkRecordModel create(
 			CompanyModel company,
 			ProjectModel project,
 			ResourceModel resource,
@@ -709,24 +709,24 @@ public class WorkRecordsTest extends AbstractTestClient {
 					testCaseName);
 	}
 	
-	private List<WorkRecordModel> listWorkRecords(Status expectedStatus) {
-		Response _response = workRecordWC.replacePath("/").get();
+	private List<WorkRecordModel> list(Status expectedStatus) {
+		Response _response = wc.replacePath("/").get();
 		assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return new ArrayList<WorkRecordModel>(workRecordWC.getCollection(WorkRecordModel.class));
+			return new ArrayList<WorkRecordModel>(wc.getCollection(WorkRecordModel.class));
 		}
 		else {
 			return null;
 		}
 	}
 
-	private WorkRecordModel postWorkRecord(
+	private WorkRecordModel post(
 			WorkRecordModel wrm, 
 			Status expectedStatus) {
-		return postWorkRecord(workRecordWC, wrm, expectedStatus);
+		return post(wc, wrm, expectedStatus);
 	}
 	
-	public static WorkRecordModel postWorkRecord(
+	public static WorkRecordModel post(
 			WebClient webClient,
 			WorkRecordModel model,
 			Status expectedStatus) {
@@ -741,8 +741,8 @@ public class WorkRecordsTest extends AbstractTestClient {
 		}
 	}
 	
-	private WorkRecordModel getWorkRecord(String id, Status expectedStatus) {
-		Response _response = workRecordWC.replacePath("/").path(id).get();
+	private WorkRecordModel get(String id, Status expectedStatus) {
+		Response _response = wc.replacePath("/").path(id).get();
 		assertEquals("read(" + id + ") should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(WorkRecordModel.class);
@@ -752,9 +752,9 @@ public class WorkRecordsTest extends AbstractTestClient {
 		}
 	}
 	
-	private WorkRecordModel putWorkRecord(WorkRecordModel wrm, Status expectedStatus) {
-		workRecordWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		Response _response = workRecordWC.replacePath("/").path(wrm.getId()).put(wrm);
+	private WorkRecordModel put(WorkRecordModel wrm, Status expectedStatus) {
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		Response _response = wc.replacePath("/").path(wrm.getId()).put(wrm);
 		assertEquals("update() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(WorkRecordModel.class);
@@ -764,8 +764,8 @@ public class WorkRecordsTest extends AbstractTestClient {
 		}
 	}
 	
-	private void deleteWorkRecord(String id, Status expectedStatus) {
-		Response _response = workRecordWC.replacePath("/").path(id).delete();
+	private void delete(String id, Status expectedStatus) {
+		Response _response = wc.replacePath("/").path(id).delete();
 		assertEquals("delete(" + id + ") should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());	
 	}
 	

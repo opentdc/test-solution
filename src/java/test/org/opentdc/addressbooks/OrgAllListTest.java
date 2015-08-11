@@ -204,14 +204,14 @@ public class OrgAllListTest extends AbstractTestClient {
 	 * @return the newly created organization
 	 */
 	private static OrgModel createOrg(String aid, String name) {
-		OrgModel _om = new OrgModel();
-		_om.setName(name);
-		_om.setOrgType(OrgType.getDefaultOrgType());
+		OrgModel _model = new OrgModel();
+		_model.setName(name);
+		_model.setOrgType(OrgType.getDefaultOrgType());
 		Response _response = wc.replacePath("/").path(aid).
-				path(ServiceUtil.ORG_PATH_EL).post(_om);
+				path(ServiceUtil.ORG_PATH_EL).post(_model);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("posted OrgModel " + _om.getName() + " in addressbook " + aid);
-		return _om;
+		System.out.println("posted OrgModel " + _model.getName() + " in addressbook " + aid);
+		return _model;
 	}
 	
 	protected int calculateMembers() {

@@ -52,18 +52,18 @@ import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.OrgTest;
 
 public class CompanyTest extends AbstractTestClient {
-	private WebClient wttWC = null;
+	private WebClient wc = null;
 	private static AddressbookModel adb = null;
 	private static OrgModel org = null;
 	private WebClient addressbookWC = null;
 	
 	@Before
 	public void initializeTests() {
-		wttWC = initializeTest(ServiceUtil.WTT_API_URL, WttService.class);
+		wc = initializeTest(ServiceUtil.WTT_API_URL, WttService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		
 		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		org = OrgTest.createOrg(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
+		org = OrgTest.create(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
 	}
 
 	@After
@@ -71,7 +71,7 @@ public class CompanyTest extends AbstractTestClient {
 		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
 		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		wttWC.close();
+		wc.close();
 	}
 
 	/********************************** company attributes tests *********************************/	
@@ -177,17 +177,17 @@ public class CompanyTest extends AbstractTestClient {
 		assertNull("orgId should not be set by empty constructor", _c1.getOrgId());
 
 		// create(_c1) -> BAD_REQUEST (because of empty title)
-		Response _response = wttWC.replacePath("/").post(_c1);
+		Response _response = wc.replacePath("/").post(_c1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		_c1.setTitle("testCompanyCreateReadDeleteWithEmptyConstructor");
 		
 		// create(_c1) -> BAD_REQUEST (because of empty orgId)
-		_response = wttWC.replacePath("/").post(_c1);
+		_response = wc.replacePath("/").post(_c1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		_c1.setOrgId(org.getId());
 		
 		// create(_c1) -> OK
-		_response = wttWC.replacePath("/").post(_c1);
+		_response = wc.replacePath("/").post(_c1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());		
 		
 		CompanyModel _c2 = _response.readEntity(CompanyModel.class);
@@ -200,7 +200,7 @@ public class CompanyTest extends AbstractTestClient {
 		assertNull("description of returned object should still be null after remote create", _c2.getDescription());
 		
 		// read(_c2) -> _c3
-		_response = wttWC.replacePath("/").path(_c2.getId()).get();
+		_response = wc.replacePath("/").path(_c2.getId()).get();
 		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c3 = _response.readEntity(CompanyModel.class);
 		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
@@ -209,7 +209,7 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("orgId of returned object should be unchanged after remote create", _c2.getOrgId(), _c3.getOrgId());
 
 		// delete(_c3)
-		_response = wttWC.replacePath("/").path(_c3.getId()).delete();
+		_response = wc.replacePath("/").path(_c3.getId()).delete();
 		assertEquals("delete(" + _c3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -222,7 +222,7 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("description should be set by constructor", "MY_DESC", _c1.getDescription());
 		assertEquals("orgId should be set by constructor", org.getId(), _c1.getOrgId());
 		// create(_c1) -> _c2
-		Response _response = wttWC.replacePath("/").post(_c1);
+		Response _response = wc.replacePath("/").post(_c1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c2 = _response.readEntity(CompanyModel.class);
 		assertNull("id should be still null after remote create", _c1.getId());
@@ -236,7 +236,7 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("remote create should not change the orgId", org.getId(), _c2.getOrgId());
 
 		// read(_c2)  -> _c3
-		_response = wttWC.replacePath("/").path(_c2.getId()).get();
+		_response = wc.replacePath("/").path(_c2.getId()).get();
 		assertEquals("read(" + _c2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c3 = _response.readEntity(CompanyModel.class);
 		assertEquals("id of returned object should be the same", _c2.getId(), _c3.getId());
@@ -245,7 +245,7 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("remote create should not change the orgId", org.getId(), _c3.getOrgId());
 
 		// delete(_c3)
-		_response = wttWC.replacePath("/").path(_c3.getId()).delete();
+		_response = wc.replacePath("/").path(_c3.getId()).delete();
 		assertEquals("delete(" + _c3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -256,14 +256,14 @@ public class CompanyTest extends AbstractTestClient {
 		_c1.setId("LOCAL_ID");
 		assertEquals("id should have changed", "LOCAL_ID", _c1.getId());
 		// create(_c1) -> BAD_REQUEST
-		Response _response = wttWC.replacePath("/").post(_c1);
+		Response _response = wc.replacePath("/").post(_c1);
 		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCreateCompanyWithDuplicateId() {
 		// create(new()) -> _c2
-		Response _response = wttWC.replacePath("/").post(new CompanyModel("testCreateCompanyWithDuplicateId", "MY_DESC", org.getId()));
+		Response _response = wc.replacePath("/").post(new CompanyModel("testCreateCompanyWithDuplicateId", "MY_DESC", org.getId()));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c2 = _response.readEntity(CompanyModel.class);
 
@@ -272,11 +272,11 @@ public class CompanyTest extends AbstractTestClient {
 		_c3.setId(_c2.getId());		// wrongly create a 2nd CompanyModel object with the same ID
 		
 		// create(_c3) -> CONFLICT
-		_response = wttWC.replacePath("/").post(_c3);
+		_response = wc.replacePath("/").post(_c3);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_c2)
-		_response = wttWC.replacePath("/").path(_c2.getId()).delete();
+		_response = wc.replacePath("/").path(_c2.getId()).delete();
 		assertEquals("delete(" + _c2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -287,15 +287,15 @@ public class CompanyTest extends AbstractTestClient {
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
 			// create(new()) -> _localList
-			_response = wttWC.replacePath("/").post(new CompanyModel("testCompanyList" + i, "MY_DESC", org.getId()));
+			_response = wc.replacePath("/").post(new CompanyModel("testCompanyList" + i, "MY_DESC", org.getId()));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(CompanyModel.class));
 		}
 		
 		// list(/) -> _remoteList
-		_response = wttWC.replacePath("/").query("size", Integer.toString(Integer.MAX_VALUE)).get();
+		_response = wc.replacePath("/").query("size", Integer.toString(Integer.MAX_VALUE)).get();
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		List<CompanyModel> _remoteList = new ArrayList<CompanyModel>(wttWC.getCollection(CompanyModel.class));
+		List<CompanyModel> _remoteList = new ArrayList<CompanyModel>(wc.getCollection(CompanyModel.class));
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (CompanyModel _c : _remoteList) {
@@ -306,12 +306,12 @@ public class CompanyTest extends AbstractTestClient {
 			assertTrue("company <" + _c.getId() + "> should be listed", _remoteListIds.contains(_c.getId()));
 		}
 		for (CompanyModel _c : _localList) {
-			_response = wttWC.replacePath("/").path(_c.getId()).get();
+			_response = wc.replacePath("/").path(_c.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(CompanyModel.class);
 		}
 		for (CompanyModel _c : _localList) {
-			_response = wttWC.replacePath("/").path(_c.getId()).delete();
+			_response = wc.replacePath("/").path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}
@@ -324,12 +324,12 @@ public class CompanyTest extends AbstractTestClient {
 		CompanyModel _c2 = new CompanyModel("testCompanyCreate2", "MY_DESC2", org.getId());
 		
 		// create(_c1)  -> _c3
-		Response _response = wttWC.replacePath("/").post(_c1);
+		Response _response = wc.replacePath("/").post(_c1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c3 = _response.readEntity(CompanyModel.class);
 
 		// create(_c2) -> _c4
-		_response = wttWC.replacePath("/").post(_c2);
+		_response = wc.replacePath("/").post(_c2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c4 = _response.readEntity(CompanyModel.class);		
 		assertNotNull("ID should be set", _c3.getId());
@@ -343,11 +343,11 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("orgId2 should be set correctly", org.getId(), _c4.getOrgId());
 
 		// delete(_c3) -> NO_CONTENT
-		_response = wttWC.replacePath("/").path(_c3.getId()).delete();
+		_response = wc.replacePath("/").path(_c3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
 		// delete(_c4) -> NO_CONTENT
-		_response = wttWC.replacePath("/").path(_c4.getId()).delete();
+		_response = wc.replacePath("/").path(_c4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -355,17 +355,17 @@ public class CompanyTest extends AbstractTestClient {
 	public void testCompanyDoubleCreate(
 	) {
 		// create(new()) -> _c
-		Response _response = wttWC.replacePath("/").post(new CompanyModel("testCompanyDoubleCreate", "MY_DESC", org.getId()));
+		Response _response = wc.replacePath("/").post(new CompanyModel("testCompanyDoubleCreate", "MY_DESC", org.getId()));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c = _response.readEntity(CompanyModel.class);
 		assertNotNull("ID should be set:", _c.getId());		
 		
 		// create(_c) -> CONFLICT
-		_response = wttWC.replacePath("/").post(_c);
+		_response = wc.replacePath("/").post(_c);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_c) -> NO_CONTENT
-		_response = wttWC.replacePath("/").path(_c.getId()).delete();
+		_response = wc.replacePath("/").path(_c.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
@@ -376,34 +376,34 @@ public class CompanyTest extends AbstractTestClient {
 		Response _response = null;
 		OrgModel _om = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_om = OrgTest.createOrg(addressbookWC, adb.getId(), "ORGNAME" + i, OrgType.LTD);
-			_response = wttWC.replacePath("/").post(new CompanyModel("testCompanyRead" + i, "MY_DESC", _om.getId()));
+			_om = OrgTest.create(addressbookWC, adb.getId(), "ORGNAME" + i, OrgType.LTD);
+			_response = wc.replacePath("/").post(new CompanyModel("testCompanyRead" + i, "MY_DESC", _om.getId()));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(CompanyModel.class));
 		}
 	
 		// test read on each local element
 		for (CompanyModel _c : _localList) {
-			_response = wttWC.replacePath("/").path(_c.getId()).get();
+			_response = wc.replacePath("/").path(_c.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_response.readEntity(CompanyModel.class);
 		}
 
 		// test read on each listed element
-		_response = wttWC.replacePath("/").get();
-		List<CompanyModel> _remoteList = new ArrayList<CompanyModel>(wttWC.getCollection(CompanyModel.class));
+		_response = wc.replacePath("/").get();
+		List<CompanyModel> _remoteList = new ArrayList<CompanyModel>(wc.getCollection(CompanyModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		CompanyModel _tmpObj = null;
 		for (CompanyModel _c : _remoteList) {
-			_response = wttWC.replacePath("/").path(_c.getId()).get();
+			_response = wc.replacePath("/").path(_c.getId()).get();
 			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_tmpObj = _response.readEntity(CompanyModel.class);
 			assertEquals("ID should be unchanged when reading a company", _c.getId(), _tmpObj.getId());						
 		}
 
 		for (CompanyModel _c : _localList) {
-			_response = wttWC.replacePath("/").path(_c.getId()).delete();
+			_response = wc.replacePath("/").path(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}
 	}	
@@ -415,17 +415,17 @@ public class CompanyTest extends AbstractTestClient {
 		CompanyModel _c1 = new CompanyModel("testCompanyMultiRead", "MY_DESC", org.getId());
 		
 		// create(_c1) -> _c2
-		Response _response = wttWC.replacePath("/").post(_c1);
+		Response _response = wc.replacePath("/").post(_c1);
 		CompanyModel _c2 = _response.readEntity(CompanyModel.class);
 
 		// read(_c2) -> _c3
-		_response = wttWC.replacePath("/").path(_c2.getId()).get();
+		_response = wc.replacePath("/").path(_c2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c3 = _response.readEntity(CompanyModel.class);
 		assertEquals("ID should be unchanged after read", _c2.getId(), _c3.getId());		
 
 		// read(_c2) -> _c4
-		_response = wttWC.replacePath("/").path(_c2.getId()).get();
+		_response = wc.replacePath("/").path(_c2.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c4 = _response.readEntity(CompanyModel.class);
 		
@@ -439,7 +439,7 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("description should be the same", _c3.getDescription(), _c2.getDescription());
 		
 		// delete(_c2)
-		_response = wttWC.replacePath("/").path(_c2.getId()).delete();
+		_response = wc.replacePath("/").path(_c2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -450,15 +450,15 @@ public class CompanyTest extends AbstractTestClient {
 		CompanyModel _c1 = new CompanyModel("testCompanyUpdate1", "MY_DESC1", org.getId());
 		
 		// create(_c1) -> _c2
-		Response _response = wttWC.replacePath("/").post(_c1);
+		Response _response = wc.replacePath("/").post(_c1);
 		CompanyModel _c2 = _response.readEntity(CompanyModel.class);
 		
 		// change the attributes
 		// update(_c2) -> _c3
 		_c2.setTitle("testCompanyUpdate2");
 		_c2.setDescription("MY_DESC2");
-		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wttWC.replacePath("/").path(_c2.getId()).put(_c2);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_c2.getId()).put(_c2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c3 = _response.readEntity(CompanyModel.class);
 
@@ -471,8 +471,8 @@ public class CompanyTest extends AbstractTestClient {
 		// update(_c2) -> _c4
 		_c2.setTitle("testCompanyUpdate3");
 		_c2.setDescription("MY_DESC3");
-		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wttWC.replacePath("/").path(_c2.getId()).put(_c2);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_c2.getId()).put(_c2);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _c4 = _response.readEntity(CompanyModel.class);
 
@@ -481,7 +481,7 @@ public class CompanyTest extends AbstractTestClient {
 		assertEquals("title should have changed", "testCompanyUpdate3", _c4.getTitle());
 		assertEquals("description should have changed", "MY_DESC3", _c4.getDescription());
 		
-		_response = wttWC.replacePath("/").path(_c2.getId()).delete();
+		_response = wc.replacePath("/").path(_c2.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
@@ -491,26 +491,26 @@ public class CompanyTest extends AbstractTestClient {
 		// new() -> _c0
 		CompanyModel _c0 = new CompanyModel("testCompanyDelete1", "MY_DESC1", org.getId());
 		// create(_c0) -> _c1
-		Response _response = wttWC.replacePath("/").post(_c0);
+		Response _response = wc.replacePath("/").post(_c0);
 		CompanyModel _c1 = _response.readEntity(CompanyModel.class);
 		
 		// read(_c1) -> _tmpObj
-		_response = wttWC.replacePath("/").path(_c1.getId()).get();
+		_response = wc.replacePath("/").path(_c1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _tmpObj = _response.readEntity(CompanyModel.class);
 		assertEquals("ID should be unchanged when reading a company (remote):", _c1.getId(), _tmpObj.getId());						
 		
 		// delete(_c1) -> OK
-		_response = wttWC.replacePath("/").path(_c1.getId()).delete();
+		_response = wc.replacePath("/").path(_c1.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	
 		// read the deleted object twice
 		// read(_c1) -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(_c1.getId()).get();
+		_response = wc.replacePath("/").path(_c1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read(_c1) -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(_c1.getId()).get();
+		_response = wc.replacePath("/").path(_c1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
@@ -521,34 +521,34 @@ public class CompanyTest extends AbstractTestClient {
 		CompanyModel _c0 = new CompanyModel("testCompanyDoubleDelete1", "MY_DESC1", org.getId());
 		
 		// create(_c0) -> _c1
-		Response _response = wttWC.replacePath("/").post(_c0);
+		Response _response = wc.replacePath("/").post(_c0);
 		CompanyModel _c1 = _response.readEntity(CompanyModel.class);
 
 		// read(_c1) -> OK
-		_response = wttWC.replacePath("/").path(_c1.getId()).get();
+		_response = wc.replacePath("/").path(_c1.getId()).get();
 		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		
 		// delete(_c1) -> OK
-		_response = wttWC.replacePath("/").path(_c1.getId()).delete();		
+		_response = wc.replacePath("/").path(_c1.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
 		// read(_c1) -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(_c1.getId()).get();
+		_response = wc.replacePath("/").path(_c1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// delete _c1 -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(_c1.getId()).delete();		
+		_response = wc.replacePath("/").path(_c1.getId()).delete();		
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 		
 		// read _c1 -> NOT_FOUND
-		_response = wttWC.replacePath("/").path(_c1.getId()).get();
+		_response = wc.replacePath("/").path(_c1.getId()).get();
 		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
 	}
 	
 	@Test
 	public void testCompanyModifications() {
 		// create(new CompanyModel()) -> _o
-		Response _response = wttWC.replacePath("/").post(new CompanyModel("testCompanyModifications1", "MY_DESC1", org.getId()));
+		Response _response = wc.replacePath("/").post(new CompanyModel("testCompanyModifications1", "MY_DESC1", org.getId()));
 		CompanyModel _o = _response.readEntity(CompanyModel.class);
 		
 		// test createdAt and createdBy
@@ -562,8 +562,8 @@ public class CompanyTest extends AbstractTestClient {
 		
 		// update(_o)  -> _o2
 		_o.setTitle("testCompanyModifications2");
-		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wttWC.replacePath("/").path(_o.getId()).put(_o);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_o.getId()).put(_o);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _o2 = _response.readEntity(CompanyModel.class);
 
@@ -579,8 +579,8 @@ public class CompanyTest extends AbstractTestClient {
 		// update(o) with modifiedBy/At set on client side -> ignored by server
 		_o.setModifiedBy("MYSELF");
 		_o.setModifiedAt(new Date(1000));
-		wttWC.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wttWC.replacePath("/").path(_o.getId()).put(_o);
+		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		_response = wc.replacePath("/").path(_o.getId()).put(_o);
 		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		CompanyModel _o3 = _response.readEntity(CompanyModel.class);
 		
@@ -590,12 +590,12 @@ public class CompanyTest extends AbstractTestClient {
 		assertThat(_o.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
 		
 		// delete(_o) -> NO_CONTENT
-		_response = wttWC.replacePath("/").path(_o.getId()).delete();		
+		_response = wc.replacePath("/").path(_o.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 	
 	/********************************* helper methods *********************************/	
-	public static CompanyModel createCompany(
+	public static CompanyModel create(
 			WebClient wttWC, 
 			WebClient addressbookWC,
 			AddressbookModel addressbookModel,
@@ -605,7 +605,7 @@ public class CompanyTest extends AbstractTestClient {
 		CompanyModel _cm = new CompanyModel();
 		_cm.setTitle(title);
 		_cm.setDescription(description);
-		_cm.setOrgId(OrgTest.createOrg(addressbookWC, addressbookModel.getId(), "TEST_ORG", OrgType.COOP).getId());
+		_cm.setOrgId(OrgTest.create(addressbookWC, addressbookModel.getId(), "TEST_ORG", OrgType.COOP).getId());
 		Response _response = wttWC.replacePath("/").post(_cm);
 		return _response.readEntity(CompanyModel.class);
 	}

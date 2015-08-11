@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package test.org.opentdc.wtt;
+package test.org.opentdc.workrecords;
 
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
@@ -35,101 +36,121 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opentdc.workrecords.WorkRecordModel;
+import org.opentdc.workrecords.WorkRecordsService;
 import org.opentdc.wtt.CompanyModel;
+import org.opentdc.wtt.ProjectModel;
 import org.opentdc.wtt.WttService;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
-import org.opentdc.addressbooks.OrgModel;
-import org.opentdc.addressbooks.OrgType;
+import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.resources.ResourceModel;
+import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.GenericService;
 import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
-import test.org.opentdc.addressbooks.OrgTest;
+import test.org.opentdc.addressbooks.ContactTest;
+import test.org.opentdc.resources.ResourceTest;
+import test.org.opentdc.wtt.CompanyTest;
+import test.org.opentdc.wtt.ProjectTest;
 
-public class CompanyBatchedListTest extends AbstractTestClient {
+public class WorkRecordListTest extends AbstractTestClient {
+	private WebClient wc = null;
 	private WebClient wttWC = null;
-	private static AddressbookModel adb = null;
-	private static OrgModel org = null;
 	private WebClient addressbookWC = null;
-	
+	private WebClient resourceWC = null;
+	private CompanyModel company = null;
+	private ProjectModel project = null;
+	private AddressbookModel addressbook = null;
+	private ResourceModel resource = null;
+	private ContactModel contact = null;
+
 	@Before
 	public void initializeTests() {
-		wttWC = initializeTest(ServiceUtil.WTT_API_URL, WttService.class);
+		wc = createWebClient(ServiceUtil.WORKRECORDS_API_URL, WorkRecordsService.class);
+		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
+		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-		
-		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		org = OrgTest.createOrg(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
+
+		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
+		company = CompanyTest.create(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
+		project = ProjectTest.create(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
+		contact = ContactTest.create(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
+		resource = ResourceTest.create(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
 	}
 
 	@After
 	public void cleanupTest() {
-		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
+		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
 		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		wttWC.close();
+		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
+		wc.close();
 	}
 
 	@Test
-	public void testCompanyBatchedList() {
-		ArrayList<CompanyModel> _localList = new ArrayList<CompanyModel>();		
+	public void testWorkRecordBatchedList() {
+		ArrayList<WorkRecordModel> _localList = new ArrayList<WorkRecordModel>();		
 		Response _response = null;
-		System.out.println("***** testCompanyBatchedList:");
-		wttWC.replacePath("/");
+		System.out.println("***** testWorkRecordListBatchDefSizeStatic:");
+		wc.replacePath("/");
 		// we want to allocate more than double the amount of default list size objects
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		CompanyModel _cm = null;
+		WorkRecordModel _model1 = null;
+		Date _d = new Date();
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_cm = new CompanyModel();
-			_cm.setTitle(String.format("%2d", i));
-			_cm.setOrgId(org.getId());
-			_response = wttWC.post(_cm);
+			_model1 = WorkRecordTest.create(company, project, resource,
+					_d, i, 10 * i, true, "testWorkRecordBatchedList" + i);
+			_model1.setComment(String.format("%2d", i));
+			_response = wc.post(_model1);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(CompanyModel.class));
-			System.out.println("posted CompanyModel " + _cm.getTitle());
+			_localList.add(_response.readEntity(WorkRecordModel.class));
+			System.out.println("posted WorkRecordModel " + _model1.getComment());
 		}
 		System.out.println("****** locallist:");
-		for (CompanyModel _cm1 : _localList) {
-			System.out.println(_cm1.getTitle());
+		for (WorkRecordModel _model : _localList) {
+			System.out.println(_model.getComment());
 		}
 
 		// get first batch
 		// list(position=0, size=25) -> elements 0 .. 24
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").query("size", Integer.toString(_batchSize)).get();
-		List<CompanyModel> _remoteList1 = new ArrayList<CompanyModel>(wttWC.getCollection(CompanyModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").get();
+		List<WorkRecordModel> _remoteList1 = new ArrayList<WorkRecordModel>(wc.getCollection(WorkRecordModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 1st Batch:");
-		for (CompanyModel _cm2 : _remoteList1) {
-			System.out.println(_cm2.getTitle());
+		for (WorkRecordModel _model : _remoteList1) {
+			System.out.println(_model.getComment());
 		}
 		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
 		
 		// get second batch
 		// list(position=25, size=25) -> elements 25 .. 49
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").query("position", 25).query("size", Integer.toString(_batchSize)).get();
-		List<CompanyModel> _remoteList2 = new ArrayList<CompanyModel>(wttWC.getCollection(CompanyModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").query("position", 25).get();
+		List<WorkRecordModel> _remoteList2 = new ArrayList<WorkRecordModel>(wc.getCollection(WorkRecordModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
-		for (CompanyModel _cm3 : _remoteList2) {
-			System.out.println(_cm3.getTitle());
+		for (WorkRecordModel _model : _remoteList2) {
+			System.out.println(_model.getComment());
 		}
 		
 		// get rest 
 		// list(position=50, size=25) ->   elements 50 .. 54
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").query("position", 50).query("size", Integer.toString(_increment)).get();
-		List<CompanyModel> _remoteList3 = new ArrayList<CompanyModel>(wttWC.getCollection(CompanyModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").query("position", 50).query("size", Integer.toString(_increment)).get();
+		List<WorkRecordModel> _remoteList3 = new ArrayList<WorkRecordModel>(wc.getCollection(WorkRecordModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 3rd Batch:");
-		for (CompanyModel _cm4 : _remoteList3) {
-			System.out.println(_cm4.getTitle());
+		for (WorkRecordModel _model : _remoteList3) {
+			System.out.println(_model.getComment());
 		}
 		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
 		
@@ -137,13 +158,13 @@ public class CompanyBatchedListTest extends AbstractTestClient {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<CompanyModel> _remoteList = null;
-		System.out.println("***** testCompanyListIterate:");
+		List<WorkRecordModel> _remoteList = null;
+		System.out.println("***** testWorkRecordListIterate:");
 		while(true) {
 			_numberOfBatches++;
-			wttWC.resetQuery();
-			_response = wttWC.replacePath("/").query("position", _position).get();
-			_remoteList = new ArrayList<CompanyModel>(wttWC.getCollection(CompanyModel.class));
+			wc.resetQuery();
+			_response = wc.replacePath("/").query("position", _position).get();
+			_remoteList = new ArrayList<WorkRecordModel>(wc.getCollection(WorkRecordModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_numberOfReturnedObjects += _remoteList.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
@@ -155,30 +176,38 @@ public class CompanyBatchedListTest extends AbstractTestClient {
 		}
 		assertTrue("number of batches should be as expected", _numberOfBatches >= 3);
 		assertTrue("should have returned all objects", _numberOfReturnedObjects >= _limit2);
+		assertTrue("last batch size should be as expected", _remoteList.size() >= _increment);
 	
 		// testing some explicit positions and sizes
-		wttWC.resetQuery();
+		wc.resetQuery();
 		// get next 5 elements from position 5
-		_response = wttWC.replacePath("/").query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<CompanyModel>(wttWC.getCollection(CompanyModel.class));
+		_response = wc.replacePath("/").query("position", 5).query("size", 5).get();
+		_remoteList = new ArrayList<WorkRecordModel>(wc.getCollection(WorkRecordModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// get last 4 elements 
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<CompanyModel>(wttWC.getCollection(CompanyModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").query("position", _limit2-4).query("size", 4).get();
+		_remoteList = new ArrayList<WorkRecordModel>(wc.getCollection(WorkRecordModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
 		
+		// read over end of list
+		wc.resetQuery();
+		_response = wc.replacePath("/").query("position", _limit2-5).query("size", 5).get();
+		_remoteList = new ArrayList<WorkRecordModel>(wc.getCollection(WorkRecordModel.class));
+		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
+		
 		// removing all test objects
-		for (CompanyModel _cm5 : _localList) {
-			_response = wttWC.replacePath(_cm5.getId()).delete();
+		for (WorkRecordModel _model : _localList) {
+			_response = wc.replacePath(_model.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
 	}
 	
 	protected int calculateMembers() {
-		return 2 * GenericService.DEF_SIZE + 5;
+		return 1;
 	}
 }

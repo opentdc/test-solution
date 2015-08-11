@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package test.org.opentdc.wtt;
+package test.org.opentdc.users;
 
 import static org.junit.Assert.*;
 
@@ -35,108 +35,101 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opentdc.wtt.CompanyModel;
-import org.opentdc.wtt.ProjectModel;
-import org.opentdc.wtt.WttService;
+import org.opentdc.users.UserModel;
+import org.opentdc.users.UsersService;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
+import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.service.GenericService;
 import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
+import test.org.opentdc.addressbooks.ContactTest;
 
-public class SubProjectBatchedListTest extends AbstractTestClient {
-	private WebClient wttWC = null;
+public class UserListTest extends AbstractTestClient {
+	private WebClient wc = null;
+	private static AddressbookModel adb = null;
 	private WebClient addressbookWC = null;
-	private CompanyModel company = null;
-	private ProjectModel parentProject = null;
-	private AddressbookModel addressbook = null;
 
 	@Before
-	public void initializeTest() {
-		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
+	public void initializeTests() {
+		wc = initializeTest(ServiceUtil.USERS_API_URL, UsersService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		parentProject = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
-	}
-
-	@After
-	public void cleanupTest() {
-		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
-		System.out.println("deleted 1 addressbook");
-		addressbookWC.close();
-		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
+		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
 	}
 	
+	@After
+	public void cleanupTest() {
+		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
+		System.out.println("deleted 1 addressbook");
+		addressbookWC.close();
+		wc.close();
+	}
+
 	@Test
-	public void testSubProjectBatchedList() {
-		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();		
+	public void testUserBatchedList() {
+		ArrayList<UserModel> _localList = new ArrayList<UserModel>();		
 		Response _response = null;
-		System.out.println("***** testProjectListBatchDefSizeStatic:");
-		wttWC.replacePath("/").path(company.getId()).
-			path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-			path(ServiceUtil.PROJECT_PATH_EL);
+		System.out.println("***** testUserListBatchDefSizeStatic:");
+		wc.replacePath("/");
 		// we want to allocate more than double the amount of default list size objects
 		int _batchSize = GenericService.DEF_SIZE;
 		int _increment = 5;
 		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		ProjectModel _res = null;
+		UserModel _um = null;
+		ContactModel _cm = null;
 		for (int i = 0; i < _limit2; i++) {
 			// create(new()) -> _localList
-			_res = new ProjectModel();
-			_res.setTitle(String.format("testSubProjectBatchedList%2d", i));
-			_response = wttWC.post(_res);
+			_cm = ContactTest.create(addressbookWC, adb.getId(), "MY_FNAME" + i, "MY_LNAME" + i);
+			_um = new UserModel();
+			_um.setLoginId(String.format("testUserBatchedList%2d", i));
+			_um.setContactId(_cm.getId());
+			_um.setHashedPassword("MY_PASSWORD" + i);
+			_um.setSalt("MY_SALT" + i);
+			_response = wc.post(_um);
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(ProjectModel.class));
-			System.out.println("posted ProjectModel " + _res.getTitle());
+			_localList.add(_response.readEntity(UserModel.class));
+			System.out.println("post " + _um.getLoginId());
 		}
 		System.out.println("****** locallist:");
-		for (ProjectModel _rm : _localList) {
-			System.out.println(_rm.getTitle());
+		for (UserModel _rm : _localList) {
+			System.out.println(_rm.getLoginId());
 		}
 
 		// get first batch
 		// list(position=0, size=25) -> elements 0 .. 24
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).get();
-		List<ProjectModel> _remoteList1 = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").get();
+		List<UserModel> _remoteList1 = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 1st Batch:");
-		for (ProjectModel _rm : _remoteList1) {
-			System.out.println(_rm.getTitle());
+		for (UserModel _rm : _remoteList1) {
+			System.out.println(_rm.getLoginId());
 		}
 		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
 		
 		// get second batch
 		// list(position=25, size=25) -> elements 25 .. 49
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).query("position", 25).get();
-		List<ProjectModel> _remoteList2 = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").query("position", 25).get();
+		List<UserModel> _remoteList2 = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
 		System.out.println("****** 2nd Batch:");
-		for (ProjectModel _rm : _remoteList2) {
-			System.out.println(_rm.getTitle());
+		for (UserModel _rm : _remoteList2) {
+			System.out.println(_rm.getLoginId());
 		}
 		
 		// get rest 
 		// list(position=50, size=25) ->   elements 50 .. 54
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).query("position", 50).get();
-		List<ProjectModel> _remoteList3 = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").query("position", 50).get();
+		List<UserModel> _remoteList3 = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		System.out.println("****** 3rd Batch:");
-		for (ProjectModel _rm : _remoteList3) {
-			System.out.println(_rm.getTitle());
+		for (UserModel _rm : _remoteList3) {
+			System.out.println(_rm.getLoginId());
 		}
 		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
 		
@@ -144,15 +137,13 @@ public class SubProjectBatchedListTest extends AbstractTestClient {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<ProjectModel> _remoteList = null;
-		System.out.println("***** testSubProjectListIterate:");
+		List<UserModel> _remoteList = null;
+		System.out.println("***** testUserListIterate:");
 		while(true) {
 			_numberOfBatches++;
-			wttWC.resetQuery();
-			_response = wttWC.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).query("position", _position).get();
-			_remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+			wc.resetQuery();
+			_response = wc.replacePath("/").query("position", _position).get();
+			_remoteList = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_numberOfReturnedObjects += _remoteList.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
@@ -167,38 +158,30 @@ public class SubProjectBatchedListTest extends AbstractTestClient {
 		assertEquals("last batch size should be as expected", _increment, _remoteList.size());
 	
 		// testing some explicit positions and sizes
-		wttWC.resetQuery();
+		wc.resetQuery();
 		// get next 5 elements from position 5
-		_response = wttWC.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+		_response = wc.replacePath("/").query("position", 5).query("size", 5).get();
+		_remoteList = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// get last 4 elements 
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").query("position", _limit2-4).query("size", 4).get();
+		_remoteList = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
 		
 		// read over end of list
-		wttWC.resetQuery();
-		_response = wttWC.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).query("position", _limit2-5).query("size", 10).get();
-		_remoteList = new ArrayList<ProjectModel>(wttWC.getCollection(ProjectModel.class));
+		wc.resetQuery();
+		_response = wc.replacePath("/").query("position", _limit2-5).query("size", 10).get();
+		_remoteList = new ArrayList<UserModel>(wc.getCollection(UserModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
 		
 		// removing all test objects
-		for (ProjectModel _c : _localList) {
-			_response = wttWC.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_c.getId()).delete();
+		for (UserModel _c : _localList) {
+			_response = wc.replacePath(_c.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		}		
 	}

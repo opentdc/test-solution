@@ -58,7 +58,7 @@ public class ContactAddressTest extends AbstractTestClient {
 	public void initializeTests() {
 		wc = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.createAddressbook(wc, "ContactAddressTest", Status.OK);
-		contact = ContactTest.createContact(wc, adb.getId(), "Address", "Test");
+		contact = ContactTest.create(wc, adb.getId(), "Address", "Test");
 		System.out.println("***** ContactAddressTest:");
 	}
 	

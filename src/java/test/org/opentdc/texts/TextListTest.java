@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package test.org.opentdc.invitations;
+package test.org.opentdc.texts;
 
 import static org.junit.Assert.*;
 
@@ -34,60 +34,71 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opentdc.invitations.InvitationModel;
-import org.opentdc.invitations.InvitationsService;
+import org.opentdc.texts.SingleLangText;
+import org.opentdc.texts.TextModel;
+import org.opentdc.texts.TextsService;
+import org.opentdc.util.LanguageCode;
 import org.opentdc.service.GenericService;
+import org.opentdc.service.LocalizedTextModel;
 import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
 /*
- * Tests for batched listing of invitations
+ * Tests for batched listing of texts
  * @author Bruno Kaiser
  */
-public class InvitationsListTest extends AbstractTestClient {
+public class TextListTest extends AbstractTestClient {
 	private static WebClient wc = null;
-	private static ArrayList<InvitationModel> testObjects = null;
+	private static ArrayList<TextModel> testObjects = null;
 
+	/**
+	 * Initialize the test with several texts each containing some LocalizedTexts.
+	 * More than double the amount of default list size objects are allocated.
+	 */
 	@BeforeClass
 	public static void initializeTests() {
-		wc = initializeTest(ServiceUtil.INVITATIONS_API_URL, InvitationsService.class);
-		System.out.println("***** InvitationsListTest:");
-		testObjects = new ArrayList<InvitationModel>();
+		wc = initializeTest(ServiceUtil.TEXTS_API_URL, TextsService.class);
+		System.out.println("***** TextsBatchedListTest:");
+		testObjects = new ArrayList<TextModel>();
 		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
-			InvitationModel _model = InvitationsTest.post(wc, 
-					new InvitationModel("InvitationsListTest", "initializeTests" + i, "EMAIL"), Status.OK);
+			TextModel _model = TextTest.post(wc, new TextModel(String.format("%2d", i), "DESC"), Status.OK);
+			LocalizedTextTest.post(wc, _model, new LocalizedTextModel(LanguageCode.DE, "eins" + i), Status.OK);
+			LocalizedTextTest.post(wc, _model, new LocalizedTextModel(LanguageCode.EN, "two" + i), Status.OK);
+			LocalizedTextTest.post(wc, _model, new LocalizedTextModel(LanguageCode.FR, "trois" + i), Status.OK);
 			testObjects.add(_model);
 		}
 		System.out.println("created " + testObjects.size() + " test objects");
-		printModelList("testObjects", testObjects);
+		TextTest.printModelList("testObjects", testObjects);
 	}
 
 	@AfterClass
 	public static void cleanupTest() {
-		for (InvitationModel _model : testObjects) {
-			InvitationsTest.delete(wc, _model.getId(), Status.NO_CONTENT);
-		}
+		// removing all test objects
+		for (TextModel _model : testObjects) {
+			TextTest.delete(wc, _model.getId(), Status.NO_CONTENT);
+		}		
+		System.out.println("deleted " + testObjects.size() + " test objects");
 		wc.close();
 	}
 	
 	@Test
 	public void testAllListed() {
-		List<InvitationModel> _list = InvitationsTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
-		printModelList("testAllListed", _list);
+		List<SingleLangText> _list = TextTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
+		TextTest.printSingleLangTextList("testAllListed", _list);
 		ArrayList<String> _ids = new ArrayList<String>();
-		for (InvitationModel _model : _list) {
-			_ids.add(_model.getId());
+		for (SingleLangText _model : _list) {
+			_ids.add(_model.getTextId());
 		}		
-		for (InvitationModel _model : testObjects) {
-			assertTrue("Addressbook <" + _model.getId() + "> should be listed", _ids.contains(_model.getId()));
+		for (TextModel _model : testObjects) {
+			assertTrue("Text <" + _model.getId() + "> should be listed", _ids.contains(_model.getId()));
 		}
 	}
-
+	
 	@Test
 	public void testAllReadable() {
-		for (InvitationModel _model : testObjects) {
-			InvitationsTest.get(wc, _model.getId(), Status.OK);
+		for (TextModel _model : testObjects) {
+			TextTest.get(wc, _model.getId(), Status.OK);
 		}			
 	}
 
@@ -97,10 +108,10 @@ public class InvitationsListTest extends AbstractTestClient {
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
 	
-		List<InvitationModel> _batch = null;
+		List<SingleLangText> _batch = null;
 		while(true) {
 			_numberOfBatches++;
-			_batch = InvitationsTest.list(wc, null, _position, -1, Status.OK);
+			_batch = TextTest.list(wc, null, _position, -1, Status.OK);
 			_numberOfReturnedObjects += _batch.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
 			if (_batch.size() < GenericService.DEF_SIZE) {
@@ -111,47 +122,29 @@ public class InvitationsListTest extends AbstractTestClient {
 		}
 		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _batch.size());
 	}
-
+	
 	@Test
 	public void testNextElements() {
-		List<InvitationModel> _objs = InvitationsTest.list(wc, null, 5, 5, Status.OK);
+		List<SingleLangText> _objs = TextTest.list(wc, null, 5, 5, Status.OK);
 		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 	
 	@Test
 	public void testLastElements() {
 		int _totalMembers = calculateMembers();
-		List<InvitationModel> _objs = InvitationsTest.list(wc, null, (_totalMembers - 4), 4, Status.OK);
+		List<SingleLangText> _objs = TextTest.list(wc, null, (_totalMembers - 4), 4, Status.OK);
 		assertEquals("list() should return correct number of elements", 4, _objs.size());		
 	}
 	
 	@Test 
 	public void testOverEndOfList() {
 		int _totalMembers = calculateMembers();
-		List<InvitationModel> _objs = InvitationsTest.list(wc, null, (_totalMembers - 5), 10, Status.OK);
+		List<SingleLangText> _objs = TextTest.list(wc, null, (_totalMembers - 5), 10, Status.OK);
 		assertEquals("list() should return correct number of elements", 5, _objs.size());		
-	}	
-	
-	/**
-	 * Print the result of the list() operation onto stdout.
-	 * @param title  the title of the log section
-	 * @param list a list of InvitationModel objects
-	 */
-	public static void printModelList(String title, List<InvitationModel> list) {
-		System.out.println("***** " + title);
-		System.out.println("\tid\tname\temail");
-		for (InvitationModel _model : list) { 
-			System.out.println(
-					"\t" + _model.getId() + 
-					"\t" + _model.getEmail());
-		}
-		System.out.println("\ttotal:\t" + list.size() + " elements");
 	}
-	
-	/* (non-Javadoc)
-	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
-	 */
+		
 	protected int calculateMembers() {
-		return InvitationsTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK).size();
+		List<SingleLangText> _objs = TextTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
+		return _objs.size();
 	}
 }

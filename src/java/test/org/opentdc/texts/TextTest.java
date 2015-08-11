@@ -53,7 +53,7 @@ import test.org.opentdc.texts.LocalizedTextTest;
  * Tests the Texts-Service.
  * @author Bruno Kaiser
  */
-public class TextsTest extends AbstractTestClient {
+public class TextTest extends AbstractTestClient {
 	private WebClient wc = null;
 
 	/**

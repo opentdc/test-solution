@@ -17,13 +17,13 @@ import org.opentdc.wtt.*;
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
-import test.org.opentdc.resources.ResourcesTest;
+import test.org.opentdc.resources.ResourceTest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 public class ProjectTreeTest extends AbstractTestClient {
-	private WebClient wttWC = null;
+	private WebClient wc = null;
 	private WebClient addressbookWC = null;
 	private CompanyModel company = null;
 	private AddressbookModel addressbook = null;
@@ -33,14 +33,14 @@ public class ProjectTreeTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTests() {
-		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
+		wc = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
 		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourcesTest.createResource(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
+		company = CompanyTest.create(wc, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
+		contact = ContactTest.create(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
+		resource = ResourceTest.create(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
 	}
 
 	@After
@@ -48,20 +48,20 @@ public class ProjectTreeTest extends AbstractTestClient {
 		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
 		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
-		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
+		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wc, company.getId(), this.getClass().getName());
 	}
 	
 	private ProjectModel createProject(String title) {
-		return ProjectTest.createProject(wttWC, company.getId(), title, "MY_DESC");
+		return ProjectTest.create(wc, company.getId(), title, "MY_DESC");
 	}
 
 	private ProjectModel createSubProject(String parentProjectId, String title) {
-		return SubProjectTest.createSubProject(wttWC, company.getId(), parentProjectId, title, "MY_DESC");
+		return SubProjectTest.create(wc, company.getId(), parentProjectId, title, "MY_DESC");
 	}
 	
 	private void createResourceRef(String projectId) {
-		ResourceRefTest.createResourceRef(wttWC, company.getId(), projectId, resource.getId());
+		ResourceRefTest.create(wc, company.getId(), projectId, resource.getId());
 	}
 		
 	@Test
@@ -98,7 +98,7 @@ public class ProjectTreeTest extends AbstractTestClient {
 		createResourceRef(_p2p3.getId());
 				
 		// get the tree
-		Response _response = wttWC.replacePath("/").path(company.getId()).path("astree").get();
+		Response _response = wc.replacePath("/").path(company.getId()).path("astree").get();
 		assertEquals("astree() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ProjectTreeNodeModel _tree = _response.readEntity(ProjectTreeNodeModel.class);
 		

@@ -52,10 +52,10 @@ import org.opentdc.wtt.WttService;
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
-import test.org.opentdc.resources.ResourcesTest;
+import test.org.opentdc.resources.ResourceTest;
 
 public class ResourceRefTest extends AbstractTestClient {
-	private WebClient wttWC = null;
+	private WebClient wc = null;
 	private WebClient addressbookWC = null;
 	private WebClient resourceWC = null;
 	private CompanyModel company = null;
@@ -66,15 +66,15 @@ public class ResourceRefTest extends AbstractTestClient {
 
 	@Before
 	public void initializeTest() {
-		wttWC = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
+		wc = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
 		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 
 		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.createCompany(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		parentProject = ProjectTest.createProject(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
-		contact = ContactTest.createContact(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourcesTest.createResource(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
+		company = CompanyTest.create(wc, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
+		parentProject = ProjectTest.create(wc, company.getId(), this.getClass().getName(), "MY_DESC");
+		contact = ContactTest.create(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
+		resource = ResourceTest.create(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
 	}
 
 	@After
@@ -82,8 +82,8 @@ public class ResourceRefTest extends AbstractTestClient {
 		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
 		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
-		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName());
+		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
+		CompanyTest.cleanup(wc, company.getId(), this.getClass().getName());
 	}
 	
 	/********************************** resourceRef attribute tests *********************************/
@@ -172,11 +172,11 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertNull("resourceName should not be set by empty constructor", _rrm1.getResourceName());
 		
 		// create(_rrm1) -> BAD_REQUEST (because of empty resourceId)
-		Response _response = wttWC.replacePath("/").post(_rrm1);
+		Response _response = wc.replacePath("/").post(_rrm1);
 		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
 		_rrm1.setResourceId(resource.getId());
 
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(_rrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -190,7 +190,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertEquals("create() should not change resourceId", resource.getId(), _rrm2.getResourceId());
 		assertEquals("create() should derive the resourceName", resource.getName(), _rrm2.getResourceName());
 
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).path(_rrm2.getId()).delete();
 		assertEquals("delete(" + _rrm2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -203,7 +203,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertEquals("resourceId should be set by constructor", resource.getId(), _rrm1.getResourceId());
 		assertNull("resourceName should not be set", _rrm1.getResourceName());
 
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(_rrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -218,7 +218,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertEquals("create() should derive the resourceName", resource.getName(), _rrm2.getResourceName());
 		
 		// delete(_rrm2)
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).path(_rrm2.getId()).delete();
 		assertEquals("delete(" + _rrm2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -226,7 +226,7 @@ public class ResourceRefTest extends AbstractTestClient {
 	
 	@Test
 	public void testOnSubProject() {
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL)
 				.post(new ProjectModel("testResourceRefOnSubProject", "MY_DESC"));
@@ -238,7 +238,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertEquals("resourceId should be set by constructor", resource.getId(), _rrm1.getResourceId());
 		assertNull("resourceName should not be set by constructor", _rrm1.getResourceName());
 		
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(_rrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -253,13 +253,13 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertEquals("create() should derive the resourceName", resource.getName(), _rrm2.getResourceName());
 		
 		// delete(_rrm2)
-		 _response = wttWC.replacePath("/").path(company.getId()).
+		 _response = wc.replacePath("/").path(company.getId()).
 				 path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).
 				 path(ServiceUtil.RESREF_PATH_EL).path(_rrm2.getId()).delete();
 		assertEquals("delete(" + _rrm2.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());		
 
 		// delete(_pm)
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).delete();
 		assertEquals("delete(" + _pm.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -268,7 +268,7 @@ public class ResourceRefTest extends AbstractTestClient {
 	@Test
 	public void testCreateWithDuplicateId() {
 		// new(1) -> _rrm1
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(new ResourceRefModel(resource.getId()));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -279,13 +279,13 @@ public class ResourceRefTest extends AbstractTestClient {
 		_rrm2.setId(_rrm1.getId());		// wrongly create a 2nd ResourceRefModel object with the same ID
 		
 		// create(_rrm2) -> CONFLICT
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(_rrm2);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
 		// delete(_rrm)
-		 _response = wttWC.replacePath("/").path(company.getId()).
+		 _response = wc.replacePath("/").path(company.getId()).
 				 path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				 path(ServiceUtil.RESREF_PATH_EL).path(_rrm1.getId()).delete();
 		assertEquals("delete(" + _rrm1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());		
@@ -297,17 +297,17 @@ public class ResourceRefTest extends AbstractTestClient {
 		ArrayList<ResourceRefModel> _localList = new ArrayList<ResourceRefModel>();
 		Response _response = null;
 		for (int i = 0; i < LIMIT; i++) {
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.RESREF_PATH_EL).post(new ResourceRefModel(resource.getId()));
 			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 			_localList.add(_response.readEntity(ResourceRefModel.class));
 		}
 		
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).get();
-		List<ResourceRefModel> _remoteList = new ArrayList<ResourceRefModel>(wttWC.getCollection(ResourceRefModel.class));
+		List<ResourceRefModel> _remoteList = new ArrayList<ResourceRefModel>(wc.getCollection(ResourceRefModel.class));
 		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -320,7 +320,7 @@ public class ResourceRefTest extends AbstractTestClient {
 		}
 
 		for (ResourceRefModel _rrm3 : _localList) {
-			_response = wttWC.replacePath("/").path(company.getId()).
+			_response = wc.replacePath("/").path(company.getId()).
 					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 					path(ServiceUtil.RESREF_PATH_EL).path(_rrm3.getId()).delete();
 			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -331,13 +331,13 @@ public class ResourceRefTest extends AbstractTestClient {
 	public void testCreate() {
 		ResourceRefModel _rrm1 = new ResourceRefModel(resource.getId());
 		ResourceRefModel _rrm2 = new ResourceRefModel(resource.getId());
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(_rrm1);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceRefModel _rrm3 = _response.readEntity(ResourceRefModel.class);
 
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(_rrm2);
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
@@ -351,12 +351,12 @@ public class ResourceRefTest extends AbstractTestClient {
 		assertEquals("resourceId should be set correctly", resource.getId(), _rrm4.getResourceId());
 		assertEquals("resourceName should be derived", resource.getName(), _rrm4.getResourceName());
 
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).path(_rrm3.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).path(_rrm4.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -365,19 +365,19 @@ public class ResourceRefTest extends AbstractTestClient {
 	@Test
 	public void testDoubleCreate(
 	) {
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(new ResourceRefModel(resource.getId()));
 		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
 		ResourceRefModel _rrm = _response.readEntity(ResourceRefModel.class);
 		assertEquals("ID should be unchanged", resource.getId(), _rrm.getResourceId());		
 		
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(_rrm);
 		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
 
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).path(_rrm.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
@@ -386,17 +386,17 @@ public class ResourceRefTest extends AbstractTestClient {
 	@Test
 	public void testDelete(
 	) {
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(new ResourceRefModel(resource.getId()));
 		ResourceRefModel _rrm = _response.readEntity(ResourceRefModel.class);
 		
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).path(_rrm.getId()).delete();
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 		
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).path(_rrm.getId()).delete();
 		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
@@ -404,7 +404,7 @@ public class ResourceRefTest extends AbstractTestClient {
 	
 	@Test
 	public void testResourceRefModifications() {
-		Response _response = wttWC.replacePath("/").path(company.getId()).
+		Response _response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).post(new ResourceRefModel(resource.getId()));
 		ResourceRefModel _rrm = _response.readEntity(ResourceRefModel.class);
@@ -418,14 +418,14 @@ public class ResourceRefTest extends AbstractTestClient {
 		
 		// there is no update method for ResourceRef
 		
-		_response = wttWC.replacePath("/").path(company.getId()).
+		_response = wc.replacePath("/").path(company.getId()).
 				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
 				path(ServiceUtil.RESREF_PATH_EL).path(_rrm.getId()).delete();		
 		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
 	}
 
 	/********************************* helper methods *********************************/	
-	public static ResourceRefModel createResourceRef(
+	public static ResourceRefModel create(
 				WebClient wttWC,
 				String companyId,
 				String projectId,

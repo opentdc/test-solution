@@ -51,7 +51,7 @@ import org.opentdc.service.ServiceUtil;
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
-import test.org.opentdc.rates.RatesTest;
+import test.org.opentdc.rates.RateTest;
 
 public class RateRefTest extends AbstractTestClient {
 	private WebClient resourceWC = null;
@@ -70,9 +70,9 @@ public class RateRefTest extends AbstractTestClient {
 		rateWC = createWebClient(ServiceUtil.RATES_API_URL, RatesService.class);
 		
 		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		contact = ContactTest.createContact(addressbookWC, adb.getId(), "FNAME", "LNAME");
-		resource = ResourcesTest.createResource(resourceWC, adb, contact, "RateRefTest", Status.OK);
-		rate = RatesTest.createRate(rateWC, Status.OK);
+		contact = ContactTest.create(addressbookWC, adb.getId(), "FNAME", "LNAME");
+		resource = ResourceTest.create(resourceWC, adb, contact, "RateRefTest", Status.OK);
+		rate = RateTest.create(rateWC, Status.OK);
 	}
 
 	@After
@@ -80,10 +80,10 @@ public class RateRefTest extends AbstractTestClient {
 		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
 		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		RatesTest.deleteRate(rateWC, rate.getId(), Status.NO_CONTENT);
+		RateTest.delete(rateWC, rate.getId(), Status.NO_CONTENT);
 		rateWC.close();
 		System.out.println("deleted 1 rate");
-		ResourcesTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
+		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
 	}
 	
 	/********************************** localizedText attributes tests *********************************/			
@@ -151,9 +151,9 @@ public class RateRefTest extends AbstractTestClient {
 		assertNull("rateId should not be set by empty constructor", _model1.getRateId());
 		assertNull("rateTitle should not be set by empty constructor", _model1.getRateTitle());
 	
-		postRateRef(_model1, Status.BAD_REQUEST);
+		post(_model1, Status.BAD_REQUEST);
 		_model1.setRateId(rate.getId());
-		RateRefModel _model2 = postRateRef(_model1, Status.OK);
+		RateRefModel _model2 = post(_model1, Status.OK);
 
 		assertNull("create() should not change the id of the local object", _model1.getId());
 		assertEquals("create() should not change the rateId of the local object", rate.getId(), _model1.getRateId());
@@ -163,12 +163,12 @@ public class RateRefTest extends AbstractTestClient {
 		assertEquals("create() should not change the rateId", rate.getId(), _model2.getRateId());
 		assertEquals("create() should derive the rateTitle", rate.getTitle(), _model2.getRateTitle());
 		
-		RateRefModel _model3 = getRateRef(_model2.getId(), Status.OK);
+		RateRefModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		assertEquals("rateId of returned object should be unchanged after remote create", _model2.getRateId(), _model3.getRateId());
 		assertEquals("rateTitle of returned object should be unchanged after remote create", _model2.getRateTitle(), _model3.getRateTitle());
 
-		deleteRateRef(_model3.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -176,9 +176,9 @@ public class RateRefTest extends AbstractTestClient {
 		RateRefModel _model1 = new RateRefModel();
 		_model1.setRateId(rate.getId());
 		assertNull("rateTitle should not be set by empty constructor", _model1.getRateTitle());
-		RateRefModel _model2 = postRateRef(_model1, Status.OK);
+		RateRefModel _model2 = post(_model1, Status.OK);
 		assertEquals("rateTitle should be derived", rate.getTitle(), _model2.getRateTitle());
-		deleteRateRef(_model2.getId(), Status.NO_CONTENT);
+		delete(_model2.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -188,7 +188,7 @@ public class RateRefTest extends AbstractTestClient {
 		assertEquals("rateId should be set by constructor", rate.getId(), _model1.getRateId());
 		assertNull("rateTitle should not be set by constructor", _model1.getRateTitle());
 		
-		RateRefModel _model2 = postRateRef(_model1, Status.OK);
+		RateRefModel _model2 = post(_model1, Status.OK);
 		assertNull("id should still be null after remote create", _model1.getId());
 		assertEquals("create() should not change the rateId", rate.getId(), _model1.getRateId());
 		assertNull("create() should not change the rateTitle", _model1.getRateTitle());
@@ -197,42 +197,42 @@ public class RateRefTest extends AbstractTestClient {
 		assertEquals("create() should not change the rateId", rate.getId(), _model2.getRateId());
 		assertEquals("create() should derive the rateTitle", rate.getTitle(), _model2.getRateTitle());
 
-		RateRefModel _model3 = getRateRef(_model2.getId(), Status.OK);
+		RateRefModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("read() should not change the id", _model2.getId(), _model3.getId());
 		assertEquals("read() should not change the rateId", _model2.getRateId(), _model3.getRateId());
 		assertEquals("read() should not change the rateTitle", _model2.getRateTitle(), _model3.getRateTitle());
 		
-		deleteRateRef(_model3.getId(), Status.NO_CONTENT);
+		delete(_model3.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testCreateWithClientSideId() {
 		RateRefModel _model = new RateRefModel(rate.getId());
 		_model.setId("LOCAL_ID");
-		postRateRef(_model, Status.BAD_REQUEST);
+		post(_model, Status.BAD_REQUEST);
 	}
 	
 	@Test
 	public void testCreateWithDuplicateId() {
-		RateRefModel _model1 = postRateRef(new RateRefModel(rate.getId()), Status.OK);
+		RateRefModel _model1 = post(new RateRefModel(rate.getId()), Status.OK);
 		RateRefModel _model2 = new RateRefModel(rate.getId());
 		_model2.setId(_model1.getId());		// wrongly create a 2nd LocalizedTextModel object with the same ID
-		postRateRef(_model2, Status.CONFLICT);
-		deleteRateRef(_model1.getId(), Status.NO_CONTENT);
+		post(_model2, Status.CONFLICT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testList() {
 		ArrayList<RateRefModel> _localList = new ArrayList<RateRefModel>();		
 		resourceWC.replacePath("/").path(resource.getId()).path(ServiceUtil.RATEREF_PATH_EL);
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
 		
-		List<RateRefModel> _remoteList = listRateRefs(Status.OK);
+		List<RateRefModel> _remoteList = list(Status.OK);
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (RateRefModel _model : _remoteList) {
@@ -244,72 +244,72 @@ public class RateRefTest extends AbstractTestClient {
 		}
 		
 		for (RateRefModel _model : _localList) {
-			getRateRef(_model.getId(), Status.OK);
+			get(_model.getId(), Status.OK);
 		}
 		
 		for (RateRefModel _model : _localList) {
-			deleteRateRef(_model.getId(), Status.NO_CONTENT);
+			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}
 
 	@Test
 	public void testCreate() {	
-		RateRefModel _model1 = postRateRef(new RateRefModel(rate.getId()), Status.OK);
+		RateRefModel _model1 = post(new RateRefModel(rate.getId()), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
 		assertEquals("rateId should be set correctly", rate.getId(), _model1.getRateId());
 		assertEquals("rateTitle should be set correctly", rate.getTitle(), _model1.getRateTitle());
 		
-		RateRefModel _model2 = postRateRef(new RateRefModel(rate.getId()), Status.OK);
+		RateRefModel _model2 = post(new RateRefModel(rate.getId()), Status.OK);
 		assertNotNull("ID should be set", _model2.getId());
 		assertEquals("rateId should be set correctly", rate.getId(), _model2.getRateId());
 		assertEquals("rateTitle should be set correctly", rate.getTitle(), _model2.getRateTitle());
 
 		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
 
-		deleteRateRef(_model1.getId(), Status.NO_CONTENT);
-		deleteRateRef(_model2.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		delete(_model2.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testCreateDouble() {
-		RateRefModel _model = postRateRef(new RateRefModel(rate.getId()), Status.OK);
+		RateRefModel _model = post(new RateRefModel(rate.getId()), Status.OK);
 		assertNotNull("ID should be set:", _model.getId());
-		postRateRef(_model, Status.CONFLICT);
-		deleteRateRef(_model.getId(), Status.NO_CONTENT);
+		post(_model, Status.CONFLICT);
+		delete(_model.getId(), Status.NO_CONTENT);
 	}
 		
 	@Test
 	public void testRead() {
 		ArrayList<RateRefModel> _localList = new ArrayList<RateRefModel>();
 		resourceWC.replacePath("/").path(resource.getId()).path(ServiceUtil.RATEREF_PATH_EL);
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
-		_localList.add(postRateRef(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
+		_localList.add(post(new RateRefModel(rate.getId()), Status.OK));
 	
 		// test read on each local element
 		for (RateRefModel _model : _localList) {
-			getRateRef(_model.getId(), Status.OK);
+			get(_model.getId(), Status.OK);
 		}
-		List<RateRefModel> _remoteList = listRateRefs(Status.OK);
+		List<RateRefModel> _remoteList = list(Status.OK);
 
 		for (RateRefModel _model : _remoteList) {
-			assertEquals("ID should be unchanged when reading a project", _model.getId(), getRateRef(_model.getId(), Status.OK).getId());						
+			assertEquals("ID should be unchanged when reading a project", _model.getId(), get(_model.getId(), Status.OK).getId());						
 		}
 
 		for (RateRefModel _model : _localList) {
-			deleteRateRef(_model.getId(), Status.NO_CONTENT);
+			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}
 	
 	@Test
 	public void testMultiRead() {
-		RateRefModel _model1 = postRateRef(new RateRefModel(rate.getId()), Status.OK);
-		RateRefModel _model2 = getRateRef(_model1.getId(), Status.OK);
+		RateRefModel _model1 = post(new RateRefModel(rate.getId()), Status.OK);
+		RateRefModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read:", _model1.getId(), _model2.getId());		
-		RateRefModel _ltm3 = getRateRef(_model1.getId(), Status.OK);
+		RateRefModel _ltm3 = get(_model1.getId(), Status.OK);
 		
 		assertEquals("ID should be the same:", _model2.getId(), _ltm3.getId());
 		assertEquals("rateId should be the same:", _model2.getRateId(), _ltm3.getRateId());
@@ -319,46 +319,46 @@ public class RateRefTest extends AbstractTestClient {
 		assertEquals("rateId should be the same:", _model2.getRateId(), _model1.getRateId());
 		assertEquals("rateTitle should be the same:", _model2.getRateTitle(), _model1.getRateTitle());
 		
-		deleteRateRef(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
 	public void testDelete(
 	) {
-		RateRefModel _model1 = postRateRef(new RateRefModel(rate.getId()), Status.OK);
-		RateRefModel _model2 = getRateRef(_model1.getId(), Status.OK);
+		RateRefModel _model1 = post(new RateRefModel(rate.getId()), Status.OK);
+		RateRefModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged when reading a project (remote):", _model1.getId(), _model2.getId());						
-		deleteRateRef(_model1.getId(), Status.NO_CONTENT);
-		deleteRateRef(_model1.getId(), Status.NOT_FOUND);
-		getRateRef(_model1.getId(), Status.NOT_FOUND);
+		delete(_model1.getId(), Status.NO_CONTENT);
+		delete(_model1.getId(), Status.NOT_FOUND);
+		get(_model1.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testDoubleDelete() {
-		RateRefModel _model = postRateRef(new RateRefModel(rate.getId()), Status.OK);
-		getRateRef(_model.getId(), Status.OK);
-		deleteRateRef(_model.getId(), Status.NO_CONTENT);
-		getRateRef(_model.getId(), Status.NOT_FOUND);
-		deleteRateRef(_model.getId(), Status.NOT_FOUND);
-		deleteRateRef(_model.getId(), Status.NOT_FOUND);
+		RateRefModel _model = post(new RateRefModel(rate.getId()), Status.OK);
+		get(_model.getId(), Status.OK);
+		delete(_model.getId(), Status.NO_CONTENT);
+		get(_model.getId(), Status.NOT_FOUND);
+		delete(_model.getId(), Status.NOT_FOUND);
+		delete(_model.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
 	public void testModifications() {
-		RateRefModel _model = postRateRef(new RateRefModel(rate.getId()), Status.OK);		
+		RateRefModel _model = post(new RateRefModel(rate.getId()), Status.OK);		
 		assertNotNull("create() should set createdAt", _model.getCreatedAt());
 		assertNotNull("create() should set createdBy", _model.getCreatedBy());
-		deleteRateRef(_model.getId(), Status.NO_CONTENT);
+		delete(_model.getId(), Status.NO_CONTENT);
 	}
 	
 	/********************************* helper methods *********************************/	
-	public List<RateRefModel> listRateRefs(
+	public List<RateRefModel> list(
 			Status expectedStatus) 
 	{
-		return listRateRefs(resourceWC, resource.getId(), expectedStatus);
+		return list(resourceWC, resource.getId(), expectedStatus);
 	}
 
-	public static List<RateRefModel> listRateRefs(
+	public static List<RateRefModel> list(
 			WebClient webClient,
 			String resourceId,
 			Status expectedStatus) 
@@ -372,14 +372,14 @@ public class RateRefTest extends AbstractTestClient {
 		}
 	}
 	
-	public RateRefModel postRateRef(
+	public RateRefModel post(
 			RateRefModel rateRefModel,
 			Status expectedStatus) 
 	{
-		return postRateRef(resourceWC, resource, rateRefModel, expectedStatus);
+		return post(resourceWC, resource, rateRefModel, expectedStatus);
 	}
 
-	public static RateRefModel postRateRef(
+	public static RateRefModel post(
 			WebClient webClient,
 			ResourceModel resourceModel,
 			RateRefModel rateRefModel,
@@ -394,14 +394,14 @@ public class RateRefTest extends AbstractTestClient {
 		}
 	}
 	
-	public RateRefModel getRateRef(
+	public RateRefModel get(
 			String rateRefId,
 			Status expectedStatus) 
 	{
-		return getRateRef(resourceWC, resource, rateRefId, expectedStatus);
+		return get(resourceWC, resource, rateRefId, expectedStatus);
 	}
 
-	public static RateRefModel getRateRef(
+	public static RateRefModel get(
 			WebClient webClient,
 			ResourceModel resourceModel,
 			String rateRefId,
@@ -416,14 +416,14 @@ public class RateRefTest extends AbstractTestClient {
 		}
 	}
 	
-	public void deleteRateRef(
+	public void delete(
 			String rateRefId,
 			Status expectedStatus) 
 	{
-		deleteRateRef(resourceWC, resource, rateRefId, expectedStatus);
+		delete(resourceWC, resource, rateRefId, expectedStatus);
 	}
 
-	public static void deleteRateRef(
+	public static void delete(
 			WebClient webClient,
 			ResourceModel resourceModel,
 			String rateRefId,
