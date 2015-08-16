@@ -509,6 +509,97 @@ public class WorkRecordTest extends AbstractTestClient {
 	}
 	
 	@Test
+	public void testWrongCompanyId() {
+		WorkRecordModel _model1 = create(company, project, resource, new Date(), 1, 10, true, "testWrongCompanyId");
+		_model1.setCompanyId("");
+		post(_model1, Status.BAD_REQUEST);
+		_model1.setCompanyId(null);
+		post(_model1, Status.BAD_REQUEST);
+		_model1.setCompanyId("INVALID_COMPANY_ID");
+		post(_model1, Status.BAD_REQUEST);		
+	}
+	
+	@Test
+	public void testWrongProjectId() {
+		WorkRecordModel _model1 = create(company, project, resource, new Date(), 1, 10, true, "testWrongProjectId");
+		_model1.setProjectId("");
+		post(_model1, Status.BAD_REQUEST);
+		_model1.setProjectId(null);
+		post(_model1, Status.BAD_REQUEST);
+		_model1.setProjectId("INVALID_PROJECT_ID");
+		post(_model1, Status.BAD_REQUEST);		
+	}
+	
+	@Test
+	public void testWrongResourceId() {
+		WorkRecordModel _model1 = create(company, project, resource, new Date(), 1, 10, true, "testWrongResourceId");
+		_model1.setResourceId("");
+		post(_model1, Status.BAD_REQUEST);
+		_model1.setResourceId(null);
+		post(_model1, Status.BAD_REQUEST);
+		_model1.setResourceId("INVALID_RESOURCE_ID");
+		post(_model1, Status.BAD_REQUEST);		
+	}
+
+	@Test
+	public void testCompanyIdChange() {
+		WorkRecordModel _model1 = post(
+				create(company, project, resource, new Date(), 1, 10, true, "testCompanyIdChange"), Status.OK);
+		_model1.setCompanyId(company2.getId());
+		put(_model1, Status.BAD_REQUEST);
+		delete(_model1.getId(), Status.NO_CONTENT);			
+	}
+
+	@Test
+	public void testProjectIdChange() {
+		WorkRecordModel _model1 = post(
+				create(company, project, resource, new Date(), 1, 10, true, "testProjectIdChange"), Status.OK);
+		_model1.setProjectId(project2.getId());
+		put(_model1, Status.BAD_REQUEST);
+		delete(_model1.getId(), Status.NO_CONTENT);			
+	}
+
+	@Test
+	public void testResourceIdChange() {
+		WorkRecordModel _model1 = post(
+				create(company, project, resource, new Date(), 1, 10, true, "testResourceIdChange"), Status.OK);
+		_model1.setResourceId(resource2.getId());
+		put(_model1, Status.BAD_REQUEST);
+		delete(_model1.getId(), Status.NO_CONTENT);			
+	}
+
+	@Test
+	public void testDerivedFields() {
+		CompanyModel _company = CompanyTest.post(wttWC, 
+				new CompanyModel(CN + "1", "MY_DESC", org.getId()), Status.OK);
+		ProjectModel _project = ProjectTest.post(wttWC, _company.getId(), 
+				new ProjectModel(CN + "1", "MY_DESC1"), Status.OK);
+		ResourceModel _resource = ResourceTest.post(resourceWC, 
+				new ResourceModel(CN + "1", contact.getId()), Status.OK);
+		WorkRecordModel _model1 = post(
+				create(_company, _project, _resource, new Date(), 1, 10, true, "testDerivedFields"), Status.OK);
+		assertEquals("companyTitle should be derived correctly", _company.getTitle(), _model1.getCompanyTitle());
+		assertEquals("projectTitle should be derived correctly", _project.getTitle(), _model1.getProjectTitle());
+		assertEquals("resourceName should be set correctly", _resource.getName(), _model1.getResourceName());
+		_company.setTitle("NEW_COMPANY_TITLE");
+		CompanyTest.put(wttWC, _company, Status.OK);
+		_project.setTitle("NEW_PROJECT_TITLE");
+		ProjectTest.put(wttWC, _company.getId(), _project, Status.OK);
+		_resource.setName("NEW_RESOURCE_NAME");
+		ResourceTest.put(resourceWC, _resource, Status.OK);
+		_model1.setComment("changed");
+		WorkRecordModel _model2 = put(_model1, Status.OK);
+		assertEquals("id should not change", _model1.getId(), _model2.getId());
+		assertEquals("comment should have changed", "changed", _model2.getComment());
+		assertEquals("companyTitle should be derived correctly", "NEW_COMPANY_TITLE", _model2.getCompanyTitle());
+		assertEquals("projectTitle should be derived correctly", "NEW_PROJECT_TITLE", _model2.getProjectTitle());
+		assertEquals("resourceName should be set correctly", "NEW_RESOURCE_NAME", _model2.getResourceName());
+		delete(_model1.getId(), Status.NO_CONTENT);	
+		CompanyTest.delete(wttWC, _company.getId(), Status.NO_CONTENT);
+		ResourceTest.delete(resourceWC, _resource.getId(), Status.NO_CONTENT);
+	}
+
+	@Test
 	public void testDoubleCreate(
 	) {
 		WorkRecordModel _model1 = post(
