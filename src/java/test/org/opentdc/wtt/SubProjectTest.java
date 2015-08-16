@@ -1,11 +1,8 @@
 package test.org.opentdc.wtt;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
@@ -18,43 +15,81 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opentdc.addressbooks.AddressbookModel;
-import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.service.ServiceUtil;
-import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
-import org.opentdc.wtt.WttService;
 
-import test.org.opentdc.AbstractTestClient;
-import test.org.opentdc.addressbooks.AddressbookTest;
-
-public class SubProjectTest  extends AbstractTestClient {		
-	private WebClient wc = null;
-	private WebClient addressbookWC = null;
-	private CompanyModel company = null;
+/**
+ * Testing subprojects in WttService
+ * @author Bruno Kaiser
+ *
+ */
+public class SubProjectTest  extends AbstractProjectTestClient {	
+	private static final String CN = "SubProjectTest";
 	private ProjectModel parentProject = null;
-	private AddressbookModel addressbook = null;
 
+	/**
+	 * Initialize test resources.
+	 */
 	@Before
-	public void initializeTest() {
-		wc = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
-		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.create(wc, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		parentProject = ProjectTest.create(wc, company.getId(), this.getClass().getName(), "MY_DESC");
+	public void initializeTests() {
+		super.initializeTests();
+		parentProject = ProjectTest.post(wc, company.getId(), 
+				new ProjectModel(CN, "MY_DESC"), Status.OK);
 	}
 
+	/**
+	 * Free all allocated test resources.
+	 */
 	@After
 	public void cleanupTest() {
-		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
-		System.out.println("deleted 1 addressbook");
-		addressbookWC.close();
-		CompanyTest.cleanup(wc, company.getId(), this.getClass().getName());
+		super.cleanupTest();
 	}
 	
 	/********************************** subproject attributes tests *********************************/	
-	// testing of attributes is not needed here, because subProject use the same Model as Projects
+	@Test
+	public void testEmptyConstructor() {
+		super.testEmptyConstructor();
+	}
+	
+	@Test
+	public void testConstructor() {	
+		super.testConstructor();
+	}
+	
+	@Test
+	public void testId() {
+		super.testId();
+	}
+
+	@Test
+	public void testTitle() {
+		super.testTitle();
+	}
+	
+	@Test
+	public void testDescription() {
+		super.testDescription();
+	}	
+	
+	@Test
+	public void testCreatedBy() {
+		super.testCreatedBy();
+	}
+	
+	@Test
+	public void testCreatedAt() {
+		super.testCreatedAt();
+	}
+		
+	@Test
+	public void testModifiedBy() {
+		super.testModifiedBy();
+	}
+	
+	@Test
+	public void testModifiedAt() {
+		super.testModifiedAt();
+	}
 	
 	/********************************** REST service tests *********************************/		
 	// create:  POST p "api/company/{cid}/project/{pid}/project"
@@ -62,490 +97,75 @@ public class SubProjectTest  extends AbstractTestClient {
 	// update:  PUT p "api/company/{cid}/project/{pid}/project/{spid}"
 	// delete:  DELETE "api/company/{cid}/project/{pid}/project/{spid}"
 	@Test
-	public void testSubProjectCreateReadDeleteWithEmptyConstructor() {
-		// new() -> _pm1
-		ProjectModel _pm1 = new ProjectModel();
-		
-		// create(_pm1) -> BAD_REQUEST (because of empty title)
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
-		assertEquals("create() should return with status BAD_REQUEST", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
-		_pm1.setTitle("testSubProjectCreateReadDeleteWithEmptyConstructor");
-
-		// create(_pm1) -> _pm2
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
-		
-		// validate _pm1 (local object)
-		assertNull("create() should not change the id", _pm1.getId());
-		assertEquals("create() should not change the title", "testSubProjectCreateReadDeleteWithEmptyConstructor", _pm1.getTitle());
-		assertNull("create() should not change the description", _pm1.getDescription());
-		
-		// validate _pm2 (remote object returned from create())
-		assertNotNull("create() should set a valid id on the remote object returned", _pm2.getId());
-		assertEquals("create() should not change the title", "testSubProjectCreateReadDeleteWithEmptyConstructor", _pm2.getTitle());
-		assertNull("create() should not change the description", _pm2.getDescription());
-
-		// read(_pm2) -> _pm3
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).get();
-		assertEquals("read(" + _pm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
-		
-		// validate _pm3 (remote object returned from read())
-		assertEquals("read() should not change the id", _pm2.getId(), _pm3.getId());
-		assertEquals("read() should not change the title", _pm2.getTitle(), _pm3.getTitle());
-		assertEquals("read() should not change the description", _pm2.getDescription(), _pm3.getDescription());
-
-		// delete(_pm3)
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm3.getId()).delete();
-		assertEquals("delete(" + _pm3.getId() + ") should return with status NO_CONTENT:", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testCreateReadDeleteWithEmptyConstructor() {
+		super.testCreateReadDeleteWithEmptyConstructor();
 	}
 
 	@Test
-	public void testSubProjectCreateReadDelete() {
-		// new() -> _pm1
-		ProjectModel _pm1 = new ProjectModel("testSubProjectCreateReadDelete", "MY_DESC");
-		assertNull("id should not be set by constructor", _pm1.getId());
-		assertEquals("title should be set by constructor", "testSubProjectCreateReadDelete", _pm1.getTitle());
-		assertEquals("description should be set by constructor", "MY_DESC", _pm1.getDescription());
-		// create(_pm1) -> _pm2
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
-
-		assertNull("id should be null after remote create", _pm1.getId());
-		assertEquals("title should be unchanged after remote create", "testSubProjectCreateReadDelete", _pm1.getTitle());
-		assertEquals("description should be unchanged after remote create", "MY_DESC", _pm1.getDescription());
-		assertNotNull("id of returned object should be set", _pm2.getId());
-		assertEquals("title of returned object should be unchanged after remote create", "testSubProjectCreateReadDelete", _pm2.getTitle());
-		assertEquals("description of returned object should be unchanged after remote create", "MY_DESC", _pm2.getDescription());
-
-		// read(_pm2)  -> _pm3
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).get();
-		assertEquals("read(" + _pm2.getId() + ") should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
-		assertEquals("id of returned object should be the same", _pm2.getId(), _pm3.getId());
-		assertEquals("title of returned object should be unchanged after remote create", _pm2.getTitle(), _pm3.getTitle());
-		assertEquals("description of returned object should be unchanged after remote create", _pm2.getDescription(), _pm3.getDescription());
-
-		// delete(_pm3)
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm3.getId()).delete();
-		assertEquals("delete(" + _pm3.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreateReadDelete deleted " + _pm3.getId());
+	public void testCreateReadDelete() {
+		super.testCreateReadDelete();
 	}
 	
 	@Test
-	public void testCreateSubProjectWithClientSideId() {
-		// new() -> _pm1 -> _pm1.setId()
-		ProjectModel _pm1 = new ProjectModel("testCreateSubProjectWithClientSideId", "MY_DESC");
-		_pm1.setId("LOCAL_ID");
-		assertEquals("id should have changed", "LOCAL_ID", _pm1.getId());
-		// create(_pm1) -> BAD_REQUEST
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
-		assertEquals("create() with an id generated by the client should be denied by the server", Status.BAD_REQUEST.getStatusCode(), _response.getStatus());
+	public void testClientSideId() {
+		super.testClientSideId();
 	}
 	
 	@Test
-	public void testCreateSubProjectWithDuplicateId() {
-		// create(new()) -> _pm1
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).
-				post(new ProjectModel("testCreateSubProjectWithDuplicateId", "MY_DESC"));
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
-		System.out.println("testCreateSubProjectWithDuplicateId created " + _pm1.getId());
-
-		// new() -> _pm2 -> _pm2.setId(_pm1.getId())
-		ProjectModel _pm2 = new ProjectModel("testCreateSubProjectWithClientSideId2", "MY_DESC2");
-		_pm2.setId(_pm1.getId());		// wrongly create a 2nd ProjectModel object with the same ID
-		
-		// create(_pm2) -> CONFLICT
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm2);
-		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
-
-		// delete(_pm1)
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();
-		assertEquals("delete(" + _pm1.getId() + ") should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testCreateSubProjectWithDuplicateId deleted " + _pm1.getId());
-}
-	
-	// GET "api/company/{cid}/project/{pid}/project"
-	@Test
-	public void testSubProjectList() {
-		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();		
-		Response _response = null;
-		for (int i = 0; i < LIMIT; i++) {
-			// create(new()) -> _localList
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).
-					post(new ProjectModel("testSubProjectList" + i, "MY_DESC" + i));
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(ProjectModel.class));
-		}
-		
-		// list(/) -> _remoteList
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).get();
-		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wc.getCollection(ProjectModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-
-		ArrayList<String> _remoteListIds = new ArrayList<String>();
-		for (ProjectModel _pm : _remoteList) {
-			_remoteListIds.add(_pm.getId());
-		}
-		
-		for (ProjectModel _pm : _localList) {
-			assertTrue("project <" + _pm.getId() + "> should be listed", _remoteListIds.contains(_pm.getId()));
-		}
-		
-		for (ProjectModel _pm : _localList) {
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_response.readEntity(ProjectModel.class);
-		}
-		
-		for (ProjectModel _pm : _localList) {
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		}
-	}
-
-	@Test
-	public void testSubProjectCreate() {	
-		// new(1) -> _pm1
-		ProjectModel _pm1 = new ProjectModel("testSubProjectCreate1", "MY_DESC1");
-		// new(2) -> _pm2
-		ProjectModel _pm2 = new ProjectModel("testSubProjectCreate2", "MY_DESC2");
-		
-		// create(_pm1)  -> _pm3
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectCreate created " + _pm3.getId());
-
-		// create(_pm2) -> _pm4
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm2);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm4 = _response.readEntity(ProjectModel.class);		
-		System.out.println("testSubProjectCreate created " + _pm4.getId());
-		assertNotNull("ID should be set", _pm3.getId());
-		assertNotNull("ID should be set", _pm4.getId());
-		assertThat(_pm4.getId(), not(equalTo(_pm3.getId())));
-		assertEquals("title1 should be set correctly", "testSubProjectCreate1", _pm3.getTitle());
-		assertEquals("description1 should be set correctly", "MY_DESC1", _pm3.getDescription());
-		assertEquals("title2 should be set correctly", "testSubProjectCreate2", _pm4.getTitle());
-		assertEquals("description2 should be set correctly", "MY_DESC2", _pm4.getDescription());
-
-		// delete(_p3) -> NO_CONTENT
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm3.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreate deleted " + _pm3.getId());
-
-		// delete(_p4) -> NO_CONTENT
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm4.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreate deleted " + _pm4.getId());
+	public void testDuplicateId() {
+		super.testDuplicateId();
 	}
 	
 	@Test
-	public void testSubProjectCreateDouble() {		
-		// create(new()) -> _pm
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).
-				post(new ProjectModel("testSubProjectCreateDouble", "MY_DESC"));
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectCreateDouble created " + _pm.getId());
-		assertNotNull("ID should be set:", _pm.getId());		
-		
-		// create(_pm) -> CONFLICT
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm);
-		assertEquals("create() with a duplicate id should be denied by the server", Status.CONFLICT.getStatusCode(), _response.getStatus());
+	public void testList() {
+		super.testList();
+	}
 
-		// delete(_pm) -> NO_CONTENT
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectCreateDouble deleted " + _pm.getId());
+	@Test
+	public void testCreate() {	
+		super.testCreate();
 	}
 	
 	@Test
-	public void testSubProjectRead() {
-		ArrayList<ProjectModel> _localList = new ArrayList<ProjectModel>();
-		Response _response = null;
-		for (int i = 0; i < LIMIT; i++) {
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).
-					post(new ProjectModel("testSubProjectRead", "MY_DESC"));
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(ProjectModel.class));
-		}
-	
-		// test read on each local element
-		for (ProjectModel _pm : _localList) {
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_response.readEntity(ProjectModel.class);
-		}
-
-		// test read on each element within list()
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).get();
-		List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wc.getCollection(ProjectModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-
-		ProjectModel _tmpObj = null;
-		for (ProjectModel _pm : _remoteList) {
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_tmpObj = _response.readEntity(ProjectModel.class);
-			assertEquals("ID should be unchanged when reading a project", _pm.getId(), _tmpObj.getId());						
-		}
-
-		for (ProjectModel _pm : _localList) {
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_pm.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-			System.out.println("testSubProjectRead deleted " + _pm.getId());			
-		}
-	}
-		
-	@Test
-	public void testSubProjectMultiRead() {
-		// new() -> _pm1
-		ProjectModel _pm1 = new ProjectModel("testSubProjectMultiRead", "MY_DESC");
-		
-		// create(_pm1) -> _pm2
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm1);
-		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectMultiRead created " + _pm2.getId());			
-
-		// read(_pm2) -> _pm3
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
-		assertEquals("ID should be unchanged after read:", _pm2.getId(), _pm3.getId());		
-
-		// read(_pm2) -> _pm4
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm4 = _response.readEntity(ProjectModel.class);
-		assertEquals("ID should be unchanged after read:", _pm2.getId(), _pm4.getId());		
-		
-		// but: the two objects are not equal !
-		assertEquals("ID should be the same:", _pm3.getId(), _pm4.getId());
-		assertEquals("title should be the same:", _pm3.getTitle(), _pm4.getTitle());
-		assertEquals("description should be the same:", _pm3.getDescription(), _pm4.getDescription());
-		
-		assertEquals("ID should be the same:", _pm3.getId(), _pm2.getId());
-		assertEquals("title should be the same:", _pm3.getTitle(), _pm2.getTitle());
-		assertEquals("description should be the same:", _pm3.getDescription(), _pm2.getDescription());
-		
-		// delete(_pm2)
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm2.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectMultiRead deleted " + _pm2.getId());			
+	public void testDoubleCreate() {	
+		super.testDoubleCreate();
 	}
 	
 	@Test
-	public void testSubProjectUpdate() {
-		// create() -> _pm1
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(new ProjectModel("testSubProjectUpdate", "MY_DESC"));
-		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
-		
-		// change the attributes
-		// update(_pm1) -> _pm2
-		_pm1.setTitle("MY_TITLE1");
-		_pm1.setDescription("MY_DESC1");
-		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).put(_pm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
-
-		assertNotNull("ID should be set", _pm2.getId());
-		assertEquals("ID should be unchanged", _pm1.getId(), _pm2.getId());	
-		assertEquals("title should have changed", "MY_TITLE1", _pm2.getTitle());
-		assertEquals("description should have changed", "MY_DESC1", _pm2.getDescription());
-
-		// reset the attributes
-		// update(_pm1) -> _pm3
-		_pm1.setTitle("MY_TITLE2");
-		_pm1.setDescription("MY_DESC2");
-		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).put(_pm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm3 = _response.readEntity(ProjectModel.class);
-
-		assertNotNull("ID should be set", _pm3.getId());
-		assertEquals("ID should be unchanged", _pm1.getId(), _pm3.getId());	
-		assertEquals("title should have changed", "MY_TITLE2", _pm3.getTitle());
-		assertEquals("description should have changed", "MY_DESC2", _pm3.getDescription());
-		
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testRead() {
+		super.testRead();
 	}
-
+		
 	@Test
-	public void testSubProjectDelete(
-	) {
-		// create() -> _pm1
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(new ProjectModel("testSubProjectDelete", "MY_DESC"));
-		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectDelete created " + _pm1.getId());			
-		
-		// read(_pm1) -> _pm2
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
-		assertEquals("ID should be unchanged when reading a project (remote):", _pm1.getId(), _pm2.getId());						
-		
-		// delete(_pm1) -> OK
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectDelete deleted " + _pm1.getId());			
-	
-		// read the deleted object twice
-		// read(_pm1) -> NOT_FOUND
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// read(_pm1) -> NOT_FOUND
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+	public void testMultiRead() {
+		super.testMultiRead();
 	}
 	
 	@Test
-	public void testSubProjectDoubleDelete() {		
-		// create() -> _pm1
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(new ProjectModel("testSubProjectDoubleDelete", "MY_DESC"));
-		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
-		System.out.println("testSubProjectDoubleDelete created " + _pm1.getId());			
-
-		// read(_pm1) -> OK
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
-		assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		
-		// delete(_pm1) -> OK
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();		
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		System.out.println("testSubProjectDoubleDelete deleted " + _pm1.getId());			
-		
-		// read(_pm1) -> NOT_FOUND
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// delete _pm1 -> NOT_FOUND
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();		
-		assertEquals("delete() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
-		
-		// read _pm1 -> NOT_FOUND
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).get();
-		assertEquals("read() should return with status NOT_FOUND", Status.NOT_FOUND.getStatusCode(), _response.getStatus());
+	public void testUpdate() {
+		super.testUpdate();
 	}
 
 	@Test
-	public void testSubProjectDeep() throws Exception {
-			// create() -> _parentProject
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).
-				post(new ProjectModel("parentProject", "MY_DESC"));
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _parentProject = _response.readEntity(ProjectModel.class);
+	public void testDelete() {
+		super.testDelete();
+	}
+	
+	@Test
+	public void testDoubleDelete() {
+		super.testDoubleDelete();
+	}
+
+	@Test
+	public void testDeepHierarchy() throws Exception {
+		ProjectModel _parentProject = post(new ProjectModel("parentProject", "testDeepHierarchy"), Status.OK);
 		String _parentProjectId = null;
 		TreeMap<String, String> _projectTree = new TreeMap<String, String>();  // parentProject, clientProject
 		
 		// creating some subprojects in a deep structure
 		for (int i = 0; i < LIMIT; i++) {
 			_parentProjectId = _parentProject.getId();
-			_parentProject = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_parentProject.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).
-					post(new ProjectModel("testSubProjectDeep" + i, "MY_DESC" + i)).readEntity(ProjectModel.class);
+			_parentProject = post(_parentProject.getId(), new ProjectModel("testDeepHierarchy" + i, "MY_DESC" + i), Status.OK);
 			// parentProjectId, clientProjectId
 			_projectTree.put(_parentProjectId, _parentProject.getId());
 			// System.out.println("created <" + _parentProjectId + ">/<" + _parentProject.getId() + ">");
@@ -559,17 +179,10 @@ public class SubProjectTest  extends AbstractTestClient {
 		while (_iter.hasNext()) {
 			_parentId = (String) _iter.next();
 			_childId = _projectTree.get(_parentId);
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_parentId).
-					path(ServiceUtil.PROJECT_PATH_EL).get();
-			List<ProjectModel> _remoteList = new ArrayList<ProjectModel>(wc.getCollection(ProjectModel.class));
-			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+			List<ProjectModel> _remoteList = list(_parentId, null, Status.OK);
 			assertEquals("list() should contain one single subproject", 1, _remoteList.size());
-			// read(_p2) -> _p3
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_parentId).
-					path(ServiceUtil.PROJECT_PATH_EL).path(_childId).get();
-			assertEquals("read() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
+
+			get(_parentId, _childId, Status.OK);
 		}
 
 		// delete all subprojects recursively  (iterating in reverse order)
@@ -577,91 +190,240 @@ public class SubProjectTest  extends AbstractTestClient {
 			_childId = _projectTree.get(_pId);
 			// System.out.println("deleting <" + _pId + ">/<" + _childId + ">");
 			if (! _projectTree.containsKey(_childId)) {
-				_response = wc.replacePath("/").path(company.getId()).
-						path(ServiceUtil.PROJECT_PATH_EL).path(_pId).
-						path(ServiceUtil.PROJECT_PATH_EL).path(_childId).delete();		
-				assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+				delete(_pId, _childId, Status.NO_CONTENT);
 				_projectTree.remove(_childId);
 			}
 		}
 	}
 	
 	@Test
-	public void testSubProjectModifications() {
-		// create(new ProjectModel()) -> _pm1
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).post(new ProjectModel("testSubProjectModifications", "MY_DESC"));
-		ProjectModel _pm1 = _response.readEntity(ProjectModel.class);
-		
-		// test createdAt and createdBy
-		assertNotNull("create() should set createdAt", _pm1.getCreatedAt());
-		assertNotNull("create() should set createdBy", _pm1.getCreatedBy());
-		// test modifiedAt and modifiedBy (= same as createdAt/createdBy)
-		assertNotNull("create() should set modifiedAt", _pm1.getModifiedAt());
-		assertNotNull("create() should set modifiedBy", _pm1.getModifiedBy());
-		assertEquals("createdAt and modifiedAt should be identical after create()", _pm1.getCreatedAt(), _pm1.getModifiedAt());
-		assertEquals("createdBy and modifiedBy should be identical after create()", _pm1.getCreatedBy(), _pm1.getModifiedBy());
-		
-		// update(_pm1)  -> _pm2
-		_pm1.setTitle("NEW_TITLE");
-		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).put(_pm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _pm2 = _response.readEntity(ProjectModel.class);
-
-		// test createdAt and createdBy (unchanged)
-		assertEquals("update() should not change createdAt", _pm1.getCreatedAt(), _pm2.getCreatedAt());
-		assertEquals("update() should not change createdBy", _pm1.getCreatedBy(), _pm2.getCreatedBy());
-		
-		// test modifiedAt and modifiedBy (= different from createdAt/createdBy)
-		assertThat(_pm2.getModifiedAt(), not(equalTo(_pm2.getCreatedAt())));
-		// TODO: in our case, the modifying user will be the same; how can we test, that modifiedBy really changed ?
-		// assertThat(_pm2.getModifiedBy(), not(equalTo(_pm2.getCreatedBy())));
-
-		// update(_pm1) with modifiedBy/At set on client side -> ignored by server
-		_pm1.setModifiedBy("MYSELF");
-		_pm1.setModifiedAt(new Date(1000));
-		wc.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).put(_pm1);
-		assertEquals("update() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		ProjectModel _o3 = _response.readEntity(ProjectModel.class);
-		
-		// test, that modifiedBy really ignored the client-side value "MYSELF"
-		assertThat(_pm1.getModifiedBy(), not(equalTo(_o3.getModifiedBy())));
-		// check whether the client-side modifiedAt() is ignored
-		assertThat(_pm1.getModifiedAt(), not(equalTo(_o3.getModifiedAt())));
-		
-		// delete(_pm1) -> NO_CONTENT
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(_pm1.getId()).delete();		
-		assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
+	public void testModifications() {
+		super.testModifications();
 	}
 	
 	/********************************* helper methods *********************************/	
-	public static ProjectModel create(
-			WebClient wttWC, 
-			String companyId,
-			String parentProjectId,
-			String title, 
-			String description) 
-	{
-		ProjectModel _pm = new ProjectModel();
-		_pm.setTitle(title);
-		_pm.setDescription(description);
-		Response _response = wttWC.replacePath("/").path(companyId).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProjectId).
-				path(ServiceUtil.PROJECT_PATH_EL).post(_pm);
-		assertEquals("post() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		return _response.readEntity(ProjectModel.class);
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.wtt.AbstractProjectTestClient#list(java.lang.String, javax.ws.rs.core.Response.Status)
+	 */
+	@Override
+	protected List<ProjectModel> list(
+			String query, 
+			Status expectedStatus) {
+		return list(wc, company.getId(), parentProject.getId(), query, -1, Integer.MAX_VALUE, expectedStatus);
 	}
 	
+	private List<ProjectModel> list(
+			String parentProjectId,
+			String query,
+			Status expectedStatus){
+		return list(wc, company.getId(), parentProjectId, query, -1, Integer.MAX_VALUE, expectedStatus);
+	}
+	
+	
+	/**
+	 * Retrieve a list of SubProjects from WttService by executing a HTTP GET request.
+	 * @param webClient the WebClient for the WttService
+	 * @param companyId the ID of the company
+	 * @param parentProjectId the ID of the parentProject to be listed
+	 * @param query the URL query to use
+	 * @param position the position to start a batch with
+	 * @param size the size of a batch
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return a List of ProjectModel objects in JSON format
+	 */
+	public static List<ProjectModel> list(
+			WebClient webClient, 
+			String companyId,
+			String parentProjectId,
+			String query, 
+			int position,
+			int size,
+			Status expectedStatus) {
+		webClient.resetQuery();
+		webClient.replacePath("/").path(companyId).
+			path(ServiceUtil.PROJECT_PATH_EL).path(parentProjectId).path(ServiceUtil.PROJECT_PATH_EL);
+		Response _response = executeListQuery(webClient, query, position, size);
+		List<ProjectModel> _list = null;
+		if (expectedStatus != null) {
+			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			_list = new ArrayList<ProjectModel>(webClient.getCollection(ProjectModel.class));
+			System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _list.size());
+		}
+		return _list;
+	}
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.wtt.AbstractProjectTestClient#post(org.opentdc.wtt.ProjectModel, javax.ws.rs.core.Response.Status)
+	 */
+	@Override
+	protected ProjectModel post(
+			ProjectModel model,
+			Status expectedStatus) {
+		return post(wc, company.getId(), parentProject.getId(), model, expectedStatus);
+	}
+	
+	private ProjectModel post(
+			String parentProjectId,
+			ProjectModel model,
+			Status expectedStatus) {
+		return post(wc, company.getId(), parentProjectId, model, expectedStatus);
+	}
+
+	/**
+	 * Create a new SubProject on the server by executing a HTTP POST request.
+	 * @param webClient the WebClient representing the WttService
+	 * @param companyId the ID of the company
+	 * @param parentProjectId the ID of the parentProject
+	 * @param model the ProjectModel data to create on the server
+	 * @param exceptedStatus the expected HTTP status to test on
+	 * @return the created ProjectModel
+	 */
+	public static ProjectModel post(
+			WebClient webClient,
+			String companyId,
+			String parentProjectId,
+			ProjectModel model,
+			Status expectedStatus) 
+	{
+		Response _response = webClient.replacePath("/").path(companyId).
+				path(ServiceUtil.PROJECT_PATH_EL).path(parentProjectId).path(ServiceUtil.PROJECT_PATH_EL).post(model);
+		if (expectedStatus != null) {
+			assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(ProjectModel.class);
+		} else {
+			return null;
+		}
+	}		
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.wtt.AbstractProjectTestClient#get(java.lang.String, javax.ws.rs.core.Response.Status)
+	 */
+	@Override
+	protected ProjectModel get(
+			String id, 
+			Status expectedStatus) {
+		return get(wc, company.getId(), parentProject.getId(), id, expectedStatus);
+	}
+	
+	private ProjectModel get(
+			String parentProjectId,
+			String id,
+			Status expectedStatus) {
+		return get(wc, company.getId(), parentProjectId, id, expectedStatus);
+	}
+	
+	/**
+	 * Read the SubProject with id from WttService by executing a HTTP GET method.
+	 * @param webClient the web client representing the WttService
+	 * @param companyId the ID of the company 
+	 * @param parentProjectId the ID of the parentProject
+	 * @param id the id of the ProjectModel to retrieve
+	 * @param expectedStatus  the expected HTTP status to test on
+	 * @return the retrieved ProjectModel object in JSON format
+	 */
+	public static ProjectModel get(
+			WebClient webClient,
+			String companyId,
+			String parentProjectId,
+			String id,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").path(companyId).
+				path(ServiceUtil.PROJECT_PATH_EL).path(parentProjectId).path(ServiceUtil.PROJECT_PATH_EL).path(id).get();
+		if (expectedStatus != null) {
+			assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(ProjectModel.class);
+		} else {
+			return null;
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.wtt.AbstractProjectTestClient#put(org.opentdc.wtt.ProjectModel, javax.ws.rs.core.Response.Status)
+	 */
+	@Override
+	protected ProjectModel put(
+			ProjectModel model, 
+			Status expectedStatus) {
+		return put(wc, company.getId(), parentProject.getId(), model, expectedStatus);
+	}
+	
+	/**
+	 * Update a SubProject on the WttService by executing a HTTP PUT method.
+	 * @param webClient the web client representing the WttService
+	 * @param companyId the ID of the company 
+	 * @param parentProjectId the ID of the parentProject
+	 * @param model the new ProjectModel data
+	 * @param expectedStatus the expected HTTP status to test on
+	 * @return the updated ProjectModel object in JSON format
+	 */
+	public static ProjectModel put(
+			WebClient webClient,
+			String companyId,
+			String parentProjectId,
+			ProjectModel model,
+			Status expectedStatus) {
+		webClient.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+		Response _response = webClient.replacePath("/").path(companyId).
+				path(ServiceUtil.PROJECT_PATH_EL).path(parentProjectId).path(ServiceUtil.PROJECT_PATH_EL).path(model.getId()).put(model);
+		if (expectedStatus != null) {
+			assertEquals("PUT should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			return _response.readEntity(ProjectModel.class);
+		} else {
+			return null;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.wtt.AbstractProjectTestClient#delete(java.lang.String, javax.ws.rs.core.Response.Status)
+	 */
+	@Override
+	protected void delete(
+			String id, 
+			Status expectedStatus) {
+		delete(wc, company.getId(), parentProject.getId(), id, expectedStatus);
+	}
+	
+	private void delete(
+			String parentProjectId,
+			String id,
+			Status expectedStatus) {
+		delete(wc, company.getId(), parentProjectId, id, expectedStatus);
+	}
+	
+	/**
+	 * Delete the SubProject with id on the WttService by executing a HTTP DELETE method.
+	 * @param webClient the WebClient for the WttService
+	 * @param companyId the ID of the company 
+	 * @param parentProjectId the ID of the parentProject
+	 * @param id the id of the ProjectModel object to delete
+	 * @param expectedStatus the expected HTTP status to test on
+	 */
+	public static void delete(
+			WebClient webClient,
+			String companyId,
+			String parentProjectId,
+			String id,
+			Status expectedStatus) {
+		Response _response = webClient.replacePath("/").path(companyId).
+				path(ServiceUtil.PROJECT_PATH_EL).path(parentProjectId).path(ServiceUtil.PROJECT_PATH_EL).path(id).delete();	
+		if (expectedStatus != null) {
+			assertEquals("DELETE should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
+	}		
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
+	 */
+	@Override
 	protected int calculateMembers() {
-		return 1;
+		return list(wc, company.getId(), parentProject.getId(), null, 0, Integer.MAX_VALUE, Status.OK).size();
 	}
 }
