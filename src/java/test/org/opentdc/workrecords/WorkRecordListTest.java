@@ -103,7 +103,7 @@ public class WorkRecordListTest extends AbstractTestClient {
 		testObjects = new ArrayList<WorkRecordModel>();
 		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
 			testObjects.add(WorkRecordTest.post(wc, 
-					WorkRecordTest.create(company, project, resource, new Date(), 1, 30, true, CN),
+					WorkRecordTest.create(company, project, resource, new Date(), 1, 30, true, true, CN),
 					Status.OK));
 		}
 		System.out.println("created " + testObjects.size() + " test objects");
