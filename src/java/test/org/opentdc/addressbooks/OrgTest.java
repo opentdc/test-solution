@@ -532,7 +532,7 @@ public class OrgTest extends AbstractTestClient {
 			}
 			if (_response.getStatus() == Status.OK.getStatusCode()) {
 				_list = new ArrayList<OrgModel>(webClient.getCollection(OrgModel.class));
-				System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ", " + listAllOrgs + ") ->" + _list.size());
+				// System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ", " + listAllOrgs + ") ->" + _list.size());
 			}
 			return _list;
 		}

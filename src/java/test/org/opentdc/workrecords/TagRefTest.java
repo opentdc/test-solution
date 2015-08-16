@@ -120,7 +120,7 @@ public class TagRefTest extends AbstractTestClient {
 		rate = RateTest.post(rateWC, 
 				new RateModel(CN, 100, "MY_DESC"), Status.OK);
 		workRecord = WorkRecordTest.post(wc, 
-				WorkRecordTest.create(company, project, resource, date, 1, 30, true, "TagRefTests"), Status.OK);
+				WorkRecordTest.create(company, project, resource, date, 1, 30, true, true, "TagRefTests"), Status.OK);
 		tag = TagTest.create(tagWC, Status.OK);
 		LocalizedTextTest.post(tagWC, tag, new LocalizedTextModel(LanguageCode.getDefaultLanguageCode(), "TagRefTest"), Status.OK);
 	}
@@ -142,6 +142,7 @@ public class TagRefTest extends AbstractTestClient {
 		TagTest.delete(tagWC, tag.getId(), Status.NO_CONTENT);
 		tagWC.close();
 		
+		WorkRecordTest.delete(wc, workRecord.getId(), Status.NO_CONTENT);
 		wc.close();
 	}
 	
@@ -151,7 +152,6 @@ public class TagRefTest extends AbstractTestClient {
 		TagRefModel _model = new TagRefModel();
 		assertNull("id should not be set by empty constructor", _model.getId());
 		assertNull("tagId should not be set by empty constructor", _model.getTagId());
-		assertNull("text should not be set by empty constructor", _model.getText());
 	}
 	
 	@Test
@@ -159,7 +159,6 @@ public class TagRefTest extends AbstractTestClient {
 		TagRefModel _model = new TagRefModel("testConstructor1");
 		assertNull("id should not be set by constructor", _model.getId());
 		assertEquals("tagId should be set by constructor", "testConstructor1", _model.getTagId());
-		assertNull("text should be set by constructor", _model.getText());
 	}
 	
 	@Test
@@ -177,15 +176,7 @@ public class TagRefTest extends AbstractTestClient {
 		_model.setTagId("testTagId");
 		assertEquals("tagId should have changed", "testTagId", _model.getTagId());
 	}
-	
-	@Test
-	public void testTagText() {
-		TagRefModel _model = new TagRefModel();
-		assertNull("text should not be set by empty constructor", _model.getText());
-		_model.setText("testTagText");
-		assertEquals("text should have changed:", "testTagText", _model.getText());
-	}	
-	
+		
 	@Test
 	public void testCreatedBy() {
 		TagRefModel _model = new TagRefModel();
@@ -208,7 +199,6 @@ public class TagRefTest extends AbstractTestClient {
 		TagRefModel _model1 = new TagRefModel();
 		assertNull("id should not be set by empty constructor", _model1.getId());
 		assertNull("tagId should not be set by empty constructor", _model1.getTagId());
-		assertNull("text should not be set by empty constructor", _model1.getText());
 	
 		post(_model1, Status.BAD_REQUEST);
 		_model1.setTagId(tag.getId());
@@ -216,28 +206,15 @@ public class TagRefTest extends AbstractTestClient {
 
 		assertNull("create() should not change the id of the local object", _model1.getId());
 		assertEquals("create() should not change the tagId of the local object", tag.getId(), _model1.getTagId());
-		assertNull("create() should not change the text of the local object", _model1.getText());
 		
 		assertNotNull("create() should set a valid id on the remote object returned", _model2.getId());
 		assertEquals("create() should not change the tagId", tag.getId(), _model2.getTagId());
-		assertEquals("create() should derive the text", "TagRefTest", _model2.getText());
 		
 		TagRefModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
 		assertEquals("tagId of returned object should be unchanged after remote create", _model2.getTagId(), _model3.getTagId());
-		assertEquals("text of returned object should be unchanged after remote create", _model2.getText(), _model3.getText());
 
 		delete(_model3.getId(), Status.NO_CONTENT);
-	}
-	
-	@Test
-	public void testDerivedText() {
-		TagRefModel _model1 = new TagRefModel();
-		_model1.setTagId(tag.getId());
-		assertNull("text should not be set by empty constructor", _model1.getText());
-		TagRefModel _model2 = post(_model1, Status.OK);
-		assertEquals("text should be derived", "TagRefTest", _model2.getText());
-		delete(_model2.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
@@ -245,21 +222,17 @@ public class TagRefTest extends AbstractTestClient {
 		TagRefModel _model1 = new TagRefModel(tag.getId());
 		assertNull("id should not be set by constructor", _model1.getId());
 		assertEquals("tagId should be set by constructor", tag.getId(), _model1.getTagId());
-		assertNull("text should not be set by constructor", _model1.getText());
 		
 		TagRefModel _model2 = post(_model1, Status.OK);
 		assertNull("id should still be null after remote create", _model1.getId());
 		assertEquals("create() should not change the tagId", tag.getId(), _model1.getTagId());
-		assertNull("create() should not change the text", _model1.getText());
 		
 		assertNotNull("id of returned object should be set", _model2.getId());
 		assertEquals("create() should not change the tagId", tag.getId(), _model2.getTagId());
-		assertEquals("create() should derive the text", "TagRefTest", _model2.getText());
 
 		TagRefModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("read() should not change the id", _model2.getId(), _model3.getId());
 		assertEquals("read() should not change the tagId", _model2.getTagId(), _model3.getTagId());
-		assertEquals("read() should not change the text", _model2.getText(), _model3.getText());
 		
 		delete(_model3.getId(), Status.NO_CONTENT);
 	}
@@ -316,12 +289,10 @@ public class TagRefTest extends AbstractTestClient {
 		TagRefModel _model1 = post(new TagRefModel(tag.getId()), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
 		assertEquals("tagId should be set correctly", tag.getId(), _model1.getTagId());
-		assertEquals("text should be set correctly", "TagRefTest", _model1.getText());
 		
 		TagRefModel _model2 = post(new TagRefModel(tag.getId()), Status.OK);
 		assertNotNull("ID should be set", _model2.getId());
 		assertEquals("tagId should be set correctly", tag.getId(), _model2.getTagId());
-		assertEquals("text should be set correctly", "TagRefTest", _model2.getText());
 
 		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
 
@@ -372,11 +343,9 @@ public class TagRefTest extends AbstractTestClient {
 		
 		assertEquals("ID should be the same:", _model2.getId(), _ltm3.getId());
 		assertEquals("tagId should be the same:", _model2.getTagId(), _ltm3.getTagId());
-		assertEquals("text should be the same:", _model2.getText(), _ltm3.getText());
 		
 		assertEquals("ID should be the same:", _model2.getId(), _model1.getId());
 		assertEquals("tagId should be the same:", _model2.getTagId(), _model1.getTagId());
-		assertEquals("text should be the same:", _model2.getText(), _model1.getText());
 		
 		delete(_model1.getId(), Status.NO_CONTENT);
 	}

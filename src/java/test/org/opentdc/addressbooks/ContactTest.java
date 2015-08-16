@@ -436,7 +436,7 @@ public class ContactTest extends AbstractTestClient {
 				delete(_model.getId(), Status.NO_CONTENT);
 			}
 		}
-
+		
 		@Test
 		public void testCreate() {	
 			Date _bdate1 = new Date(1000);
@@ -783,7 +783,7 @@ public class ContactTest extends AbstractTestClient {
 			}
 			if (_response.getStatus() == Status.OK.getStatusCode()) {
 				_list = new ArrayList<ContactModel>(webClient.getCollection(ContactModel.class));
-				System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ", " + listAllContacts + ") ->" + _list.size());
+				// System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ", " + listAllContacts + ") ->" + _list.size());
 			}
 			return _list;
 		}

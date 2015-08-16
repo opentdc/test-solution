@@ -372,7 +372,7 @@ public class AddressbookTest extends AbstractTestClient {
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			_list = new ArrayList<AddressbookModel>(webClient.getCollection(AddressbookModel.class));
-			System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _list.size());
+			// System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _list.size());
 		}
 		return _list;
 	}
