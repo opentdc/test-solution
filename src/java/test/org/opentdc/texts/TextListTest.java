@@ -49,6 +49,7 @@ import test.org.opentdc.AbstractTestClient;
  * @author Bruno Kaiser
  */
 public class TextListTest extends AbstractTestClient {
+	private static final String CN = "TextListTest";
 	private static WebClient wc = null;
 	private static ArrayList<TextModel> testObjects = null;
 
@@ -59,7 +60,7 @@ public class TextListTest extends AbstractTestClient {
 	@BeforeClass
 	public static void initializeTests() {
 		wc = initializeTest(ServiceUtil.TEXTS_API_URL, TextsService.class);
-		System.out.println("***** TextsBatchedListTest:");
+		System.out.println("***** " + CN);
 		testObjects = new ArrayList<TextModel>();
 		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
 			TextModel _model = TextTest.post(wc, new TextModel(String.format("%2d", i), "DESC"), Status.OK);

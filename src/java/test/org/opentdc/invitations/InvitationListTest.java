@@ -46,23 +46,30 @@ import test.org.opentdc.AbstractTestClient;
  * @author Bruno Kaiser
  */
 public class InvitationListTest extends AbstractTestClient {
+	private static final String CN = "InvitationListTest";
 	private static WebClient wc = null;
 	private static ArrayList<InvitationModel> testObjects = null;
 
+	/**
+	 * Initialize test with several contacts.
+	 */
 	@BeforeClass
 	public static void initializeTests() {
 		wc = initializeTest(ServiceUtil.INVITATIONS_API_URL, InvitationsService.class);
-		System.out.println("***** InvitationsListTest:");
+		System.out.println("***** " + CN);
 		testObjects = new ArrayList<InvitationModel>();
 		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
 			InvitationModel _model = InvitationTest.post(wc, 
-					new InvitationModel("InvitationsListTest", "initializeTests" + i, "EMAIL"), Status.OK);
+					new InvitationModel(CN, "initializeTests" + i, "EMAIL"), Status.OK);
 			testObjects.add(_model);
 		}
 		System.out.println("created " + testObjects.size() + " test objects");
 		printModelList("testObjects", testObjects);
 	}
 
+	/**
+	 * Cleanup all test resources
+	 */
 	@AfterClass
 	public static void cleanupTest() {
 		for (InvitationModel _model : testObjects) {
@@ -71,6 +78,9 @@ public class InvitationListTest extends AbstractTestClient {
 		wc.close();
 	}
 	
+	/**
+	 * Test whether all allocated test objects are listed.
+	 */
 	@Test
 	public void testAllListed() {
 		List<InvitationModel> _list = InvitationTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
@@ -84,6 +94,9 @@ public class InvitationListTest extends AbstractTestClient {
 		}
 	}
 
+	/**
+	 * Test whether all listed objects are readable.
+	 */
 	@Test
 	public void testAllReadable() {
 		for (InvitationModel _model : testObjects) {
@@ -91,6 +104,9 @@ public class InvitationListTest extends AbstractTestClient {
 		}			
 	}
 
+	/**
+	 * Test batch-wise access to the test data (list with default position and size).
+	 */
 	@Test
 	public void testBatchedList() {
 		int _numberOfBatches = 0;
@@ -112,12 +128,18 @@ public class InvitationListTest extends AbstractTestClient {
 		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _batch.size());
 	}
 
+	/**
+	 * Get some elements from a specific position
+	 */
 	@Test
 	public void testNextElements() {
 		List<InvitationModel> _objs = InvitationTest.list(wc, null, 5, 5, Status.OK);
 		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 	
+	/**
+	 * Get some elements at the end of the list
+	 */
 	@Test
 	public void testLastElements() {
 		int _totalMembers = calculateMembers();
@@ -125,6 +147,9 @@ public class InvitationListTest extends AbstractTestClient {
 		assertEquals("list() should return correct number of elements", 4, _objs.size());		
 	}
 	
+	/**
+	 * Read some elements until after the list end
+	 */
 	@Test 
 	public void testOverEndOfList() {
 		int _totalMembers = calculateMembers();

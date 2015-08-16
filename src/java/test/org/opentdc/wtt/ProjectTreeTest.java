@@ -9,6 +9,8 @@ import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.addressbooks.OrgModel;
+import org.opentdc.addressbooks.OrgType;
 import org.opentdc.resources.ResourceModel;
 import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.ServiceUtil;
@@ -17,12 +19,14 @@ import org.opentdc.wtt.*;
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
+import test.org.opentdc.addressbooks.OrgTest;
 import test.org.opentdc.resources.ResourceTest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 public class ProjectTreeTest extends AbstractTestClient {
+	private static final String CN = "ProjectTreeTest";
 	private WebClient wc = null;
 	private WebClient addressbookWC = null;
 	private CompanyModel company = null;
@@ -30,6 +34,7 @@ public class ProjectTreeTest extends AbstractTestClient {
 	private WebClient resourceWC = null;
 	private ResourceModel resource = null;
 	private ContactModel contact = null;
+	private OrgModel org = null;
 
 	@Before
 	public void initializeTests() {
@@ -37,33 +42,30 @@ public class ProjectTreeTest extends AbstractTestClient {
 		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.create(wc, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		contact = ContactTest.create(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourceTest.create(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
+		addressbook = AddressbookTest.post(addressbookWC, 
+				new AddressbookModel(CN), Status.OK);
+		contact = ContactTest.post(addressbookWC, addressbook.getId(), 
+				new ContactModel(CN + "1", CN + "2"), Status.OK);
+		org = OrgTest.post(addressbookWC,  addressbook.getId(), 
+				new OrgModel(CN, OrgType.TEAM), Status.OK);
+		company = CompanyTest.post(wc, 
+				new CompanyModel(CN, "MY_DESC", org.getId()), Status.OK);
+		resource = ResourceTest.post(resourceWC, 
+				new ResourceModel(CN, contact.getId()), Status.OK);
 	}
 
 	@After
 	public void cleanupTest() {
 		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
-		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
-		CompanyTest.cleanup(wc, company.getId(), this.getClass().getName());
-	}
-	
-	private ProjectModel createProject(String title) {
-		return ProjectTest.create(wc, company.getId(), title, "MY_DESC");
-	}
-
-	private ProjectModel createSubProject(String parentProjectId, String title) {
-		return SubProjectTest.create(wc, company.getId(), parentProjectId, title, "MY_DESC");
-	}
-	
-	private void createResourceRef(String projectId) {
-		ResourceRefTest.create(wc, company.getId(), projectId, resource.getId());
-	}
 		
+		ResourceTest.delete(resourceWC, resource.getId(), Status.NO_CONTENT);
+		resourceWC.close();
+		
+		CompanyTest.delete(wc, company.getId(), Status.NO_CONTENT);
+		wc.close();
+	}
+	
 	@Test
 	public void testTree() {
 		// generate a tree:   1 company - 2 projects with each 3 subprojects and 3 resources
@@ -132,6 +134,22 @@ public class ProjectTreeTest extends AbstractTestClient {
 		// TODO: test resourceRefs
 		
 	}
+	
+	private ProjectModel createProject(String title) {
+		return ProjectTest.post(wc, company.getId(), 
+				new ProjectModel(title, "MY_DESC"), Status.OK);
+	}
+
+	private ProjectModel createSubProject(String parentProjectId, String title) {
+		return SubProjectTest.post(wc, company.getId(), parentProjectId, 
+				new ProjectModel(title, "MY_DESC"), Status.OK);
+	}
+	
+	private void createResourceRef(String projectId) {
+		ResourceRefTest.post(wc, company.getId(), projectId, 
+				new ResourceRefModel(resource.getId()), Status.OK);
+	}
+		
 
 	protected int calculateMembers() {
 		return 1;

@@ -28,12 +28,11 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.ProjectModel;
@@ -42,6 +41,8 @@ import org.opentdc.wtt.WttService;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.addressbooks.OrgModel;
+import org.opentdc.addressbooks.OrgType;
 import org.opentdc.resources.ResourceModel;
 import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.GenericService;
@@ -50,167 +51,170 @@ import org.opentdc.service.ServiceUtil;
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
+import test.org.opentdc.addressbooks.OrgTest;
 import test.org.opentdc.resources.ResourceTest;
 
+/**
+ * Test lists of ResourceRefs in time tracking service WTT.
+ * @author Bruno Kaiser
+ *
+ */
 public class ResourceRefListTest extends AbstractTestClient {
-	private WebClient wc = null;
-	private WebClient addressbookWC = null;
-	private CompanyModel company = null;
-	private ProjectModel parentProject = null;
-	private AddressbookModel addressbook = null;
-	private WebClient resourceWC = null;
-	private ResourceModel resource = null;
-	private ContactModel contact = null;
+	private static final String CN = "ResourceRefListTest";
+	private static WebClient wc = null;
+	private static WebClient addressbookWC = null;
+	private static CompanyModel company = null;
+	private static ProjectModel parentProject = null;
+	private static AddressbookModel addressbook = null;
+	private static WebClient resourceWC = null;
+	private static ResourceModel resource = null;
+	private static ContactModel contact = null;
+	private static OrgModel org = null;
+	private static ArrayList<ResourceRefModel> testObjects = null;
 
-	@Before
-	public void initializeTest() {
+	/**
+	 * Initialize the test with several resourceRefs
+	 */
+	@BeforeClass
+	public static void initializeTest() {
 		wc = createWebClient(ServiceUtil.WTT_API_URL, WttService.class);
 		resourceWC = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.create(wc, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		parentProject = ProjectTest.create(wc, company.getId(), this.getClass().getName(), "MY_DESC");
-		contact = ContactTest.create(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourceTest.create(resourceWC, addressbook, contact, this.getClass().getName(), Status.OK);
+		addressbook = AddressbookTest.post(addressbookWC, 
+				new AddressbookModel(CN), Status.OK);
+		contact = ContactTest.post(addressbookWC, addressbook.getId(),
+				new ContactModel(CN + "1", CN + "2"), Status.OK);
+		org = OrgTest.post(addressbookWC, addressbook.getId(), 
+				new OrgModel(CN, OrgType.LTD), Status.OK);
+		company = CompanyTest.post(wc, 
+				new CompanyModel(CN + "1", "MY_DESC", org.getId()), Status.OK);
+		parentProject = ProjectTest.post(wc, company.getId(), 
+				new ProjectModel(CN, "MY_DESC"), Status.OK);
+		resource = ResourceTest.post(resourceWC, 
+				new ResourceModel(CN + "1", contact.getId()), Status.OK);
+		
+		System.out.println("***** " + CN);
+		testObjects = new ArrayList<ResourceRefModel>();
+		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
+			testObjects.add(ResourceRefTest.post(wc, company.getId(), parentProject.getId(), new ResourceRefModel(resource.getId()), Status.OK));
+		}
+		System.out.println("created " + testObjects.size() + " test objects");
+		printModelList("testObjects", testObjects);
 	}
 
-	@After
-	public void cleanupTest() {
+	/**
+	 * Remove all allocated test resources.
+	 */
+	@AfterClass
+	public static void cleanupTest() {
 		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
-		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
-		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
-		CompanyTest.cleanup(wc, company.getId(), this.getClass().getName());
+		
+		ResourceTest.delete(resourceWC, resource.getId(), Status.NO_CONTENT);
+		resourceWC.close();
+		
+		CompanyTest.delete(wc, company.getId(), Status.NO_CONTENT);
+		wc.close();		
 	}
 
+	/**
+	 * Test whether all allocated test objects are listed.
+	 */
 	@Test
-	public void testResourceRefBatchedList() {
-		ArrayList<ResourceRefModel> _localList = new ArrayList<ResourceRefModel>();		
-		System.out.println("***** testResourceRefBatchedList:");		
-		// we want to allocate more than double the amount of default list size objects
-		int _batchSize = GenericService.DEF_SIZE;
-		int _increment = 5;
-		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		ResourceRefModel _model1 = null;
-		for (int i = 0; i < _limit2; i++) {
-			// create(new()) -> _localList
-			_model1 = ResourceRefTest.create(
-					wc, company.getId(), parentProject.getId(), resource.getId());
-			_localList.add(_model1);
-			System.out.println("posted ResourceRefModel " + _model1.getResourceId());
+	public void testAllListed() {
+		List<ResourceRefModel> _list = ResourceRefTest.list(wc, company.getId(), parentProject.getId(), null, 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testAllListed", _list);
+		ArrayList<String> _ids = new ArrayList<String>();
+		for (ResourceRefModel _model : _list) {
+			_ids.add(_model.getId());
+		}		
+		for (ResourceRefModel _model : testObjects) {
+			assertTrue("Addressbook <" + _model.getId() + "> should be listed", _ids.contains(_model.getId()));
 		}
-		System.out.println("****** locallist:");
-		for (ResourceRefModel _model : _localList) {
-			System.out.println(_model.getResourceId());
-		}
+	}
 
-		// get first batch
-		// list(position=0, size=25) -> elements 0 .. 24
-		wc.resetQuery();
-		Response _response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.RESREF_PATH_EL).get();
-		List<ResourceRefModel> _remoteList1 = new ArrayList<ResourceRefModel>(wc.getCollection(ResourceRefModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 1st Batch:");
-		for (ResourceRefModel _model : _remoteList1) {
-			System.out.println(_model.getResourceId());
-		}
-		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
-		
-		// get second batch
-		// list(position=25, size=25) -> elements 25 .. 49
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.RESREF_PATH_EL).query("position", 25).get();
-		List<ResourceRefModel> _remoteList2 = new ArrayList<ResourceRefModel>(wc.getCollection(ResourceRefModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
-		System.out.println("****** 2nd Batch:");
-		for (ResourceRefModel _model : _remoteList2) {
-			System.out.println(_model.getResourceId());
-		}
-		
-		// get rest 
-		// list(position=50, size=25) ->   elements 50 .. 54
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.RESREF_PATH_EL).query("position", 50).get();
-		List<ResourceRefModel> _remoteList3 = new ArrayList<ResourceRefModel>(wc.getCollection(ResourceRefModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 3rd Batch:");
-		for (ResourceRefModel _model : _remoteList3) {
-			System.out.println(_model.getResourceId());
-		}
-		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
-		
-		// testing the batches
+	/**
+	 * Test batch-wise access to the test data (list with default position and size).
+	 */
+	@Test
+	public void testBatchedList() 
+	{
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<ResourceRefModel> _remoteList = null;
-		System.out.println("***** testResourceRefListIterate:");
+	
+		List<ResourceRefModel> _batch = null;
 		while(true) {
 			_numberOfBatches++;
-			wc.resetQuery();
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.RESREF_PATH_EL).query("position", _position).get();
-			_remoteList = new ArrayList<ResourceRefModel>(wc.getCollection(ResourceRefModel.class));
-			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_numberOfReturnedObjects += _remoteList.size();
+			_batch = ResourceRefTest.list(wc, company.getId(), parentProject.getId(), null, _position, -1, Status.OK);
+			_numberOfReturnedObjects += _batch.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
-			if (_remoteList.size() < GenericService.DEF_SIZE) {
+			if (_batch.size() < GenericService.DEF_SIZE) {
 				break;
 			} else {
 				_position += GenericService.DEF_SIZE;					
 			}
 		}
-		assertEquals("number of batches should be as expected", 3, _numberOfBatches);
-		assertEquals("should have returned all objects", _limit2, _numberOfReturnedObjects);
-		assertEquals("last batch size should be as expected", _increment, _remoteList.size());
-	
-		// testing some explicit positions and sizes
-		wc.resetQuery();
-		// get next 5 elements from position 5
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.RESREF_PATH_EL).query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<ResourceRefModel>(wc.getCollection(ResourceRefModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
-		
-		// get last 4 elements 
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.RESREF_PATH_EL).query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<ResourceRefModel>(wc.getCollection(ResourceRefModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
-		
-		// read over end of list
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(company.getId()).
-				path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-				path(ServiceUtil.RESREF_PATH_EL).query("position", _limit2-5).query("size", 10).get();
-		_remoteList = new ArrayList<ResourceRefModel>(wc.getCollection(ResourceRefModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
-		
-		// removing all test objects
-		for (ResourceRefModel _model : _localList) {
-			_response = wc.replacePath("/").path(company.getId()).
-					path(ServiceUtil.PROJECT_PATH_EL).path(parentProject.getId()).
-					path(ServiceUtil.RESREF_PATH_EL).path(_model.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		}		
+		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _batch.size());
+	}
+
+	/**
+	 * Get some elements starting from a specific position
+	 */
+	@Test
+	public void testNextElements() 
+	{
+		List<ResourceRefModel> _objs = ResourceRefTest.list(wc, company.getId(), parentProject.getId(), null, 5, 5, Status.OK);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 	
+	/**
+	 * Get some elements until the end of the list
+	 */
+	@Test
+	public void testLastElements() 
+	{
+		int _totalMembers = calculateMembers();
+		List<ResourceRefModel> _objs = ResourceRefTest.list(wc, company.getId(), parentProject.getId(), null, (_totalMembers - 4), 4, Status.OK);
+		assertEquals("list() should return correct number of elements", 4, _objs.size());		
+	}
+	
+	/**
+	 * Read some elements until after the list end
+	 */
+	@Test 
+	public void testOverEndOfList() 
+	{
+		int _totalMembers = calculateMembers();
+		List<ResourceRefModel> _objs = ResourceRefTest.list(wc, company.getId(), parentProject.getId(), null, (_totalMembers - 5), 10, Status.OK);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
+	}
+	
+	/**
+	 * Print the result of the list() operation onto stdout.
+	 * @param title  the title of the log section
+	 * @param list a list of ResourceRefModel objects
+	 */
+	public static void printModelList(
+			String title, 
+			List<ResourceRefModel> list) 
+	{
+		System.out.println("***** " + title);
+		System.out.println("\tID\tresourceName\tresourceId");
+		for (ResourceRefModel _model : list) { 
+			System.out.println(
+					"\t" + _model.getId() + 
+					"\t" + _model.getResourceName() +
+					"\t" + _model.getResourceId());
+		}
+		System.out.println("\ttotal:\t" + list.size() + " elements");
+	}
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
+	 */
 	protected int calculateMembers() {
-		return 1;
+		return ResourceRefTest.list(wc, company.getId(), parentProject.getId(), null, 0, Integer.MAX_VALUE, Status.OK).size();
 	}
 }

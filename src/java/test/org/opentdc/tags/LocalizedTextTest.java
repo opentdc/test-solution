@@ -47,6 +47,11 @@ import org.opentdc.util.LanguageCode;
 
 import test.org.opentdc.AbstractTestClient;
 
+/**
+ * Testing localized texts in Tags.
+ * @author Bruno Kaiser
+ *
+ */
 public class LocalizedTextTest extends AbstractTestClient {
 	private WebClient wc = null;
 	private TagModel tag = null;
@@ -415,6 +420,18 @@ public class LocalizedTextTest extends AbstractTestClient {
 		} else {
 			return null;
 		}
+	}
+	
+	public static String getTextByLang(
+			WebClient webClient,
+			String tagId,
+			LanguageCode langCode) {
+		for (LocalizedTextModel _localizedText : list(webClient, tagId, Status.OK)) {
+			if (_localizedText.getLanguageCode() == langCode) {
+				return _localizedText.getText();
+			}
+		}
+		return null;
 	}
 	
 	public LocalizedTextModel post(

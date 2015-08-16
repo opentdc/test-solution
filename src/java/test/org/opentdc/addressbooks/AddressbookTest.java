@@ -45,8 +45,12 @@ import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
+/**
+ * Testing Addressbooks.
+ * @author Bruno Kaiser
+ *
+ */
 public class AddressbookTest extends AbstractTestClient {
-	
 	private WebClient wc = null;
 
 	@Before
@@ -164,8 +168,8 @@ public class AddressbookTest extends AbstractTestClient {
 	@Test
 	public void testClientSideId() {
 		AddressbookModel _model = new AddressbookModel("testClientSideId");
-		_model.setId("LOCAL_ID");
-		assertEquals("id should have changed", "LOCAL_ID", _model.getId());
+		_model.setId("testClientSideId");
+		assertEquals("id should have changed", "testClientSideId", _model.getId());
 		post(_model, Status.BAD_REQUEST);
 	}
 	
@@ -183,13 +187,12 @@ public class AddressbookTest extends AbstractTestClient {
 		List<AddressbookModel> _listBefore = list(null, Status.OK);
 		ArrayList<AddressbookModel> _localList = new ArrayList<AddressbookModel>();	
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(post(new AddressbookModel("testAddressbookList" + i), Status.OK));
+			_localList.add(post(new AddressbookModel("testList" + i), Status.OK));
 		}
 		assertEquals("correct number of addressbooks should be created", LIMIT, _localList.size());
 		
 		List<AddressbookModel> _listAfter = list(null, Status.OK);		
 		assertEquals("list() should return the correct number of addressbooks", _listBefore.size() + LIMIT, _listAfter.size());
-		// implicitly proven:  _remoteList.size() == _localList.size()
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (AddressbookModel _model : _listAfter) {
@@ -207,7 +210,8 @@ public class AddressbookTest extends AbstractTestClient {
 	}
 
 	@Test
-	public void testCreate() {
+	public void testCreate() 
+	{
 		AddressbookModel _model1 = post(new AddressbookModel("testCreate1"), Status.OK);
 		AddressbookModel _model2 = post(new AddressbookModel("testCreate2"), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
@@ -221,7 +225,8 @@ public class AddressbookTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testDoubleCreate() {
+	public void testDoubleCreate() 
+	{
 		AddressbookModel _model = post(new AddressbookModel("testDoubleCreate"), Status.OK);
 		assertNotNull("ID should be set:", _model.getId());		
 		post(_model, Status.CONFLICT);
@@ -229,8 +234,8 @@ public class AddressbookTest extends AbstractTestClient {
 	}
 
 	@Test
-	public void testRead(
-	) {
+	public void testRead() 
+	{
 		ArrayList<AddressbookModel> _localList = new ArrayList<AddressbookModel>();
 		for (int i = 0; i < LIMIT; i++) {
 			_localList.add(post(new AddressbookModel("testRead" + i), Status.OK));
@@ -248,8 +253,8 @@ public class AddressbookTest extends AbstractTestClient {
 	}	
 
 	@Test
-	public void testMultiRead(
-	) {
+	public void testMultiRead() 
+	{
 		AddressbookModel _model1 = post(new AddressbookModel("testMultiRead"), Status.OK);
 		AddressbookModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read", _model1.getId(), _model2.getId());		
@@ -262,7 +267,8 @@ public class AddressbookTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testUpdate() {
+	public void testUpdate() 
+	{
 		AddressbookModel _model1 = post(new AddressbookModel("testUpdate"), Status.OK);
 		_model1.setName("testUpdate1");
 		AddressbookModel _model2 = put(_model1, Status.OK);
@@ -278,17 +284,19 @@ public class AddressbookTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testDelete() {
+	public void testDelete() 
+	{
 		AddressbookModel _model1 = post(new AddressbookModel("testDelete"), Status.OK);
 		AddressbookModel _model2 = get(_model1.getId(), Status.OK);
-		assertEquals("ID should be unchanged when reading an addressbook (remote):", _model1.getId(), _model2.getId());						
+		assertEquals("ID should be unchanged when reading an addressbook", _model1.getId(), _model2.getId());						
 		delete(_model1.getId(), Status.NO_CONTENT);
 		get(_model1.getId(), Status.NOT_FOUND);
 		get(_model1.getId(), Status.NOT_FOUND);
 	}
 	
 	@Test
-	public void testDoubleDelete() {
+	public void testDoubleDelete() 
+	{
 		AddressbookModel _model1 = post(new AddressbookModel("testDoubleDelete"), Status.OK);
 		get(_model1.getId(), Status.OK);
 		delete(_model1.getId(), Status.NO_CONTENT);
@@ -298,7 +306,8 @@ public class AddressbookTest extends AbstractTestClient {
 	}
 	
 	@Test
-	public void testModifications() {
+	public void testModifications() 
+	{
 		AddressbookModel _model1 = post(new AddressbookModel("testModifications"), Status.OK);
 		assertNotNull("create() should set createdAt", _model1.getCreatedAt());
 		assertNotNull("create() should set createdBy", _model1.getCreatedBy());
@@ -331,7 +340,7 @@ public class AddressbookTest extends AbstractTestClient {
 	 * This uses neither position nor size queries.
 	 * @param query the URL query to use
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return a List of TagTextModel object in JSON format
+	 * @return a List of AddressbookModel objects in JSON format
 	 */
 	public List<AddressbookModel> list(
 			String query, 
@@ -354,49 +363,26 @@ public class AddressbookTest extends AbstractTestClient {
 			int position,
 			int size,
 			Status expectedStatus) {
-		System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ")");
-		Response _response = null;
 		webClient.resetQuery();
-		if (query == null) {
-			if (position >= 0) {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("position", position).query("size", size).get();
-				} else {
-					_response = webClient.replacePath("/").query("position", position).get();
-				}
-			} else {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("size", size).get();
-				} else {
-					_response = webClient.replacePath("/").get();
-				}
-			}
-		} else {
-			if (position >= 0) {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("query", query).query("position", position).query("size", size).get();					
-				} else {
-					_response = webClient.replacePath("/").query("query", query).query("position", position).get();					
-				}
-			} else {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("query", query).query("size", size).get();					
-				} else {
-					_response = webClient.replacePath("/").query("query", query).get();					
-				}				
-			}
-		}
-		List<AddressbookModel> _addressbooks = null;
+		webClient.replacePath("/");
+		Response _response = executeListQuery(webClient, query, position, size);
+		List<AddressbookModel> _list = null;
 		if (expectedStatus != null) {
 			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			_addressbooks = new ArrayList<AddressbookModel>(webClient.getCollection(AddressbookModel.class));
-			System.out.println("listTags(tagWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _addressbooks.size());
+			_list = new ArrayList<AddressbookModel>(webClient.getCollection(AddressbookModel.class));
+			System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _list.size());
 		}
-		return _addressbooks;
+		return _list;
 	}
 	
+	/**
+	 * Create a new AddressbookModel on the server by executing a HTTP POST request.
+	 * @param model the data to post
+	 * @param expectedStatus the expected HTTP status to test on; if this is null, it will not be tested
+	 * @return the created data object
+	 */
 	private AddressbookModel post(
 			AddressbookModel model,
 			Status expectedStatus) {
@@ -405,10 +391,10 @@ public class AddressbookTest extends AbstractTestClient {
 
 	/**
 	 * Create a new AddressbookModel on the server by executing a HTTP POST request.
-	 * @param webClient the WebClient representing the AddressbooksService
-	 * @param model the AddressbookModel data to create on the server
+	 * @param webClient the WebClient representing the service
+	 * @param model the data to create on the server
 	 * @param exceptedStatus the expected HTTP status to test on
-	 * @return the created AddressbookModel
+	 * @return the created data
 	 */
 	public static AddressbookModel post(
 			WebClient webClient,
@@ -425,20 +411,6 @@ public class AddressbookTest extends AbstractTestClient {
 		}
 	}
 	
-	/**
-	 * Create a new AddressbookModel on the server by executing a HTTP POST request.
-	 * @param webClient the WebClient representing the AddressbooksService
-	 * @param exceptedStatus the expected HTTP status to test on
-	 * @return the created AddressbookModel
-	 */
-	public static AddressbookModel createAddressbook(
-			WebClient webClient,
-			String addressbookName,
-			Status expectedStatus) 
-	{
-		return post(webClient, new AddressbookModel(addressbookName), expectedStatus);
-	}
-		
 	/**
 	 * Read the AddressbookModel with id from AddressbooksService by executing a HTTP GET method.
 	 * @param id the id of the AddressbookModel to retrieve
@@ -520,7 +492,7 @@ public class AddressbookTest extends AbstractTestClient {
 	/**
 	 * Delete the AddressbookModel with id on the AddressbooksService by executing a HTTP DELETE method.
 	 * @param webClient the WebClient for the AddressbooksService
-	 * @param tagId the id of the AddressbookModel object to delete
+	 * @param id the id of the AddressbookModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
 	public static void delete(
@@ -537,6 +509,6 @@ public class AddressbookTest extends AbstractTestClient {
 	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
 	 */
 	protected int calculateMembers() {
-		return 0;
+		return list(wc, null, 0, Integer.MAX_VALUE, Status.OK).size();
 	}
 }

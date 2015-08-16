@@ -28,7 +28,6 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -50,8 +49,8 @@ import test.org.opentdc.AbstractTestClient;
  *
  */
 public class OrgAllListTest extends AbstractTestClient {
+	private static final String CN = "OrgAllListTest";
 	private static ArrayList<AddressbookModel> addressbooks = null;
-	private static ArrayList<OrgModel> orgs = null;
 	private static final int nrAddressbooks = 3;
 	private static final int nrOrgs = 10;
 	private static int totalOrgs = nrAddressbooks * nrOrgs;
@@ -63,35 +62,21 @@ public class OrgAllListTest extends AbstractTestClient {
 	@BeforeClass
 	public static void initializeTest() {
 		wc = initializeTest(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);		
-		System.out.println("***** OrgAllListTest:");
+		System.out.println("***** " + CN);
 		addressbooks = new ArrayList<AddressbookModel>();
-		orgs = new ArrayList<OrgModel>();
 		AddressbookModel _abm = null;
 		for (int i = 0; i < nrAddressbooks; i++) {
-			_abm = createAddressbook("OrgAllListTest" + i);
+			_abm = AddressbookTest.post(wc,  new AddressbookModel(CN + i), Status.OK);
 			addressbooks.add(_abm);
 			for (int j = 0; j < nrOrgs; j++) {
-				orgs.add(createOrg(_abm.getId(), "addressbook" + i + "_org" + j));
+				OrgTest.create(wc, _abm.getId(), "addressbook" + i + "_org" + j, OrgType.ASSOC, Status.OK);
 			}
 		}
-		System.out.println("OrgAllListTest - Parameters" + 
+		System.out.println(CN + " - Parameters" + 
 				":\n\tnrAddressbooks:\t\t" + nrAddressbooks +
 				"\n\tnrOrgs:\t\t\t" + nrOrgs + 
 				"\n\ttotalOrgs:\t\t" + totalOrgs);		
-
 		printCounters("initializeTest");
-	}
-	
-	private static void printCounters(String title) {
-		wc.resetQuery();
-		wc.replacePath("/").get();
-		List<AddressbookModel> _addressbooks = new ArrayList<AddressbookModel>(wc.getCollection(AddressbookModel.class));
-		
-		wc.replacePath("/").path("allOrgs").query("size",  1000).get();
-		List<OrgModel> _orgs = new ArrayList<OrgModel>(wc.getCollection(OrgModel.class));
-		System.out.println(title + 
-				":\n\tnrAddressbooks:\t\t" + _addressbooks.size() +
-				"\n\tnrOrgs:\t\t\t" + _orgs.size());		
 	}
 	
 	/**
@@ -100,7 +85,7 @@ public class OrgAllListTest extends AbstractTestClient {
 	@AfterClass
 	public static void cleanupTest() {
 		for (AddressbookModel _model : addressbooks) {
-			deleteAddressbook(_model.getId());
+			AddressbookTest.delete(wc, _model.getId(), Status.NO_CONTENT);
 		}
 		printCounters("cleanupTest");
 		wc.close();
@@ -112,11 +97,9 @@ public class OrgAllListTest extends AbstractTestClient {
 	@Test
 	public void testOrgsAllList() {
 		printCounters("testOrgsAllList");
-		Response _response = wc.replacePath("/").path("allOrgs").query("size", totalOrgs + 1).get();
-		List<OrgModel> _remoteList = new ArrayList<OrgModel>(wc.getCollection(OrgModel.class));
-		assertEquals("listAllOrgs() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertTrue("should have returned all objects", _remoteList.size() >= totalOrgs);
-		System.out.println("list() returns " + _remoteList.size() + " elements (_remoteList).");
+		List<OrgModel> _list = OrgTest.list(wc, null, null, 0, totalOrgs + 1, Status.OK, true);
+		assertTrue("should have returned all objects", _list.size() >= totalOrgs);
+		System.out.println("list() returns " + _list.size() + " elements (_remoteList).");
 	}
 	
 	/**
@@ -127,94 +110,67 @@ public class OrgAllListTest extends AbstractTestClient {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<OrgModel> _remoteList = null;
+		List<OrgModel> _list = null;
 		printCounters("testOrgAllListBatched");
-		Response _response = null;
 		while(true) {
 			_numberOfBatches++;
 			wc.resetQuery();
-			_response = wc.replacePath("/").path("allOrgs").query("position", _position).get();
-			_remoteList = new ArrayList<OrgModel>(wc.getCollection(OrgModel.class));
-			assertEquals("listAllOrgs() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_numberOfReturnedObjects += _remoteList.size();
+			_list = OrgTest.list(wc, null, null, _position, -1, Status.OK, true);
+			_numberOfReturnedObjects += _list.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
-			if (_remoteList.size() < GenericService.DEF_SIZE) {
+			if (_list.size() < GenericService.DEF_SIZE) {
 				break;
 			} else {
 				_position += GenericService.DEF_SIZE;					
 			}
 		}
-		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _remoteList.size());
+		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _list.size());
 	}
 		
 	/**
-	 * Tests listAllOrgs() with some explicit, critical queries.
+	 * Get some elements from a specific position
 	 */
 	@Test
-	public void testOrgAllListExplicitQueries() {
-		// testing some explicit positions and sizes
-		wc.resetQuery();
-		// get next _nrElements elements from position _nrElements
-		int _nrElements = 7;
-		Response _response = wc.replacePath("/").path("allOrgs").query("position", _nrElements).query("size", _nrElements).get();
-		List<OrgModel> _remoteList = new ArrayList<OrgModel>(wc.getCollection(OrgModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", _nrElements, _remoteList.size());
+	public void testNextElements() {
+		System.out.println("testNextElements");
+		List<OrgModel> _list = OrgTest.list(wc, null, null, 7, 7, Status.OK, true);
+		assertEquals("list() should return correct number of elements", 7, _list.size());
+	}
 		
-		// get last _nrElements elements 
-		wc.resetQuery();
-		_response = wc.replacePath("/").path("allOrgs").query("position", totalOrgs - _nrElements).query("size", _nrElements).get();
-		_remoteList = new ArrayList<OrgModel>(wc.getCollection(OrgModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", _nrElements, _remoteList.size());
+	/**
+	 * Get some elements at the end of the list
+	 */
+	@Test
+	public void testLastElements() {
+		System.out.println("testLastElements");
+		List<OrgModel> _list = OrgTest.list(wc, null, null, totalOrgs - 7, 7, Status.OK, true);
+		assertEquals("list() should return correct number of elements", 7, _list.size());
+	}
 		
-		// read over end of list
-		wc.resetQuery();
-		_response = wc.replacePath("/").path("allOrgs").query("position", totalOrgs - _nrElements).query("size", 2 * _nrElements).get();
-		_remoteList = new ArrayList<OrgModel>(wc.getCollection(OrgModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertTrue("list() should return correct number of elements", _remoteList.size() >= _nrElements);		
-	}
-	
 	/**
-	 * Create a new addressbook
-	 * @param name the name of the addressbook
-	 * @return the newly created addressbook
+	 * Read some elements until after the list end
 	 */
-	private static AddressbookModel createAddressbook(String name) {
-		Response _response = wc.replacePath("/").post(new AddressbookModel(name));
-		AddressbookModel _adb = _response.readEntity(AddressbookModel.class);
-		System.out.println("posted AddressbookModel " + name + ": " + _adb.getId());
-		return _adb;
+	@Test
+	public void testReadOverEndOfList() {
+		System.out.println("testReadOverEndOfList");
+		List<OrgModel> _list = OrgTest.list(wc, null, null, totalOrgs - 7, 2 * 7, Status.OK, true);
+		assertTrue("list() should return correct number of elements", _list.size() >= 7);		
 	}
-	
+		
 	/**
-	 * Delete an addressbook.
-	 * @param id the unique id of the addressbook
+	 * Print the current state of test counters.
+	 * @param title the title of the test case
 	 */
-	private static void deleteAddressbook(String id) {
-		wc.replacePath("/").path(id).delete();
-		System.out.println("deleted AddressbookModel " + id);
+	private static void printCounters(String title) {
+		System.out.println(title + 
+				":\n\tnrAddressbooks:\t\t" + AddressbookTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK).size() +
+				"\n\tnrOrgs:\t\t\t" + OrgTest.list(wc, null, null, 0, Integer.MAX_VALUE, Status.OK, true).size());		
 	}
 	
-	/**
-	 * Create a new Organization
-	 * @param aid the id of the addressbook
-	 * @param name the name of the organization
-	 * @return the newly created organization
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
 	 */
-	private static OrgModel createOrg(String aid, String name) {
-		OrgModel _model = new OrgModel();
-		_model.setName(name);
-		_model.setOrgType(OrgType.getDefaultOrgType());
-		Response _response = wc.replacePath("/").path(aid).
-				path(ServiceUtil.ORG_PATH_EL).post(_model);
-		assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("posted OrgModel " + _model.getName() + " in addressbook " + aid);
-		return _model;
-	}
-	
 	protected int calculateMembers() {
-		return nrAddressbooks * nrOrgs;
+		return OrgTest.list(wc, null, null, 0, Integer.MAX_VALUE, Status.OK, true).size();
 	}
 }

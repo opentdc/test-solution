@@ -45,10 +45,12 @@ import org.opentdc.service.ServiceUtil;
 import test.org.opentdc.AbstractTestClient;
 
 /**
+ * Testing lists of Addresses.
  * @author Bruno Kaiser
  *
  */
 public class AddressListTest extends AbstractTestClient {
+	private static final String CN = "AddressListTest";
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
 	private static WebClient wc = null;
@@ -60,8 +62,8 @@ public class AddressListTest extends AbstractTestClient {
 	@BeforeClass
 	public static void initializeTests() {
 		wc = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-		adb = AddressbookTest.createAddressbook(wc, "AddressListTest", Status.OK);
-		contact = ContactTest.create(wc, adb.getId(), "AddressListTest", "Test");
+		adb = AddressbookTest.post(wc, new AddressbookModel(CN), Status.OK);
+		contact = ContactTest.post(wc, adb.getId(), new ContactModel(CN + "1", CN + "2"), Status.OK);
 		System.out.println("***** AddressListTest:");
 		testObjects = new ArrayList<AddressModel>();
 		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55

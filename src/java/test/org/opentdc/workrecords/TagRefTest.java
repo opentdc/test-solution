@@ -41,6 +41,8 @@ import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.addressbooks.OrgModel;
+import org.opentdc.addressbooks.OrgType;
 import org.opentdc.rates.RateModel;
 import org.opentdc.rates.RatesService;
 import org.opentdc.resources.ResourceModel;
@@ -60,6 +62,7 @@ import org.opentdc.wtt.WttService;
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
+import test.org.opentdc.addressbooks.OrgTest;
 import test.org.opentdc.rates.RateTest;
 import test.org.opentdc.resources.ResourceTest;
 import test.org.opentdc.tags.LocalizedTextTest;
@@ -67,7 +70,13 @@ import test.org.opentdc.tags.TagTest;
 import test.org.opentdc.wtt.CompanyTest;
 import test.org.opentdc.wtt.ProjectTest;
 
+/**
+ * Testing references to tags.
+ * @author Bruno Kaiser
+ *
+ */
 public class TagRefTest extends AbstractTestClient {
+	private static final String CN = "TagRefTest";
 	private WebClient wc = null;
 	private WebClient tagWC = null;
 	private WebClient wttWC = null;
@@ -76,6 +85,7 @@ public class TagRefTest extends AbstractTestClient {
 	private WebClient rateWC = null;
 	
 	private AddressbookModel addressbook = null;
+	private OrgModel org = null;
 	private CompanyModel company = null;
 	private ProjectModel project = null;
 	private ContactModel contact = null;
@@ -95,13 +105,20 @@ public class TagRefTest extends AbstractTestClient {
 		rateWC = createWebClient(ServiceUtil.RATES_API_URL, RatesService.class);
 		
 		date = new Date();
+		addressbook = AddressbookTest.post(addressbookWC, new AddressbookModel(CN), Status.OK);
+		contact = ContactTest.post(addressbookWC, addressbook.getId(), 
+				new ContactModel(CN + "1", CN + "2"), Status.OK);
+		org = OrgTest.post(addressbookWC, addressbook.getId(), 
+				new OrgModel(CN, OrgType.COOP), Status.OK);
 		
-		addressbook = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		company = CompanyTest.create(wttWC, addressbookWC, addressbook, this.getClass().getName(), "MY_DESC");
-		project = ProjectTest.create(wttWC, company.getId(), this.getClass().getName(), "MY_DESC");
-		contact = ContactTest.create(addressbookWC, addressbook.getId(), "FNAME", "LNAME");
-		resource = ResourceTest.create(resourceWC, addressbook, contact, this.getClass().getName() + "1", Status.OK);
-		rate = RateTest.create(rateWC, Status.OK);
+		company = CompanyTest.post(wttWC, 
+				new CompanyModel(CN, "MY_DESC", org.getId()), Status.OK);
+		project = ProjectTest.post(wttWC, company.getId(), 
+				new ProjectModel(CN + "1", CN + "2"), Status.OK);
+		resource = ResourceTest.post(resourceWC, 
+				new ResourceModel(CN, contact.getId()), Status.OK);
+		rate = RateTest.post(rateWC, 
+				new RateModel(CN, 100, "MY_DESC"), Status.OK);
 		workRecord = WorkRecordTest.post(wc, 
 				WorkRecordTest.create(company, project, resource, date, 1, 30, true, "TagRefTests"), Status.OK);
 		tag = TagTest.create(tagWC, Status.OK);
@@ -111,11 +128,20 @@ public class TagRefTest extends AbstractTestClient {
 	@After
 	public void cleanupTest() {
 		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
-		System.out.println("deleted 1 addressbook with 1 contact");
 		addressbookWC.close();
-		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName(), false);
-		CompanyTest.cleanup(wttWC, company.getId(), this.getClass().getName(), false);
+		
+		ResourceTest.delete(resourceWC, resource.getId(), Status.NO_CONTENT);
+		resourceWC.close();
+		
+		CompanyTest.delete(wttWC, company.getId(), Status.NO_CONTENT);
+		wttWC.close();
+		
 		RateTest.delete(rateWC, rate.getId(), Status.NO_CONTENT);
+		rateWC.close();
+		
+		TagTest.delete(tagWC, tag.getId(), Status.NO_CONTENT);
+		tagWC.close();
+		
 		wc.close();
 	}
 	

@@ -536,37 +536,9 @@ public class EventTest extends AbstractTestClient {
 			int size,
 			Status expectedStatus) {
 		System.out.println("listEvents(eventWC, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ")");
-		Response _response = null;
 		webClient.resetQuery();
-		if (query == null) {
-			if (position >= 0) {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("position", position).query("size", size).get();
-				} else {
-					_response = webClient.replacePath("/").query("position", position).get();
-				}
-			} else {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("size", size).get();
-				} else {
-					_response = webClient.replacePath("/").get();
-				}
-			}
-		} else {
-			if (position >= 0) {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("query", query).query("position", position).query("size", size).get();					
-				} else {
-					_response = webClient.replacePath("/").query("query", query).query("position", position).get();					
-				}
-			} else {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("query", query).query("size", size).get();					
-				} else {
-					_response = webClient.replacePath("/").query("query", query).get();					
-				}				
-			}
-		}
+		webClient.replacePath("/");
+		Response _response = executeListQuery(webClient, query, position, size);
 		List<EventModel> _events = null;
 		if (expectedStatus != null) {
 			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());

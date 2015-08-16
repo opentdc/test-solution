@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
+import org.opentdc.rates.Currency;
 import org.opentdc.rates.RateModel;
 import org.opentdc.rates.RatesService;
 import org.opentdc.resources.RateRefModel;
@@ -53,7 +54,13 @@ import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.ContactTest;
 import test.org.opentdc.rates.RateTest;
 
+/**
+ * Testing references to Rates
+ * @author Bruno Kaiser
+ *
+ */
 public class RateRefTest extends AbstractTestClient {
+	private static final String CN = "RateRefTest";
 	private WebClient resourceWC = null;
 	private WebClient addressbookWC = null;
 	private WebClient rateWC = null;
@@ -69,21 +76,20 @@ public class RateRefTest extends AbstractTestClient {
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		rateWC = createWebClient(ServiceUtil.RATES_API_URL, RatesService.class);
 		
-		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		contact = ContactTest.create(addressbookWC, adb.getId(), "FNAME", "LNAME");
-		resource = ResourceTest.create(resourceWC, adb, contact, "RateRefTest", Status.OK);
-		rate = RateTest.create(rateWC, Status.OK);
+		adb = AddressbookTest.post(addressbookWC, new AddressbookModel(this.getClass().getName()), Status.OK);
+		contact = ContactTest.post(addressbookWC, adb.getId(), new ContactModel("FNAME", "LNAME"), Status.OK);
+		resource = ResourceTest.create(resourceWC, CN, contact.getId(), Status.OK);
+		rate = RateTest.create(rateWC, CN, 10, Currency.getDefaultCurrency(), "MY_DESC");
 	}
 
 	@After
 	public void cleanupTest() {
 		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
-		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
+		ResourceTest.delete(resourceWC, resource.getId(), Status.NO_CONTENT);
+		resourceWC.close();
 		RateTest.delete(rateWC, rate.getId(), Status.NO_CONTENT);
 		rateWC.close();
-		System.out.println("deleted 1 rate");
-		ResourceTest.cleanup(resourceWC, resource.getId(), this.getClass().getName());
 	}
 	
 	/********************************** localizedText attributes tests *********************************/			

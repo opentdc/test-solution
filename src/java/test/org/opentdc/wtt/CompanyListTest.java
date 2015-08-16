@@ -28,12 +28,11 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opentdc.wtt.CompanyModel;
 import org.opentdc.wtt.WttService;
@@ -48,137 +47,160 @@ import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
 import test.org.opentdc.addressbooks.OrgTest;
 
+/**
+ * Testing lists of companies in time tracking service WTT.
+ * @author Bruno Kaiser
+ *
+ */
 public class CompanyListTest extends AbstractTestClient {
-	private WebClient wc = null;
+	private static final String CN = "CompanyListTest";
+	private static WebClient wc = null;
 	private static AddressbookModel adb = null;
 	private static OrgModel org = null;
-	private WebClient addressbookWC = null;
+	private static WebClient addressbookWC = null;
+	private static ArrayList<CompanyModel> testObjects = null;
 	
-	@Before
-	public void initializeTests() {
+	/**
+	 * Initialize the test with several companies
+	 */
+	@BeforeClass
+	public static void initializeTests() {
 		wc = initializeTest(ServiceUtil.WTT_API_URL, WttService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
+		System.out.println("***** " + CN);
 		
-		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
-		org = OrgTest.create(addressbookWC, adb.getId(), this.getClass().getName(), OrgType.CLUB);
+		adb = AddressbookTest.post(addressbookWC, 
+				new AddressbookModel(CN), Status.OK);
+		org = OrgTest.post(addressbookWC, adb.getId(), 
+				new OrgModel(CN, OrgType.CLUB), Status.OK);
+		testObjects = new ArrayList<CompanyModel>();
+		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
+			testObjects.add(CompanyTest.post(wc, new CompanyModel(CN + i, "MY_DESC", org.getId()), Status.OK));
+		}
+		System.out.println("created " + testObjects.size() + " test objects");
+		printModelList("testObjects", testObjects);
 	}
 
-	@After
-	public void cleanupTest() {
+	/**
+	 * Remove all allocated test resources.
+	 */
+	@AfterClass
+	public static void cleanupTest() {
 		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
-		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
+		
+		for (CompanyModel _model : testObjects) {
+			CompanyTest.delete(wc, _model.getId(), Status.NO_CONTENT);
+		}
 		wc.close();
 	}
 
+	/**
+	 * Test whether all allocated test objects are listed.
+	 */
 	@Test
-	public void testCompanyBatchedList() {
-		ArrayList<CompanyModel> _localList = new ArrayList<CompanyModel>();		
-		Response _response = null;
-		System.out.println("***** testCompanyBatchedList:");
-		wc.replacePath("/");
-		// we want to allocate more than double the amount of default list size objects
-		int _batchSize = GenericService.DEF_SIZE;
-		int _increment = 5;
-		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		CompanyModel _model1 = null;
-		for (int i = 0; i < _limit2; i++) {
-			// create(new()) -> _localList
-			_model1 = new CompanyModel();
-			_model1.setTitle(String.format("%2d", i));
-			_model1.setOrgId(org.getId());
-			_response = wc.post(_model1);
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(CompanyModel.class));
-			System.out.println("posted CompanyModel " + _model1.getTitle());
+	public void testAllListed() {
+		List<CompanyModel> _list = CompanyTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testAllListed", _list);
+		ArrayList<String> _ids = new ArrayList<String>();
+		for (CompanyModel _model : _list) {
+			_ids.add(_model.getId());
+		}		
+		for (CompanyModel _model : testObjects) {
+			assertTrue("Company <" + _model.getId() + "> should be listed", _ids.contains(_model.getId()));
 		}
-		System.out.println("****** locallist:");
-		for (CompanyModel _model : _localList) {
-			System.out.println(_model.getTitle());
-		}
+	}
 
-		// get first batch
-		// list(position=0, size=25) -> elements 0 .. 24
-		wc.resetQuery();
-		_response = wc.replacePath("/").query("size", Integer.toString(_batchSize)).get();
-		List<CompanyModel> _remoteList1 = new ArrayList<CompanyModel>(wc.getCollection(CompanyModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 1st Batch:");
-		for (CompanyModel _model : _remoteList1) {
-			System.out.println(_model.getTitle());
-		}
-		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
-		
-		// get second batch
-		// list(position=25, size=25) -> elements 25 .. 49
-		wc.resetQuery();
-		_response = wc.replacePath("/").query("position", 25).query("size", Integer.toString(_batchSize)).get();
-		List<CompanyModel> _remoteList2 = new ArrayList<CompanyModel>(wc.getCollection(CompanyModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
-		System.out.println("****** 2nd Batch:");
-		for (CompanyModel _model : _remoteList2) {
-			System.out.println(_model.getTitle());
-		}
-		
-		// get rest 
-		// list(position=50, size=25) ->   elements 50 .. 54
-		wc.resetQuery();
-		_response = wc.replacePath("/").query("position", 50).query("size", Integer.toString(_increment)).get();
-		List<CompanyModel> _remoteList3 = new ArrayList<CompanyModel>(wc.getCollection(CompanyModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 3rd Batch:");
-		for (CompanyModel _model : _remoteList3) {
-			System.out.println(_model.getTitle());
-		}
-		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
-		
-		// testing the batches
+	/**
+	 * Test whether all listed objects are readable.
+	 */
+	@Test
+	public void testAllReadable() {
+		for (CompanyModel _model : testObjects) {
+			CompanyTest.get(wc, _model.getId(), Status.OK);
+		}			
+	}
+
+	/**
+	 * Test batch-wise access to the test data (list with default position and size).
+	 */
+	@Test
+	public void testBatchedList() 
+	{
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<CompanyModel> _remoteList = null;
-		System.out.println("***** testCompanyListIterate:");
+	
+		List<CompanyModel> _batch = null;
 		while(true) {
 			_numberOfBatches++;
-			wc.resetQuery();
-			_response = wc.replacePath("/").query("position", _position).get();
-			_remoteList = new ArrayList<CompanyModel>(wc.getCollection(CompanyModel.class));
-			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_numberOfReturnedObjects += _remoteList.size();
+			_batch = CompanyTest.list(wc, null, _position, -1, Status.OK);
+			_numberOfReturnedObjects += _batch.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
-			if (_remoteList.size() < GenericService.DEF_SIZE) {
+			if (_batch.size() < GenericService.DEF_SIZE) {
 				break;
 			} else {
 				_position += GenericService.DEF_SIZE;					
 			}
 		}
-		assertTrue("number of batches should be as expected", _numberOfBatches >= 3);
-		assertTrue("should have returned all objects", _numberOfReturnedObjects >= _limit2);
-	
-		// testing some explicit positions and sizes
-		wc.resetQuery();
-		// get next 5 elements from position 5
-		_response = wc.replacePath("/").query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<CompanyModel>(wc.getCollection(CompanyModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
-		
-		// get last 4 elements 
-		wc.resetQuery();
-		_response = wc.replacePath("/").query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<CompanyModel>(wc.getCollection(CompanyModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
-		
-		// removing all test objects
-		for (CompanyModel _model : _localList) {
-			_response = wc.replacePath(_model.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		}		
+		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _batch.size());
 	}
 	
+	/**
+	 * Get some elements starting from a specific position
+	 */
+	@Test
+	public void testNextElements() 
+	{
+		List<CompanyModel> _objs = CompanyTest.list(wc, null, 5, 5, Status.OK);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
+	}
+	
+	/**
+	 * Get some elements until the end of the list
+	 */
+	@Test
+	public void testLastElements() 
+	{
+		int _totalMembers = calculateMembers();
+		List<CompanyModel> _objs = CompanyTest.list(wc, null, (_totalMembers - 4), 4, Status.OK);
+		assertEquals("list() should return correct number of elements", 4, _objs.size());		
+	}
+	
+	/**
+	 * Read some elements until after the list end
+	 */
+	@Test 
+	public void testOverEndOfList() 
+	{
+		int _totalMembers = calculateMembers();
+		List<CompanyModel> _objs = CompanyTest.list(wc, null, (_totalMembers - 5), 10, Status.OK);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
+	}
+		
+	/**
+	 * Print the result of the list() operation onto stdout.
+	 * @param title  the title of the log section
+	 * @param list a list of CompanyModel objects
+	 */
+	public static void printModelList(
+			String title, 
+			List<CompanyModel> list) 
+	{
+		System.out.println("***** " + title);
+		System.out.println("\tID\ttitle");
+		for (CompanyModel _model : list) { 
+			System.out.println(
+					"\t" + _model.getId() + 
+					"\t" + _model.getTitle());
+		}
+		System.out.println("\ttotal:\t" + list.size() + " elements");
+	}
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
+	 */
 	protected int calculateMembers() {
-		return 2 * GenericService.DEF_SIZE + 5;
+		return CompanyTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK).size();
 	}
 }

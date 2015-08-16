@@ -53,16 +53,16 @@ import test.org.opentdc.AbstractTestClient;
  *
  */
 public class RateTest extends AbstractTestClient {
-	private WebClient rateWC = null;
+	private WebClient wc = null;
 
 	@Before
 	public void initializeTest() {
-		rateWC = initializeTest(ServiceUtil.RATES_API_URL, RatesService.class);
+		wc = initializeTest(ServiceUtil.RATES_API_URL, RatesService.class);
 	}
 	
 	@After
 	public void cleanupTest() {
-		rateWC.close();
+		wc.close();
 	}
 
 	/********************************** rates attributes tests *********************************/	
@@ -263,8 +263,8 @@ public class RateTest extends AbstractTestClient {
 	@Test
 	public void testCreateWithDuplicateId() {
 		RateModel _model1 = post(new RateModel("testCreateWithDuplicateId", 100, "MY_DESC"), Status.OK);
-		RateModel _model2 = new RateModel("DuplicateRatesModel", 100, "MY_DESC");
-		_model2.setId(_model1.getId());		// wrongly create a 2nd RatesModel object with the same ID
+		RateModel _model2 = new RateModel("DuplicateRateModel", 100, "MY_DESC");
+		_model2.setId(_model1.getId());		// wrongly create a 2nd RateModel object with the same ID
 		post(_model2, Status.CONFLICT);
 		delete(_model1.getId(), Status.NO_CONTENT);
 	}
@@ -276,7 +276,7 @@ public class RateTest extends AbstractTestClient {
 		for (int i = 0; i < LIMIT; i++) {
 			_localList.add(post(new RateModel("testList" + i, 100+i, "MY_DESC"), Status.OK));
 		}
-		List<RateModel> _remoteList = list(Status.OK);
+		List<RateModel> _remoteList = list(null, Status.OK);
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
 		for (RateModel _model : _remoteList) {
@@ -339,7 +339,7 @@ public class RateTest extends AbstractTestClient {
 		}
 
 		// test read on each listed element
-		for (RateModel _model : list(Status.OK)) {
+		for (RateModel _model : list(null, Status.OK)) {
 			assertEquals("ID should be unchanged when reading a rate", _model.getId(), get(_model.getId(), Status.OK).getId());						
 		}
 
@@ -472,60 +472,75 @@ public class RateTest extends AbstractTestClient {
 	
 	/********************************* helper methods *********************************/	
 	/**
-	 * List all rates.
+	 * Retrieve a list of all RateModel elements from RatesService by executing a HTTP GET request.
+	 * @param query the URL query to use
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return a list of RatesModel with all rates
+	 * @return a list of RateModel with all rates
 	 */
 	public List<RateModel> list(
+			String query, 
 			Status expectedStatus) 
 	{
-		return list(rateWC, expectedStatus);
+		return list(wc, query, -1, Integer.MAX_VALUE, expectedStatus);
 	}
 
 	/**
-	 * List all rates.
-	 * @param webClient the WebClient representing the RatesService
+	 * Retrieve a list of RateModel from RatesService by executing a HTTP GET request.
+	 * @param webClient the WebClient for the RatesService
+	 * @param query the URL query to use
+	 * @param position the position to start a batch with
+	 * @param size the size of a batch
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return a list of RatesModel with all rates
+	 * @return a List of RateModel objects in JSON format
 	 */
 	public static List<RateModel> list(
-			WebClient webClient,
-			Status expectedStatus) 
-	{
-		Response _response = webClient.replacePath("/").query("size", Integer.MAX_VALUE).get();
-		assertEquals("GET should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
-		if (_response.getStatus() == Status.OK.getStatusCode()) {
-			return new ArrayList<RateModel>(webClient.getCollection(RateModel.class));
-		} else {
-			return null;
+			WebClient webClient, 
+			String query, 
+			int position,
+			int size,
+			Status expectedStatus) {
+		webClient.resetQuery();
+		webClient.replacePath("/");
+		Response _response = executeListQuery(webClient, query, position, size);
+		List<RateModel> _list = null;
+		if (expectedStatus != null) {
+			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
+		if (_response.getStatus() == Status.OK.getStatusCode()) {
+			_list = new ArrayList<RateModel>(webClient.getCollection(RateModel.class));
+			System.out.println("list(webClient, " + query + ", " + position + ", " + size + ", " + expectedStatus.toString() + ") ->" + _list.size());
+		}
+		return _list;
 	}
 	
+	
 	/**
-	 * Create a new RatesModel on the server by executing a HTTP POST request.
-	 * @param model the RatesModel to post to the server
+	 * Create a new RateModel on the server by executing a HTTP POST request.
+	 * @param model the data to post to the server
 	 * @param exceptedStatus the expected HTTP status to test on
-	 * @return the created RatesModel
+	 * @return the created data object
 	 */
 	public RateModel post(
 			RateModel model, 
 			Status expectedStatus) {
-		return post(rateWC, model, expectedStatus);
+		return post(wc, model, expectedStatus);
 	}
 	
 	/**
-	 * Create a new RatesModel on the server by executing a HTTP POST request.
-	 * @param webClient the WebClient representing the RatesService
-	 * @param model the RatesModel data to create on the server
+	 * Create a new RateModel on the server by executing a HTTP POST request.
+	 * @param webClient the WebClient representing the service
+	 * @param model the data to create on the server
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return the created RatesModel
+	 * @return the created data
 	 */
 	public static RateModel post(
 			WebClient webClient,
 			RateModel model,
 			Status expectedStatus) {
 		Response _response = webClient.replacePath("/").post(model);
-		assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		if (expectedStatus != null) {
+			assertEquals("POST should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
+		}
 		if (_response.getStatus() == Status.OK.getStatusCode()) {
 			return _response.readEntity(RateModel.class);
 		} else {
@@ -534,20 +549,7 @@ public class RateTest extends AbstractTestClient {
 	}
 	
 	/**
-	 * Create a new RatesModel on the server by executing a HTTP POST request.
-	 * @param webClient the WebClient representing the RatesService
-	 * @param expectedStatus the expected HTTP status to test on
-	 * @return the created RatesModel
-	 */
-	public static RateModel create(
-			WebClient webClient,
-			Status expectedStatus) 
-	{
-		return post(webClient, new RateModel("TestRate", 100, "TEST_DESC"), expectedStatus);
-	}
-	
-	/**
-	 * Create a new RatesModel on the server by executing a HTTP POST request.
+	 * Create a new RateModel on the server by executing a HTTP POST request.
 	 * @param webClient the WebClient representing the RatesService
 	 * @param title the title of the rate
 	 * @param rate the rate amount
@@ -571,21 +573,21 @@ public class RateTest extends AbstractTestClient {
 	}
 	
 	/**
-	 * Read the RatesModel with id from RatesService by executing a HTTP GET method.
-	 * @param id the id of the RatesModel to retrieve
+	 * Read the RateModel with id from RatesService by executing a HTTP GET method.
+	 * @param id the id of the RateModel to retrieve
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return the retrieved RatesModel object in JSON format
+	 * @return the retrieved RateModel object in JSON format
 	 */
 	public RateModel get(String id, Status expectedStatus) {
-		return get(rateWC, id, expectedStatus);
+		return get(wc, id, expectedStatus);
 	}
 	
 	/**
-	 * Read the RatesModel with id from RatesService by executing a HTTP GET method.
+	 * Read the RateModel with id from RatesService by executing a HTTP GET method.
 	 * @param rateWC the webclient of the RatesService
-	 * @param id the id of the RatesModel to retrieve
+	 * @param id the id of the RateModel to retrieve
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return the retrieved RatesModel object in JSON format
+	 * @return the retrieved RateModel object in JSON format
 	 */
 	public static RateModel get(WebClient rateWC, String id, Status expectedStatus) {
 		Response _response = rateWC.replacePath("/").path(id).get();
@@ -598,23 +600,23 @@ public class RateTest extends AbstractTestClient {
 	}
 	
 	/**
-	 * Update the RatesModel with id with new values.
+	 * Update the RateModel with id with new values.
 	 * @param model the new data
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return the newly updated RatesModel object in JSON format
+	 * @return the newly updated RateModel object in JSON format
 	 */
 	private RateModel put(
 			RateModel model, 
 			Status expectedStatus) {
-		return put(rateWC, model, expectedStatus);
+		return put(wc, model, expectedStatus);
 	}
 	
 	/**
-	 * Update the RatesModel with id with new values.
+	 * Update the RateModel with id with new values.
 	 * @param webClient the webclient of the RatesService
 	 * @param model the new data
 	 * @param expectedStatus the expected HTTP status to test on
-	 * @return the newly updated RatesModel object in JSON format
+	 * @return the newly updated RateModel object in JSON format
 	 */
 	public static RateModel put(
 			WebClient webClient,
@@ -632,18 +634,18 @@ public class RateTest extends AbstractTestClient {
 	}
 		
 	/**
-	 * Delete the RatesModel with id on the RatesService by executing a HTTP DELETE method.
-	 * @param id the id of the RatesModel object to delete
+	 * Delete the RateModel with id on the RatesService by executing a HTTP DELETE method.
+	 * @param id the id of the RateModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
 	public void delete(String rateId, Status expectedStatus) {
-		delete(rateWC, rateId, expectedStatus);
+		delete(wc, rateId, expectedStatus);
 	}
 	
 	/**
-	 * Delete the RatesModel on the RatesService by executing a HTTP DELETE method.
+	 * Delete the RateModel on the RatesService by executing a HTTP DELETE method.
 	 * @param webClient the WebClient for the RatesService
-	 * @param rateId the id of the RatesModel object to delete
+	 * @param rateId the id of the RateModel object to delete
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
 	public static void delete(

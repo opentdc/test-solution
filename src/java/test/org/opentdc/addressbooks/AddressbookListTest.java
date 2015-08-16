@@ -42,10 +42,12 @@ import org.opentdc.service.ServiceUtil;
 import test.org.opentdc.AbstractTestClient;
 
 /**
+ * Testing list() of Addressbooks.
  * @author Bruno Kaiser
  *
  */
 public class AddressbookListTest extends AbstractTestClient {
+	public static final String CN = "AddressbookListTest";
 	private static WebClient wc = null;
 	private static ArrayList<AddressbookModel> testObjects = null;
 
@@ -55,18 +57,17 @@ public class AddressbookListTest extends AbstractTestClient {
 	@BeforeClass
 	public static void initializeTests() {
 		wc = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-		System.out.println("***** AddressbookListTest:");
+		System.out.println("***** " + CN);
 		testObjects = new ArrayList<AddressbookModel>();
 		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
-			AddressbookModel _model = AddressbookTest.post(wc, new AddressbookModel("AddressbookListTest"), Status.OK);
-			testObjects.add(_model);
+			testObjects.add(AddressbookTest.post(wc, new AddressbookModel(CN), Status.OK));
 		}
 		System.out.println("created " + testObjects.size() + " test objects");
 		printModelList("testObjects", testObjects);
 	}
 
 	/**
-	 * Remove all test resources used
+	 * Remove all allocated test resources.
 	 */
 	@AfterClass
 	public static void cleanupTest() {
@@ -76,6 +77,9 @@ public class AddressbookListTest extends AbstractTestClient {
 		wc.close();
 	}
 	
+	/**
+	 * Test whether all allocated test objects are listed.
+	 */
 	@Test
 	public void testAllListed() {
 		List<AddressbookModel> _list = AddressbookTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
@@ -89,6 +93,9 @@ public class AddressbookListTest extends AbstractTestClient {
 		}
 	}
 
+	/**
+	 * Test whether all listed objects are readable.
+	 */
 	@Test
 	public void testAllReadable() {
 		for (AddressbookModel _model : testObjects) {
@@ -96,8 +103,12 @@ public class AddressbookListTest extends AbstractTestClient {
 		}			
 	}
 
+	/**
+	 * Test batch-wise access to the test data (list with default position and size).
+	 */
 	@Test
-	public void testBatchedList() {
+	public void testBatchedList() 
+	{
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
@@ -117,21 +128,33 @@ public class AddressbookListTest extends AbstractTestClient {
 		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _batch.size());
 	}
 
+	/**
+	 * Get some elements starting from a specific position
+	 */
 	@Test
-	public void testNextElements() {
+	public void testNextElements() 
+	{
 		List<AddressbookModel> _objs = AddressbookTest.list(wc, null, 5, 5, Status.OK);
 		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 	
+	/**
+	 * Get some elements until the end of the list
+	 */
 	@Test
-	public void testLastElements() {
+	public void testLastElements() 
+	{
 		int _totalMembers = calculateMembers();
 		List<AddressbookModel> _objs = AddressbookTest.list(wc, null, (_totalMembers - 4), 4, Status.OK);
 		assertEquals("list() should return correct number of elements", 4, _objs.size());		
 	}
 	
+	/**
+	 * Read some elements until after the list end
+	 */
 	@Test 
-	public void testOverEndOfList() {
+	public void testOverEndOfList() 
+	{
 		int _totalMembers = calculateMembers();
 		List<AddressbookModel> _objs = AddressbookTest.list(wc, null, (_totalMembers - 5), 10, Status.OK);
 		assertEquals("list() should return correct number of elements", 5, _objs.size());		
@@ -140,11 +163,14 @@ public class AddressbookListTest extends AbstractTestClient {
 	/**
 	 * Print the result of the list() operation onto stdout.
 	 * @param title  the title of the log section
-	 * @param list a list of AddressModel objects
+	 * @param list a list of AddressbookModel objects
 	 */
-	public static void printModelList(String title, List<AddressbookModel> list) {
+	public static void printModelList(
+			String title, 
+			List<AddressbookModel> list) 
+	{
 		System.out.println("***** " + title);
-		System.out.println("\ttextId\tname");
+		System.out.println("\tID\tname");
 		for (AddressbookModel _model : list) { 
 			System.out.println(
 					"\t" + _model.getId() + 
@@ -153,9 +179,10 @@ public class AddressbookListTest extends AbstractTestClient {
 		System.out.println("\ttotal:\t" + list.size() + " elements");
 	}
 	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
+	 */
 	protected int calculateMembers() {
 		return AddressbookTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK).size();
-//		List<AddressbookModel> _objs = AddressbookTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
-//		return _objs.size();
 	}
 }

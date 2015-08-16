@@ -28,12 +28,11 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
@@ -45,147 +44,146 @@ import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 import test.org.opentdc.addressbooks.AddressbookTest;
+import test.org.opentdc.addressbooks.ContactTest;
 
+/**
+ * Testing lists of resources.
+ * @author Bruno Kaiser
+ *
+ */
 public class ResourceListTest extends AbstractTestClient {
+	public static final String CN = "ResourceListTest";
+	private static WebClient wc = null;
+	private static ArrayList<ResourceModel> testObjects = null;
+	private static WebClient addressbookWC = null;
 	private static AddressbookModel adb = null;
-	private WebClient wc = null;
-	private WebClient addressbookWC = null;
+	private static ContactModel contact = null;
 
-	@Before
-	public void initializeTests() {
+	@BeforeClass
+	public static void initializeTests() {
 		wc = createWebClient(ServiceUtil.RESOURCES_API_URL, ResourcesService.class);
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-		adb = AddressbookTest.createAddressbook(addressbookWC, this.getClass().getName(), Status.OK);
+		adb = AddressbookTest.post(addressbookWC, new AddressbookModel(CN), Status.OK);
+		contact = ContactTest.post(addressbookWC, adb.getId(), new ContactModel(CN + 1, CN + 2), Status.OK);
+		System.out.println("***** " + CN);
+		testObjects = new ArrayList<ResourceModel>();
+		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
+			ResourceModel _model = ResourceTest.post(wc, new ResourceModel(CN, contact.getId()), Status.OK);
+			testObjects.add(_model);
+		}
+		System.out.println("created " + testObjects.size() + " test objects");
+		printModelList("testObjects", testObjects);
 	}
 	
-	@After
-	public void cleanupTest() {
+	@AfterClass
+	public static void cleanupTest() {
+		for (ResourceModel _model : testObjects) {
+			ResourceTest.delete(wc, _model.getId(), Status.NO_CONTENT);
+		}
 		AddressbookTest.delete(addressbookWC, adb.getId(), Status.NO_CONTENT);
-		System.out.println("deleted 1 addressbook");
 		addressbookWC.close();
 		wc.close();
 	}
-
+	
+	/**
+	 * Test whether all allocated test objects are listed.
+	 */
 	@Test
-	public void testResourceBatchedList() {
-		ArrayList<ResourceModel> _localList = new ArrayList<ResourceModel>();		
-		Response _response = null;
-		System.out.println("***** testResourceListBatchDefSizeStatic:");
-		wc.replacePath("/");
-		// we want to allocate more than double the amount of default list size objects
-		int _batchSize = GenericService.DEF_SIZE;
-		int _increment = 5;
-		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		ResourceModel _res = null;
-		ContactModel _cm = null;
-		for (int i = 0; i < _limit2; i++) {
-			// create(new()) -> _localList
-			_cm = createContact("MY_FNAME" + i, "MY_LNAME" + i);
-			_res = new ResourceModel();
-			_res.setName(String.format("%2d", i));
-			_res.setFirstName(_cm.getFirstName());
-			_res.setLastName(_cm.getLastName());
-			_res.setContactId(_cm.getId());
-			_response = wc.post(_res);
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(ResourceModel.class));
-			System.out.println("posted ResourceModel " + _res.getName());
+	public void testAllListed() {
+		List<ResourceModel> _list = ResourceTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testAllListed", _list);
+		ArrayList<String> _ids = new ArrayList<String>();
+		for (ResourceModel _model : _list) {
+			_ids.add(_model.getId());
+		}		
+		for (ResourceModel _model : testObjects) {
+			assertTrue("Resource <" + _model.getId() + "> should be listed", _ids.contains(_model.getId()));
 		}
-		System.out.println("****** locallist:");
-		for (ResourceModel _rm : _localList) {
-			System.out.println(_rm.getName());
-		}
+	}
 
-		// get first batch
-		// list(position=0, size=25) -> elements 0 .. 24
-		wc.resetQuery();
-		_response = wc.replacePath("/").get();
-		List<ResourceModel> _remoteList1 = new ArrayList<ResourceModel>(wc.getCollection(ResourceModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 1st Batch:");
-		for (ResourceModel _rm : _remoteList1) {
-			System.out.println(_rm.getName());
-		}
-		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
-		
-		// get second batch
-		// list(position=25, size=25) -> elements 25 .. 49
-		wc.resetQuery();
-		_response = wc.replacePath("/").query("position", 25).get();
-		List<ResourceModel> _remoteList2 = new ArrayList<ResourceModel>(wc.getCollection(ResourceModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
-		System.out.println("****** 2nd Batch:");
-		for (ResourceModel _rm : _remoteList2) {
-			System.out.println(_rm.getName());
-		}
-		
-		// get rest 
-		// list(position=50, size=25) ->   elements 50 .. 54
-		wc.resetQuery();
-		_response = wc.replacePath("/").query("position", 50).query("size", Integer.toString(_increment)).get();
-		List<ResourceModel> _remoteList3 = new ArrayList<ResourceModel>(wc.getCollection(ResourceModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 3rd Batch:");
-		for (ResourceModel _rm : _remoteList3) {
-			System.out.println(_rm.getName());
-		}
-		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
-		
-		// testing the batches
+	/**
+	 * Test whether all listed objects are readable.
+	 */
+	@Test
+	public void testAllReadable() {
+		for (ResourceModel _model : testObjects) {
+			ResourceTest.get(wc, _model.getId(), Status.OK);
+		}			
+	}
+
+	/**
+	 * Test batch-wise access to the test data (list with default position and size).
+	 */
+	@Test
+	public void testBatchedList() {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<ResourceModel> _remoteList = null;
-		System.out.println("***** testResourceListIterate:");
+	
+		List<ResourceModel> _batch = null;
 		while(true) {
 			_numberOfBatches++;
-			wc.resetQuery();
-			_response = wc.replacePath("/").query("position", _position).get();
-			_remoteList = new ArrayList<ResourceModel>(wc.getCollection(ResourceModel.class));
-			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_numberOfReturnedObjects += _remoteList.size();
+			_batch = ResourceTest.list(wc, null, _position, -1, Status.OK);
+			_numberOfReturnedObjects += _batch.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
-			if (_remoteList.size() < GenericService.DEF_SIZE) {
+			if (_batch.size() < GenericService.DEF_SIZE) {
 				break;
 			} else {
 				_position += GenericService.DEF_SIZE;					
 			}
 		}
-		assertTrue("number of batches should be as expected", _numberOfBatches >= 3);
-		assertTrue("should have returned all objects", _numberOfReturnedObjects >= _limit2);
-	
-		// testing some explicit positions and sizes
-		wc.resetQuery();
-		// get next 5 elements from position 5
-		_response = wc.replacePath("/").query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<ResourceModel>(wc.getCollection(ResourceModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
-		
-		// get last 4 elements 
-		wc.resetQuery();
-		_response = wc.replacePath("/").query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<ResourceModel>(wc.getCollection(ResourceModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
-		
-		// removing all test objects
-		for (ResourceModel _c : _localList) {
-			_response = wc.replacePath(_c.getId()).delete();
-		}		
-	}
-	
-	private ContactModel createContact(String fName, String lName) {
-		ContactModel _cm = new ContactModel();
-		_cm.setFirstName(fName);
-		_cm.setLastName(lName);
-		Response _response = addressbookWC.replacePath("/").path(adb.getId()).path(ServiceUtil.CONTACT_PATH_EL).post(_cm);
-		return _response.readEntity(ContactModel.class);
-	}
-	
-	protected int calculateMembers() {
-		return 1;
+		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _batch.size());
 	}
 
+	/**
+	 * Get some elements starting from a specific position
+	 */
+	@Test
+	public void testNextElements() {
+		List<ResourceModel> _objs = ResourceTest.list(wc, null, 5, 5, Status.OK);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
+	}
+	
+	/**
+	 * Get some elements until the end of the list
+	 */
+	@Test
+	public void testLastElements() {
+		int _totalMembers = calculateMembers();
+		List<ResourceModel> _objs = ResourceTest.list(wc, null, (_totalMembers - 4), 4, Status.OK);
+		assertEquals("list() should return correct number of elements", 4, _objs.size());		
+	}
+	
+	/**
+	 * Read some elements until after the list end
+	 */
+	@Test 
+	public void testOverEndOfList() {
+		int _totalMembers = calculateMembers();
+		List<ResourceModel> _objs = ResourceTest.list(wc, null, (_totalMembers - 5), 10, Status.OK);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
+	}
+		
+	/**
+	 * Print the result of the list() operation onto stdout.
+	 * @param title  the title of the log section
+	 * @param list a list of ResourceModel objects
+	 */
+	public static void printModelList(String title, List<ResourceModel> list) {
+		System.out.println("***** " + title);
+		System.out.println("\ttextId\tname");
+		for (ResourceModel _model : list) { 
+			System.out.println(
+					"\t" + _model.getId() + 
+					"\t" + _model.getName());
+		}
+		System.out.println("\ttotal:\t" + list.size() + " elements");
+	}
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
+	 */
+	protected int calculateMembers() {
+		return ResourceTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK).size();
+	}
 }

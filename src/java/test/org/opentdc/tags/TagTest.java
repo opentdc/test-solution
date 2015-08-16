@@ -54,14 +54,14 @@ import test.org.opentdc.AbstractTestClient;
  *
  */
 public class TagTest extends AbstractTestClient {
-	private WebClient tagWC = null;
+	private WebClient wc = null;
 
 	/**
 	 * Initializes the test case.
 	 */
 	@Before
 	public void initializeTest() {
-		tagWC = initializeTest(ServiceUtil.TAGS_API_URL, TagsService.class);
+		wc = initializeTest(ServiceUtil.TAGS_API_URL, TagsService.class);
 	}
 	
 	/**
@@ -69,7 +69,7 @@ public class TagTest extends AbstractTestClient {
 	 */
 	@After
 	public void cleanupTest() {
-		tagWC.close();
+		wc.close();
 	}
 
 	/********************************** tags attributes tests *********************************/	
@@ -190,12 +190,12 @@ public class TagTest extends AbstractTestClient {
 		TagModel _model1 = post(new TagModel(), Status.OK);
 		TagModel _model2 = post(new TagModel(), Status.OK);
 		TagModel _model3 = post(new TagModel(), Status.OK);
-		LocalizedTextTest.post(tagWC, _model1, new LocalizedTextModel(LanguageCode.DE, "eins"), Status.OK);
-		LocalizedTextTest.post(tagWC, _model2, new LocalizedTextModel(LanguageCode.DE, "zwei"), Status.OK);
-		LocalizedTextTest.post(tagWC, _model3, new LocalizedTextModel(LanguageCode.DE, "drei"), Status.OK);
-		LocalizedTextTest.post(tagWC, _model1, new LocalizedTextModel(LanguageCode.EN, "one"), Status.OK);
-		LocalizedTextTest.post(tagWC, _model2, new LocalizedTextModel(LanguageCode.EN, "two"), Status.OK);
-		LocalizedTextTest.post(tagWC, _model3, new LocalizedTextModel(LanguageCode.FR, "trois"), Status.OK);
+		LocalizedTextTest.post(wc, _model1, new LocalizedTextModel(LanguageCode.DE, "eins"), Status.OK);
+		LocalizedTextTest.post(wc, _model2, new LocalizedTextModel(LanguageCode.DE, "zwei"), Status.OK);
+		LocalizedTextTest.post(wc, _model3, new LocalizedTextModel(LanguageCode.DE, "drei"), Status.OK);
+		LocalizedTextTest.post(wc, _model1, new LocalizedTextModel(LanguageCode.EN, "one"), Status.OK);
+		LocalizedTextTest.post(wc, _model2, new LocalizedTextModel(LanguageCode.EN, "two"), Status.OK);
+		LocalizedTextTest.post(wc, _model3, new LocalizedTextModel(LanguageCode.FR, "trois"), Status.OK);
 
 		List<SingleLangTag> _tagList = list(null, Status.OK);
 		logResult("all tags (no query):", _tagList);
@@ -275,7 +275,7 @@ public class TagTest extends AbstractTestClient {
 		ArrayList<TagModel> _localList = new ArrayList<TagModel>();
 		for (int i = 0; i < LIMIT; i++) {
 			_localList.add(post(new TagModel(), Status.OK));
-			LocalizedTextTest.post(tagWC, _localList.get(i), new LocalizedTextModel(LanguageCode.DE, "testTagsTextList" + i), Status.OK);
+			LocalizedTextTest.post(wc, _localList.get(i), new LocalizedTextModel(LanguageCode.DE, "testTagsTextList" + i), Status.OK);
 		}
 		List<SingleLangTag> _remoteList = list(null, Status.OK);
 		logResult("b) list():", _remoteList);
@@ -463,7 +463,7 @@ public class TagTest extends AbstractTestClient {
 	public List<SingleLangTag> list(
 			String query, 
 			Status expectedStatus) {
-		return list(tagWC, query, -1, Integer.MAX_VALUE, expectedStatus);
+		return list(wc, query, -1, Integer.MAX_VALUE, expectedStatus);
 	}
 	
 	/**
@@ -481,37 +481,9 @@ public class TagTest extends AbstractTestClient {
 			int position,
 			int size,
 			Status expectedStatus) {
-		Response _response = null;
 		webClient.resetQuery();
-		if (query == null) {
-			if (position >= 0) {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("position", position).query("size", size).get();
-				} else {
-					_response = webClient.replacePath("/").query("position", position).get();
-				}
-			} else {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("size", size).get();
-				} else {
-					_response = webClient.replacePath("/").get();
-				}
-			}
-		} else {
-			if (position >= 0) {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("query", query).query("position", position).query("size", size).get();					
-				} else {
-					_response = webClient.replacePath("/").query("query", query).query("position", position).get();					
-				}
-			} else {
-				if (size >= 0) {
-					_response = webClient.replacePath("/").query("query", query).query("size", size).get();					
-				} else {
-					_response = webClient.replacePath("/").query("query", query).get();					
-				}				
-			}
-		}
+		webClient.replacePath("/");
+		Response _response = executeListQuery(webClient, query, position, size);
 		List<SingleLangTag> _tags = null;
 		if (expectedStatus != null) {
 			assertEquals("list() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
@@ -532,7 +504,7 @@ public class TagTest extends AbstractTestClient {
 	public TagModel post(
 			TagModel model, 
 			Status expectedStatus) {
-		Response _response = tagWC.replacePath("/").post(model);
+		Response _response = wc.replacePath("/").post(model);
 		if (expectedStatus != null) {
 			assertEquals("create() should return with correct status", expectedStatus.getStatusCode(), _response.getStatus());
 		}
@@ -577,6 +549,15 @@ public class TagTest extends AbstractTestClient {
 	{
 		return post(webClient, new TagModel(), expectedStatus);
 	}
+	
+	public static SingleLangTag create(
+			WebClient webClient,
+			String text,
+			LanguageCode langCode) {
+		TagModel _tag = create(webClient, Status.OK);
+		LocalizedTextModel _ltm = LocalizedTextTest.post(webClient, _tag, new LocalizedTextModel(langCode, text), Status.OK);
+		return new SingleLangTag(_tag.getId(), _ltm, "principal");
+	}
 		
 	/**
 	 * Read the TagsModel with id from TagsService by executing a HTTP GET method.
@@ -587,7 +568,7 @@ public class TagTest extends AbstractTestClient {
 	public TagModel get(
 			String tagId, 
 			Status expectedStatus) {
-		return get(tagWC, tagId, expectedStatus);
+		return get(wc, tagId, expectedStatus);
 	}
 	
 	/**
@@ -621,7 +602,7 @@ public class TagTest extends AbstractTestClient {
 	public TagModel put(
 			TagModel tm, 
 			Status expectedStatus) {
-		return put(tagWC, tm, expectedStatus);
+		return put(wc, tm, expectedStatus);
 	}
 	
 	/**
@@ -653,7 +634,7 @@ public class TagTest extends AbstractTestClient {
 	 * @param expectedStatus the expected HTTP status to test on
 	 */
 	public void delete(String id, Status expectedStatus) {
-		delete(tagWC, id, expectedStatus);
+		delete(wc, id, expectedStatus);
 	}
 	
 	/**

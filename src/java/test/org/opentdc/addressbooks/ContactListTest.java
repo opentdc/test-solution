@@ -28,12 +28,11 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opentdc.addressbooks.AddressbookModel;
 import org.opentdc.addressbooks.AddressbooksService;
@@ -43,141 +42,142 @@ import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
+/**
+ * Testing lists of contacts.
+ * @author Bruno Kaiser
+ *
+ */
 public class ContactListTest extends AbstractTestClient {
+	private static final String CN = "ContactListTest";
 	private static AddressbookModel adb = null;
-	private WebClient wc = null;
+	private static WebClient wc = null;
+	private static ArrayList<ContactModel> testObjects = null;
 
-	@Before
-	public void initializeTests() {
+	/**
+	 * Initialize test with several contacts.
+	 */
+	@BeforeClass
+	public static void initializeTests() {
 		wc = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-		adb = AddressbookTest.createAddressbook(wc, this.getClass().getName(), Status.OK);
+		System.out.println("***** " + CN);
+		adb = AddressbookTest.post(wc, new AddressbookModel(CN), Status.OK);
+		testObjects = new ArrayList<ContactModel>();
+		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
+			ContactModel _model = ContactTest.post(wc, adb.getId(), new ContactModel(CN + i, "Test"), Status.OK);
+			testObjects.add(_model);
+		}
+		System.out.println("created " + testObjects.size() + " test objects");
+		printModelList("testObjects", testObjects);
 	}
 	
-	@After
-	public void cleanupTest() {
+	/**
+	 * Cleanup all test resources
+	 */
+	@AfterClass
+	public static void cleanupTest() {
 		AddressbookTest.delete(wc, adb.getId(), Status.NO_CONTENT);
 		wc.close();
 	}
 
+	/**
+	 * Test whether all allocated test objects are listed.
+	 */
 	@Test
-	public void testContactBatchedList() {
-		ArrayList<ContactModel> _localList = new ArrayList<ContactModel>();		
-		Response _response = null;
-		System.out.println("***** testContactBatchedList:");
-		wc.replacePath("/").path(adb.getId()).path(ServiceUtil.CONTACT_PATH_EL);
-		// we want to allocate more than double the amount of default list size objects
-		int _batchSize = GenericService.DEF_SIZE;
-		int _increment = 5;
-		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		ContactModel _model = null;
-		System.out.println("****** locallist (posts):");
-		for (int i = 0; i < _limit2; i++) {
-			_model = new ContactModel();
-			_model.setFirstName(String.format("%2d", i));
-			_model.setLastName("Test");
-			_response = wc.post(_model);
-			assertEquals("create() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_localList.add(_response.readEntity(ContactModel.class));
-			System.out.println("\t" + _model.getFn());
+	public void testAllListed() {
+		List<ContactModel> _list = ContactTest.list(wc, adb.getId(), null, 0, Integer.MAX_VALUE, Status.OK, false);
+		printModelList("testAllListed", _list);
+		ArrayList<String> _ids = new ArrayList<String>();
+		for (ContactModel _model : _list) {
+			_ids.add(_model.getId());
+		}		
+		for (ContactModel _model : testObjects) {
+			assertTrue("Contact <" + _model.getId() + "> should be listed", _ids.contains(_model.getId()));
 		}
+	}
 
-		// get first batch
-		// list(position=0, size=25) -> elements 0 .. 24
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(adb.getId()).
-				path(ServiceUtil.CONTACT_PATH_EL).get();
-		List<ContactModel> _remoteList1 = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 1st Batch:");
-		for (ContactModel _rm : _remoteList1) {
-			System.out.println(_rm.getFn());
-		}
-		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
-		
-		// get second batch
-		// list(position=25, size=25) -> elements 25 .. 49
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(adb.getId()).
-				path(ServiceUtil.CONTACT_PATH_EL).query("position", 25).get();
-		List<ContactModel> _remoteList2 = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
-		System.out.println("****** 2nd Batch:");
-		for (ContactModel _rm : _remoteList2) {
-			System.out.println(_rm.getFn());
-		}
-		
-		// get rest 
-		// list(position=50, size=25) ->   elements 50 .. 54
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(adb.getId()).
-				path(ServiceUtil.CONTACT_PATH_EL).query("position", 50).get();
-		List<ContactModel> _remoteList3 = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		System.out.println("****** 3rd Batch:");
-		for (ContactModel _rm : _remoteList3) {
-			System.out.println(_rm.getFn());
-		}
-		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
-		
-		// testing the batches
+	/**
+	 * Test whether all listed objects are readable.
+	 */
+	@Test
+	public void testAllReadable() {
+		for (ContactModel _model : testObjects) {
+			ContactTest.get(wc, adb.getId(), _model.getId(), Status.OK);
+		}			
+	}
+
+	/**
+	 * Test batch-wise access to the test data (list with default position and size).
+	 */
+	@Test
+	public void testBatchedList() {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<ContactModel> _remoteList = null;
+	
+		List<ContactModel> _batch = null;
 		while(true) {
 			_numberOfBatches++;
-			wc.resetQuery();
-			_response = wc.replacePath("/").path(adb.getId()).
-					path(ServiceUtil.CONTACT_PATH_EL).query("position", _position).get();
-			_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-			assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_numberOfReturnedObjects += _remoteList.size();
+			_batch = ContactTest.list(wc, adb.getId(), null, _position, -1, Status.OK, false);
+			_numberOfReturnedObjects += _batch.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
-			if (_remoteList.size() < GenericService.DEF_SIZE) {
+			if (_batch.size() < GenericService.DEF_SIZE) {
 				break;
 			} else {
 				_position += GenericService.DEF_SIZE;					
 			}
 		}
-		assertEquals("number of batches should be as expected", 3, _numberOfBatches);
-		assertEquals("should have returned all objects", _limit2, _numberOfReturnedObjects);
-		assertEquals("last batch size should be as expected", _increment, _remoteList.size());
-	
-		// testing some explicit positions and sizes
-		wc.resetQuery();
-		// get next 5 elements from position 5
-		_response = wc.replacePath("/").path(adb.getId()).
-				path(ServiceUtil.CONTACT_PATH_EL).query("position", 5).query("size", 5).get();
-		_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
-		
-		// get last 4 elements 
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(adb.getId()).
-				path(ServiceUtil.CONTACT_PATH_EL).query("position", _limit2-4).query("size", 4).get();
-		_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
-		
-		// read over end of list
-		wc.resetQuery();
-		_response = wc.replacePath("/").path(adb.getId()).
-				path(ServiceUtil.CONTACT_PATH_EL).query("position", _limit2-5).query("size", 10).get();
-		_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
-		
-		// removing all test objects
-		for (ContactModel _c : _localList) {
-			_response = wc.replacePath("/").path(adb.getId()).
-					path(ServiceUtil.CONTACT_PATH_EL).path(_c.getId()).delete();
-			assertEquals("delete() should return with status NO_CONTENT", Status.NO_CONTENT.getStatusCode(), _response.getStatus());
-		}		
+		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _batch.size());
+	}
+
+	/**
+	 * Get some elements starting from a specific position
+	 */
+	@Test
+	public void testNextElements() {
+		List<ContactModel> _objs = ContactTest.list(wc, adb.getId(), null, 5, 5, Status.OK, false);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 	
+	/**
+	 * Get some elements until the end of the list
+	 */
+	@Test
+	public void testLastElements() {
+		int _totalMembers = calculateMembers();
+		List<ContactModel> _objs = ContactTest.list(wc, adb.getId(), null, (_totalMembers - 4), 4, Status.OK, false);
+		assertEquals("list() should return correct number of elements", 4, _objs.size());		
+	}
+	
+	/**
+	 * Read some elements until after the list end
+	 */
+	@Test 
+	public void testOverEndOfList() {
+		int _totalMembers = calculateMembers();
+		List<ContactModel> _objs = ContactTest.list(wc, adb.getId(), null, (_totalMembers - 5), 10, Status.OK, false);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
+	}
+
+	/**
+	 * Print the result of the list() operation onto stdout.
+	 * @param title  the title of the log section
+	 * @param list a list of ContactModel objects
+	 */
+	public static void printModelList(String title, List<ContactModel> list) {
+		System.out.println("***** " + title);
+		System.out.println("\ttextId\tname");
+		for (ContactModel _model : list) { 
+			System.out.println(
+					"\t" + _model.getId() + 
+					"\t" + _model.getFn());
+		}
+		System.out.println("\ttotal:\t" + list.size() + " elements");
+	}
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
+	 */
 	protected int calculateMembers() {
-		return 2 * GenericService.DEF_SIZE + 5;
+		return ContactTest.list(wc, adb.getId(), null, 0, Integer.MAX_VALUE, Status.OK, false).size();
 	}
 }

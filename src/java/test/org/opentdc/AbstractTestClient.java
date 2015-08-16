@@ -25,6 +25,8 @@ package test.org.opentdc;
 
 import static org.junit.Assert.assertEquals;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.opentdc.service.GenericService;
 import org.opentdc.service.ServiceUtil;
@@ -69,6 +71,48 @@ public abstract class AbstractTestClient {
 	 */
 	protected static WebClient createWebClient(String apiUrl, Class<?> serviceClass) {
 		return ServiceUtil.createWebClient(apiUrl, serviceClass);
+	}
+	
+	/**
+	 * Build the query URL and execute the list query on the webClient.
+	 * @param webClient the WebClient representing the service
+	 * @param query the URL query param
+	 * @param position the position to start a batch with
+	 * @param size the size of the batch
+	 * @return a Response object containing the result of the query
+	 */
+	protected static Response executeListQuery(WebClient webClient, String query, int position, int size) {
+		Response _response = null;
+		if (query == null) {
+			if (position >= 0) {
+				if (size >= 0) {
+					_response = webClient.query("position", position).query("size", size).get();
+				} else {
+					_response = webClient.query("position", position).get();
+				}
+			} else {
+				if (size >= 0) {
+					_response = webClient.query("size", size).get();
+				} else {
+					_response = webClient.get();
+				}
+			}
+		} else {
+			if (position >= 0) {
+				if (size >= 0) {
+					_response = webClient.query("query", query).query("position", position).query("size", size).get();					
+				} else {
+					_response = webClient.query("query", query).query("position", position).get();					
+				}
+			} else {
+				if (size >= 0) {
+					_response = webClient.query("query", query).query("size", size).get();					
+				} else {
+					_response = webClient.query("query", query).get();					
+				}				
+			}
+		}
+		return _response;
 	}
 	
 	/**

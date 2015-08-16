@@ -31,115 +31,150 @@ import java.util.List;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.jaxrs.client.WebClient;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opentdc.tags.SingleLangTag;
-import org.opentdc.tags.TagModel;
 import org.opentdc.tags.TagsService;
 import org.opentdc.util.LanguageCode;
 import org.opentdc.service.GenericService;
-import org.opentdc.service.LocalizedTextModel;
 import org.opentdc.service.ServiceUtil;
 
 import test.org.opentdc.AbstractTestClient;
 
+/**
+ * Testing lists of Tags
+ * @author Bruno Kaiser
+ *
+ */
 public class TagListTest extends AbstractTestClient {
-	private WebClient wc = null;
+	public static final String CN = "TagListTest";
+	private static WebClient wc = null;
+	private static ArrayList<SingleLangTag> testObjects = null;
 
-	@Before
-	public void initializeTests() {
+	/**
+	 * Initialize the test with several Tags
+	 */
+	@BeforeClass
+	public static void initializeTests() {
 		wc = createWebClient(ServiceUtil.TAGS_API_URL, TagsService.class);
+		System.out.println("***** " + CN);
+		testObjects = new ArrayList<SingleLangTag>();
+		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
+			testObjects.add(TagTest.create(wc, CN + i, LanguageCode.EN));
+		}
+		System.out.println("created " + testObjects.size() + " test objects");
+		printModelList("testObjects", testObjects);
 	}
 
-	@After
-	public void cleanupTest() {
+	@AfterClass
+	public static void cleanupTest() {
+		for (SingleLangTag _model : testObjects) {
+			TagTest.delete(wc, _model.getTagId(), Status.NO_CONTENT);
+		}
 		wc.close();
 	}
 	
-
+	/**
+	 * Test whether all allocated test objects are listed.
+	 */
 	@Test
-	public void testTagBatchedList() {
-		ArrayList<TagModel> _localList = new ArrayList<TagModel>();		
-		System.out.println("***** testTagBatchedList:");
-		wc.replacePath("/");
-		// we want to allocate more than double the amount of default list size objects
-		int _batchSize = GenericService.DEF_SIZE;
-		int _increment = 5;
-		int _limit2 = 2 * _batchSize + _increment;		// if DEF_SIZE == 25 -> _limit2 = 55
-		TagModel _model1 = null;
-		for (int i = 0; i < _limit2; i++) {
-			_model1 = TagTest.create(wc, Status.OK);
-			_localList.add(_model1);
-			LocalizedTextTest.post(wc, _model1, new LocalizedTextModel(LanguageCode.ES, "testTagBatchedList" + i), Status.OK);
-			System.out.println("posted TagsModel " + _model1.getId() + " with LocalizedText <testTagBatchedList" + i + ">");
+	public void testAllListed() {
+		List<SingleLangTag> _list = TagTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testAllListed", _list);
+		ArrayList<String> _ids = new ArrayList<String>();
+		for (SingleLangTag _model : _list) {
+			_ids.add(_model.getTagId());
+		}		
+		for (SingleLangTag _model : testObjects) {
+			assertTrue("Tag <" + _model.getTagId() + "> should be listed", _ids.contains(_model.getTagId()));
 		}
-		assertEquals("testcase should create the right amount of Tags", _limit2, _localList.size());
+	}
 
-		// get first batch
-		// list(position=0, size=25) -> elements 0 .. 24
-		List<SingleLangTag> _remoteList1 = TagTest.list(wc, null, -1, -1, Status.OK);
-		System.out.println("****** 1st Batch:");
-		for (SingleLangTag _model : _remoteList1) {
-			System.out.println(_model.getTagId());
-		}
-		assertEquals("size of lists should be the same", _batchSize, _remoteList1.size());
-			
-		// get second batch
-		// list(position=25, size=25) -> elements 25 .. 49
-		List<SingleLangTag> _remoteList2 = TagTest.list(wc, null, 25, -1, Status.OK);
-		assertEquals("size of lists should be the same", _batchSize, _remoteList2.size());
-		System.out.println("****** 2nd Batch:");
-		for (SingleLangTag _model : _remoteList2) {
-			System.out.println(_model.getTagId());
-		}
-		
-		// get rest 
-		// list(position=50, size=25) ->   elements 50 .. 54
-		List<SingleLangTag> _remoteList3 = TagTest.list(wc, null, 50, _increment, Status.OK);
-		System.out.println("****** 3rd Batch:");
-		for (SingleLangTag _model : _remoteList3) {
-			System.out.println(_model.getTagId());
-		}
-		assertEquals("size of lists should be the same", _increment, _remoteList3.size());
-		
-		// testing the batches
+	/**
+	 * Test whether all listed objects are readable.
+	 */
+	@Test
+	public void testAllReadable() {
+		for (SingleLangTag _model : testObjects) {
+			TagTest.get(wc, _model.getTagId(), Status.OK);
+		}			
+	}
+
+	/**
+	 * Test batch-wise access to the test data (list with default position and size).
+	 */
+	@Test
+	public void testBatchedList() {
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<SingleLangTag> _remoteList = null;
+	
+		List<SingleLangTag> _batch = null;
 		while(true) {
 			_numberOfBatches++;
-			_remoteList = TagTest.list(wc, null, _position, -1, Status.OK);
-			_numberOfReturnedObjects += _remoteList.size();
+			_batch = TagTest.list(wc, null, _position, -1, Status.OK);
+			_numberOfReturnedObjects += _batch.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
-			if (_remoteList.size() < GenericService.DEF_SIZE) {
+			if (_batch.size() < GenericService.DEF_SIZE) {
 				break;
 			} else {
 				_position += GenericService.DEF_SIZE;					
 			}
 		}
-		assertTrue("number of batches should be as expected", _numberOfBatches >= 3);
-		assertTrue("should have returned all objects", _numberOfReturnedObjects >= _limit2);
-		assertTrue("last batch size should be as expected", _remoteList.size() >= _increment);
-	
-		// testing some explicit positions and sizes
-		_remoteList = TagTest.list(wc, null, 5, 5, Status.OK);  // get next 5 elements from position 5
-		assertEquals("list() should return correct number of elements", 5, _remoteList.size());
-		
-		_remoteList = TagTest.list(wc, null, _limit2-4, 4, Status.OK);  // get last 4 elements
-		assertEquals("list() should return correct number of elements", 4, _remoteList.size());
-		
-		_remoteList = TagTest.list(wc, null, _limit2-5, 10, Status.OK);  // read over end of list
-		assertTrue("list() should return correct number of elements", _remoteList.size() >= 5);
-		
-		// removing all test objects
-		for (TagModel _model : _localList) {
-			TagTest.delete(wc, _model.getId(), Status.NO_CONTENT);
-		}		
+		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _batch.size());
+	}
+
+	/**
+	 * Get some elements starting from a specific position
+	 */
+	@Test
+	public void testNextElements() {
+		List<SingleLangTag> _objs = TagTest.list(wc, null, 5, 5, Status.OK);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 	
+	/**
+	 * Get some elements until the end of the list
+	 */
+	@Test
+	public void testLastElements() {
+		int _totalMembers = calculateMembers();
+		List<SingleLangTag> _objs = TagTest.list(wc, null, (_totalMembers - 4), 4, Status.OK);
+		assertEquals("list() should return correct number of elements", 4, _objs.size());		
+	}
+	
+	/**
+	 * Read some elements until after the list end
+	 */
+	@Test 
+	public void testOverEndOfList() {
+		int _totalMembers = calculateMembers();
+		List<SingleLangTag> _objs = TagTest.list(wc, null, (_totalMembers - 5), 10, Status.OK);
+		assertEquals("list() should return correct number of elements", 5, _objs.size());		
+	}
+	
+	/**
+	 * Print the result of the list() operation onto stdout.
+	 * @param title  the title of the log section
+	 * @param list a list of AddressModel objects
+	 */
+	public static void printModelList(String title, List<SingleLangTag> list) {
+		System.out.println("***** " + title);
+		System.out.println("\ttagID\tltmID\ttext");
+		for (SingleLangTag _model : list) { 
+			System.out.println(
+					"\t" + _model.getTagId() + 
+					"\t" + _model.getLocalizedTextId() + 
+					"\t" + _model.getText());
+		}
+		System.out.println("\ttotal:\t" + list.size() + " elements");
+	}
+	
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
+	 */
 	protected int calculateMembers() {
-		return 0;
+		return TagTest.list(wc,  null, 0, Integer.MAX_VALUE, Status.OK).size();
 	}
 }

@@ -47,14 +47,20 @@ import org.opentdc.util.LanguageCode;
 
 import test.org.opentdc.AbstractTestClient;
 
+/**
+ * Testing localized texts in TextService.
+ * @author Bruno Kaiser
+ *
+ */
 public class LocalizedTextTest extends AbstractTestClient {
+	private static final String CN = "LocalizedTextTest";
 	private WebClient wc = null;
 	private TextModel textModel = null;
 
 	@Before
 	public void initializeTests() {
 		wc = initializeTest(ServiceUtil.TEXTS_API_URL, TextsService.class);
-		textModel = TextTest.create(wc, "LocalizedTextTest", "MY_DESCRIPTION", Status.OK);
+		textModel = TextTest.create(wc, CN, "MY_DESCRIPTION", Status.OK);
 	}
 
 	@After

@@ -28,7 +28,6 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -49,6 +48,7 @@ import test.org.opentdc.AbstractTestClient;
  *
  */
 public class ContactAllListTest extends AbstractTestClient {
+	private static final String CN = "ContactAllListTest";
 	private static ArrayList<AddressbookModel> addressbooks = null;
 	private static final int nrAddressbooks = 3;
 	private static final int nrContacts = 10;
@@ -61,16 +61,21 @@ public class ContactAllListTest extends AbstractTestClient {
 	@BeforeClass
 	public static void initializeTest() {
 		wc = initializeTest(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
-		System.out.println("***** ContactAllListTest:");
+		System.out.println("***** " + CN);
 		addressbooks = new ArrayList<AddressbookModel>();
 		AddressbookModel _abm = null;
 		for (int i = 0; i < nrAddressbooks; i++) {
-			_abm = AddressbookTest.post(wc, new AddressbookModel("ContactAllListTest" + i), Status.OK);
+			_abm = AddressbookTest.post(wc, new AddressbookModel(CN + i), Status.OK);
 			addressbooks.add(_abm);
 			for (int j = 0; j < nrContacts; j++) {
-				ContactTest.create(wc, _abm.getId(), "addressbook" + i + "_contact" + j, "ContactAllListTest");
+				ContactTest.post(wc, _abm.getId(), new ContactModel("addressbook" + i + "_contact" + j, CN), Status.OK);
 			}
 		}
+		System.out.println(CN + " - Parameters" + 
+				":\n\tnrAddressbooks:\t\t" + nrAddressbooks +
+				"\n\tnrContacts:\t\t\t" + nrContacts + 
+				"\n\ttotalContacts:\t\t" + totalContacts);		
+		printCounters("initializeTest");
 	}
 	
 	@AfterClass
@@ -78,18 +83,16 @@ public class ContactAllListTest extends AbstractTestClient {
 		for (AddressbookModel _model : addressbooks) {
 			AddressbookTest.delete(wc, _model.getId(), Status.NO_CONTENT);
 		}
-		System.out.println("deleted " + addressbooks.size() + " addressbooks");
+		printCounters("cleanupTest");
 		wc.close();
 	}
 	
 	@Test
 	public void testContactAllList() {
-		System.out.println("a) testContactAllList:");
-		Response _response = wc.replacePath("/").path("allContacts").query("size", totalContacts + 1).get();
-		List<ContactModel> _remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("listAllContacts() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertTrue("should have returned all objects", _remoteList.size() >= totalContacts);		
-		System.out.println("list() returns " + _remoteList.size() + " elements (_remoteList).");
+		printCounters("testContactAllList");
+		List<ContactModel> _list = ContactTest.list(wc, null, null, 0, totalContacts + 1, Status.OK, true);
+		assertTrue("should have returned all objects", _list.size() >= totalContacts);		
+		System.out.println("list() returns " + _list.size() + " elements (_remoteList).");
 	}
 	
 	/**
@@ -97,57 +100,63 @@ public class ContactAllListTest extends AbstractTestClient {
 	 */
 	@Test
 	public void testContactAllListBatched() {
-		System.out.println("b) testContactAllListBatched:");
 		int _numberOfBatches = 0;
 		int _numberOfReturnedObjects = 0;
 		int _position = 0;
-		List<ContactModel> _remoteList = null;
-		Response _response = null;
+		List<ContactModel> _list = null;
+		printCounters("testContactAllListBatched");
 		while(true) {
 			_numberOfBatches++;
-			wc.resetQuery();
-			_response = wc.replacePath("/").path("allContacts").query("position", _position).get();
-			_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-			assertEquals("listAllContacts() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-			_numberOfReturnedObjects += _remoteList.size();
+			_list = ContactTest.list(wc, null, null, _position, -1, Status.OK, true);
+			_numberOfReturnedObjects += _list.size();
 			System.out.println("batch " + _numberOfBatches + ": position=" + _position + ", returnedObjects=" + _numberOfReturnedObjects);
-			if (_remoteList.size() < GenericService.DEF_SIZE) {
+			if (_list.size() < GenericService.DEF_SIZE) {
 				break;
 			} else {
 				_position += GenericService.DEF_SIZE;					
 			}
 		}
-		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _remoteList.size());
+		validateBatches(_numberOfBatches, _numberOfReturnedObjects, _list.size());
 	}
 	
+	// testing some explicit positions and sizes
+	// get next _nrElements elements from position _nrElements
 	@Test
-	public void testContactAllListExplicitQueries() {
-		System.out.println("c) testContactAllListExplicitQueries:");
-		// testing some explicit positions and sizes
-		wc.resetQuery();
-		// get next _nrElements elements from position _nrElements
-		int _nrElements = 7;
-		Response _response = wc.replacePath("/").path("allContacts").query("position", _nrElements).query("size", _nrElements).get();
-		List<ContactModel> _remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", _nrElements, _remoteList.size());
+	public void testNextElements() {
+		System.out.println("testNextElements");
+		List<ContactModel> _list = ContactTest.list(wc, null, null, 7, 7, Status.OK, true);
+		assertEquals("list() should return correct number of elements", 7, _list.size());
+	}
 		
-		// get last _nrElements elements 
-		wc.resetQuery();
-		_response = wc.replacePath("/").path("allContacts").query("position", totalContacts - _nrElements).query("size", _nrElements).get();
-		_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertEquals("list() should return correct number of elements", _nrElements, _remoteList.size());
+	// get last _nrElements elements 
+	@Test
+	public void testLastElements() {
+		System.out.println("testLastElements");
+		List<ContactModel> _list = ContactTest.list(wc, null, null, totalContacts - 7, 7, Status.OK, true);
+		assertEquals("list() should return correct number of elements", 7, _list.size());
+	}
 		
-		// read over end of list
-		wc.resetQuery();
-		_response = wc.replacePath("/").path("allContacts").query("position", totalContacts - _nrElements).query("size", 2 * _nrElements).get();
-		_remoteList = new ArrayList<ContactModel>(wc.getCollection(ContactModel.class));
-		assertEquals("list() should return with status OK", Status.OK.getStatusCode(), _response.getStatus());
-		assertTrue("list() should return correct number of elements", _remoteList.size() >= _nrElements);		
+	// read over end of list
+	@Test
+	public void testReadOverEndOfList() {
+		System.out.println("testReadOverEndOfList");
+		List<ContactModel> _list = ContactTest.list(wc, null, null, totalContacts - 7, 2 * 7, Status.OK, true);
+		assertTrue("list() should return correct number of elements", _list.size() >= 7);		
+	}
+	
+	/**
+	 * @param title
+	 */
+	private static void printCounters(String title) {
+		System.out.println(title + 
+				":\n\tnrAddressbooks:\t\t" + AddressbookTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK).size() +
+				"\n\tnrContacts:\t\t\t" + ContactTest.list(wc, null, null, 0, Integer.MAX_VALUE, Status.OK, true).size());		
 	}
 			
+	/* (non-Javadoc)
+	 * @see test.org.opentdc.AbstractTestClient#calculateMembers()
+	 */
 	protected int calculateMembers() {
-		return nrAddressbooks * nrContacts;
+		return ContactTest.list(wc, null, null, 0, Integer.MAX_VALUE, Status.OK, true).size();
 	}
 }
