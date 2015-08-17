@@ -174,7 +174,7 @@ public class ContactMultiAddressbooksTest extends AbstractTestClient {
 	
 	private static String getIdOfAddressbookAll() {
 		for (AddressbookModel _model : AddressbookTest.list(wc, null, 0, Integer.MAX_VALUE, Status.OK)) {
-			if (_model.getName().equalsIgnoreCase("all")) {
+			if (_model.getName().equalsIgnoreCase("AAA")) {
 				return _model.getId();
 			}
 		}
