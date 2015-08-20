@@ -45,6 +45,7 @@ import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.addressbooks.OrgModel;
 import org.opentdc.addressbooks.OrgType;
+import org.opentdc.query.AbstractQueryHandler;
 import org.opentdc.resources.ResourceModel;
 import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.GenericService;
@@ -101,15 +102,24 @@ public class WorkRecordListTest extends AbstractTestClient {
 				new ResourceModel(CN, contact.getId()), Status.OK);
 		System.out.println("***** " + CN);
 		testObjects = new ArrayList<WorkRecordModel>();
-		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
+		for (int i = 1; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 54 (55 -1)
 			testObjects.add(WorkRecordTest.post(wc, 
-					WorkRecordTest.create(company, project, resource, new Date(), 1, 30, true, true, CN),
+					WorkRecordTest.create(company, project, resource, 
+							genDate(2015, (i < 30 ? 7 : 8), (i < 30 ? i : i - 29)), 
+							i, i, true, true, true, CN),
 					Status.OK));
 		}
 		System.out.println("created " + testObjects.size() + " test objects");
 		printModelList("testObjects", testObjects);
 	}
-
+	
+	public static Date genDate(int year, int month, int day) {
+		String _dateStr = String.format("%04d%02d%02d", year, month, day);
+		Date _date = AbstractQueryHandler.genDateFromYYYYMMDD(_dateStr);
+		System.out.println("genDate(" + year + ", " + month + ", " + day + ") -> " + _date);
+		return _date;
+	}
+	
 	/**
 	 * Remove all test resources used
 	 */
@@ -213,6 +223,117 @@ public class WorkRecordListTest extends AbstractTestClient {
 		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 	
+	// test some queries
+	@Test
+	public void testDateQueryGreaterThan()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "startAt().greaterThan(20150801)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testDateQueryGreaterThan / startAt().greaterThan(20150801)", _objs);
+		assertEquals("list(startAt().greaterThan(20150801)) should return 24 objects", 24, _objs.size());
+	}
+	
+	@Test
+	public void testDateQueryLessThan()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "startAt().lessThan(20150801)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testDateQueryLessThan / startAt().lessThan(20150801)", _objs);
+		assertEquals("list(startAt().lessThan(20150801)) should return 29 objects", 29, _objs.size());
+	}
+
+	@Test
+	public void testDateQueryEquals()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "startAt().equalTo(20150801)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testDateQueryEquals / startAt().equals(20150801)", _objs);
+		assertEquals("list(startAt().equals(20150801)) should return 1 object", 1, _objs.size());
+	}
+	
+	@Test
+	public void testDateInterval()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "startAt().greaterThan(20150801);startAt().lessThanOrEqualTo(20150810)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testDateInterval / startAt().greaterThan(20150801);startAt().lessThanOrEqualTo(20150810)", _objs);
+		assertEquals("list(startAt().greaterThan(20150801);startAt().lessThanOrEqualTo(20150810)) should return 9 objects", 9, _objs.size());
+	}
+	
+	@Test
+	public void testBooleanTrue()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "isRunning().equalTo(true)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testBooleanTrue / isRunning().equalTo(true)", _objs);
+		assertEquals("list(isRunning().equalTo(true)) should return 54 objects", 54, _objs.size());
+	}
+	
+	@Test
+	public void testBooleanFalse()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "isRunning().equalTo(false)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testBooleanFalse / isRunning().equalTo(false)", _objs);
+		assertEquals("list(isRunning().equalTo(false)) should return 0 objects", 0, _objs.size());
+	}
+	
+	@Test
+	public void testBooleanNotEqualTo()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "isRunning().notEqualTo(false)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testBooleanFalse / isRunning().notEqualTo(false)", _objs);
+		assertEquals("list(isRunning().notEqualTo(false)) should return 54 objects", 54, _objs.size());
+	}
+	
+	@Test
+	public void testIntLessThan()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "durationHours().lessThan(5)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testIntLessThan / durationHours().lessThan(5)", _objs);
+		assertEquals("list(durationHours().lessThan(5)) should return 4 objects", 4, _objs.size());
+	}
+	
+	@Test
+	public void testIntLessThanOrEqualTo()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "durationHours().lessThanOrEqualTo(5)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testIntLessThan / durationHours().lessThanOrEqualTo(5)", _objs);
+		assertEquals("list(durationHours().lessThanOrEqualTo(5)) should return 5 objects", 5, _objs.size());
+	}
+	
+	@Test
+	public void testIntEqualTo()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "durationHours().equalTo(5)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testIntEqualTo / durationHours().equalTo(5)", _objs);
+		assertEquals("list(durationHours().equalTo(5)) should return 1 objects", 1, _objs.size());
+	}
+	
+	@Test
+	public void testIntNotEqualTo()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "durationHours().notEqualTo(5)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testIntEqualTo / durationHours().notEqualTo(5)", _objs);
+		assertEquals("list(durationHours().notEqualTo(5)) should return 53 objects", 53, _objs.size());
+	}
+	
+	@Test
+	public void testIntGreaterThan()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "durationHours().greaterThan(50)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testIntGreaterThan / durationHours().greaterThan(50)", _objs);
+		assertEquals("list(durationHours().greaterThan(50)) should return 4 objects", 4, _objs.size());
+	}
+	
+	@Test
+	public void testIntGreaterThanOrEqualTo()
+	{
+		List<WorkRecordModel> _objs = WorkRecordTest.list(wc, "durationHours().greaterThanOrEqualTo(50)", 0, Integer.MAX_VALUE, Status.OK);
+		printModelList("testIntGreaterThanOrEqualTo / durationHours().greaterThanOrEqualTo(50)", _objs);
+		assertEquals("list(durationHours().greaterThanOrEqualTo(50)) should return 5 objects", 5, _objs.size());
+	}
+	
+	@Test
+	public void testIntIsLike()
+	{
+		WorkRecordTest.list(wc, "durationHours().isLike(50)", 0, Integer.MAX_VALUE, Status.BAD_REQUEST);
+	}
+		
 	/**
 	 * Print the result of the list() operation onto stdout.
 	 * @param title  the title of the log section

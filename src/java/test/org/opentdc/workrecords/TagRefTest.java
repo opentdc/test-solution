@@ -120,7 +120,7 @@ public class TagRefTest extends AbstractTestClient {
 		rate = RateTest.post(rateWC, 
 				new RateModel(CN, 100, "MY_DESC"), Status.OK);
 		workRecord = WorkRecordTest.post(wc, 
-				WorkRecordTest.create(company, project, resource, date, 1, 30, true, true, "TagRefTests"), Status.OK);
+				WorkRecordTest.create(company, project, resource, date, 1, 30, true, true, true, "TagRefTests"), Status.OK);
 		tag = TagTest.create(tagWC, Status.OK);
 		LocalizedTextTest.post(tagWC, tag, new LocalizedTextModel(LanguageCode.getDefaultLanguageCode(), "TagRefTest"), Status.OK);
 	}
