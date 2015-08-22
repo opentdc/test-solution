@@ -124,7 +124,7 @@ public class TagRefTest extends AbstractTestClient {
 		tag = TagTest.create(tagWC, Status.OK);
 		LocalizedTextTest.post(tagWC, tag, new LocalizedTextModel(LanguageCode.getDefaultLanguageCode(), "TagRefTest"), Status.OK);
 	}
-
+	
 	@After
 	public void cleanupTest() {
 		AddressbookTest.delete(addressbookWC, addressbook.getId(), Status.NO_CONTENT);
@@ -282,6 +282,34 @@ public class TagRefTest extends AbstractTestClient {
 		for (TagRefModel _model : _localList) {
 			delete(_model.getId(), Status.NO_CONTENT);
 		}
+	}
+
+	@Test
+	public void testTagRefList() {
+		TagModel _tag1 = TagTest.create(tagWC, Status.OK);
+		LocalizedTextTest.post(tagWC, _tag1, new LocalizedTextModel(LanguageCode.getDefaultLanguageCode(), "testTagRefList1"), Status.OK);
+
+		TagModel _tag2 = TagTest.create(tagWC, Status.OK);
+		LocalizedTextTest.post(tagWC, _tag2, new LocalizedTextModel(LanguageCode.getDefaultLanguageCode(), "testTagRefList2"), Status.OK);
+
+		WorkRecordModel _model1 = WorkRecordTest.create(company, project, resource, date, 1, 30, true, true, true, "testTagRefList");
+		_model1.setTagIdList(_tag1.getId() + "," + _tag2.getId());
+		
+		WorkRecordModel _model2 = WorkRecordTest.post(wc, _model1, Status.OK);
+		List<TagRefModel> _tags = list(wc, _model2.getId(), Status.OK);
+		assertEquals("expecting 2 TagRefModels", 2, _tags.size());
+		// sort order is not clear
+		if (_tags.get(0).getTagId().equalsIgnoreCase(_tag1.getId())) {
+			assertEquals("tagId should be correct", _tags.get(0).getTagId(), _tag1.getId());
+			assertEquals("tagId should be correct", _tags.get(1).getTagId(), _tag2.getId());
+		} else {
+			assertEquals("tagId should be correct", _tags.get(0).getTagId(), _tag2.getId());
+			assertEquals("tagId should be correct", _tags.get(1).getTagId(), _tag1.getId());	
+		}
+		
+		TagTest.delete(tagWC, _tag1.getId(), Status.NO_CONTENT);
+		TagTest.delete(tagWC, _tag2.getId(), Status.NO_CONTENT);
+		WorkRecordTest.delete(wc, _model2.getId(), Status.NO_CONTENT);
 	}
 
 	@Test
