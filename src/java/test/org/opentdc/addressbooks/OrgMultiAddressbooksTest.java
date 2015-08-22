@@ -50,7 +50,6 @@ public class OrgMultiAddressbooksTest extends AbstractTestClient {
 	private static AddressbookModel a2 = null;
 	private static WebClient wc = null;
 	private static int before = 0;
-	private static String allAbookId = null;
 
 	/**
 	 * Initialize the test with several orgs
@@ -63,7 +62,6 @@ public class OrgMultiAddressbooksTest extends AbstractTestClient {
 		System.out.println("before: " + before);
 		a1 = AddressbookTest.post(wc, new AddressbookModel(CN + "1"), Status.OK);
 		a2 = AddressbookTest.post(wc, new AddressbookModel(CN + "2"), Status.OK);
-		allAbookId = getIdOfAddressbookAll();
 		checkListSizes("initializeTest\t\t", 0, 0, 0 + before);		
 	}
 	
@@ -125,55 +123,62 @@ public class OrgMultiAddressbooksTest extends AbstractTestClient {
 		checkListSizes("12", 2, 2, 5 + before);		
 		
 		// step 13: remove org c1 from addressbook all	-> 1, 2, 4
-		OrgTest.delete(wc, allAbookId, _c1.getId(), Status.NO_CONTENT);
+		String _allAbookId = getIdOfAddressbookAll();
+		OrgTest.delete(wc, _allAbookId, _c1.getId(), Status.NO_CONTENT);
 		checkListSizes("13", 1, 2, 4 + before);		
 		
 		// step 14: remove org c2 from addressbook all	-> 1, 2, 3
-		OrgTest.delete(wc, allAbookId, _c2.getId(), Status.NO_CONTENT);
+		OrgTest.delete(wc, _allAbookId, _c2.getId(), Status.NO_CONTENT);
 		checkListSizes("14", 1, 2, 3 + before);		
 
 		// step 15: remove org c3 from addressbook all	-> 1, 2, 2
-		OrgTest.delete(wc, allAbookId, _c3.getId(), Status.NO_CONTENT);
+		OrgTest.delete(wc, _allAbookId, _c3.getId(), Status.NO_CONTENT);
 		checkListSizes("15", 1, 2, 2 + before);		
 
 		// step 16: remove org c4 from addressbook all	-> 0, 1, 1
-		OrgTest.delete(wc, allAbookId, _c4.getId(), Status.NO_CONTENT);
+		OrgTest.delete(wc, _allAbookId, _c4.getId(), Status.NO_CONTENT);
 		checkListSizes("16", 0, 1, 1 + before);		
 
 		// step 17: remove org c5 from addressbook all	-> 0, 0, 0
-		OrgTest.delete(wc, allAbookId, _c5.getId(), Status.NO_CONTENT);
+		OrgTest.delete(wc, _allAbookId, _c5.getId(), Status.NO_CONTENT);
 		checkListSizes("17", 0, 0, 0 + before);		
 
 		// step 18: add org c6 in addressbook all	-> 0, 0, 1
-		OrgModel _c6 = OrgTest.post(wc, allAbookId, new OrgModel("all c6", OrgType.OTHER), Status.OK);
+		OrgModel _c6 = OrgTest.post(wc, _allAbookId, new OrgModel("all c6", OrgType.OTHER), Status.OK);
 		checkListSizes("18", 0, 0, 1 + before);	
 		
 		// step 19: read org c6 from addressbook all 
-		OrgModel _cm1 = OrgTest.get(wc, allAbookId, _c6.getId(), Status.OK);
+		OrgModel _cm1 = OrgTest.get(wc, _allAbookId, _c6.getId(), Status.OK);
 		System.out.println("19:\tget:\t" + _cm1.getId());
 		
 		// step 20: update org c6 on addressbook all
 		_cm1.setName("NEW_NAME");
-		OrgModel _cm2 = OrgTest.put(wc, allAbookId, _cm1, Status.OK);
+		OrgModel _cm2 = OrgTest.put(wc, _allAbookId, _cm1, Status.OK);
 		System.out.println("20:\tput:\t" + _cm2.getName());
 		assertEquals("job title should have changed", "NEW_NAME", _cm2.getName());
 		
 		// step 21: remove org c6 from addressbook all	-> 0, 0, 0
-		OrgTest.delete(wc, allAbookId, _c6.getId(), Status.NO_CONTENT);
-		checkListSizes("21", 0, 0, 0 + before);				
+		OrgTest.delete(wc, _allAbookId, _c6.getId(), Status.NO_CONTENT);
+		checkListSizes("21", 0, 0, 0 + before);	
+	}
+	
+	@Test
+	public void listAddressbookAllTest() {
+		String _allAbookId = getIdOfAddressbookAll();
+		int _size1 = OrgTest.list(wc, _allAbookId, null, 0, Integer.MAX_VALUE, Status.OK, false).size();
+		int _size2 = OrgTest.list(wc, null, null, 0, Integer.MAX_VALUE, Status.OK, true).size();
+		assertEquals("size of listing addressbook all should be the same", _size1, _size2);
 	}
 		
 	private static int checkListSizes(String title, int a1s, int a2s, int alls) {
 		int _a1 = OrgTest.list(wc, a1.getId(), null, 0, Integer.MAX_VALUE, Status.OK, false).size();
 		int _a2 = OrgTest.list(wc, a2.getId(), null, 0, Integer.MAX_VALUE, Status.OK, false).size();
-		int _alls1 = OrgTest.list(wc, allAbookId, null, 0, Integer.MAX_VALUE, Status.OK, false).size();
-		int _alls2 = OrgTest.list(wc, null, null, 0, Integer.MAX_VALUE, Status.OK, true).size();
-		System.out.println(title + "\ta1:\t" + _a1 + "\ta2:\t" + _a2 + "\tall.list():\t" + _alls1 + "\tallOrgsList():\t" + _alls2);	
+		int _alls = OrgTest.list(wc, null, null, 0, Integer.MAX_VALUE, Status.OK, true).size();
+		System.out.println(title + "\ta1:\t" + _a1 + "\ta2:\t" + _a2 + "\tallOrgsList():\t" + _alls);	
 		assertEquals("size of addressbook a1 should be as expected", a1s, _a1);
 		assertEquals("size of addressbook a2 should be as expected", a2s, _a2);
-		assertEquals("size of allOrgs (all.list()) should be as expected", alls, _alls1);
-		assertEquals("size of allOrgs (listAllOrgs()) should be as expected", alls, _alls2);
-		return _alls2;
+		assertEquals("size of allOrgs (listAllOrgs()) should be as expected", alls, _alls);
+		return _alls;
 	}
 	
 	private static String getIdOfAddressbookAll() {
