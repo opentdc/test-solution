@@ -45,7 +45,6 @@ import org.opentdc.addressbooks.AddressbooksService;
 import org.opentdc.addressbooks.ContactModel;
 import org.opentdc.addressbooks.OrgModel;
 import org.opentdc.addressbooks.OrgType;
-import org.opentdc.query.AbstractQueryHandler;
 import org.opentdc.resources.ResourceModel;
 import org.opentdc.resources.ResourcesService;
 import org.opentdc.service.GenericService;
@@ -115,7 +114,7 @@ public class WorkRecordListTest extends AbstractTestClient {
 	
 	public static Date genDate(int year, int month, int day) {
 		String _dateStr = String.format("%04d%02d%02d", year, month, day);
-		Date _date = AbstractQueryHandler.genDateFromYYYYMMDD(_dateStr);
+		Date _date = ServiceUtil.parseDate(_dateStr, "yyyyMMdd");
 		System.out.println("genDate(" + year + ", " + month + ", " + day + ") -> " + _date);
 		return _date;
 	}
@@ -224,6 +223,9 @@ public class WorkRecordListTest extends AbstractTestClient {
 	}
 	
 	// test some queries
+	// precondition: because of asserts on size(), these tests assume that the storage is empty.
+	// this is not a realistic assumption
+	// but we leave it here until WorkRecords will be composites of Activities.
 	@Test
 	public void testDateQueryGreaterThan()
 	{

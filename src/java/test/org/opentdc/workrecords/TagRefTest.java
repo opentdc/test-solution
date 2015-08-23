@@ -52,7 +52,7 @@ import org.opentdc.service.ServiceUtil;
 import org.opentdc.tags.TagModel;
 import org.opentdc.tags.TagsService;
 import org.opentdc.util.LanguageCode;
-import org.opentdc.workrecords.TagRefModel;
+import org.opentdc.service.TagRefModel;
 import org.opentdc.workrecords.WorkRecordModel;
 import org.opentdc.workrecords.WorkRecordsService;
 import org.opentdc.wtt.CompanyModel;
@@ -92,7 +92,8 @@ public class TagRefTest extends AbstractTestClient {
 	private ResourceModel resource = null;
 	private RateModel rate = null;
 	private WorkRecordModel workRecord = null;
-	private TagModel tag = null;
+	private TagModel tag1 = null;
+	private TagModel tag2 = null;
 	private Date date; 
 
 	@Before
@@ -121,8 +122,8 @@ public class TagRefTest extends AbstractTestClient {
 				new RateModel(CN, 100, "MY_DESC"), Status.OK);
 		workRecord = WorkRecordTest.post(wc, 
 				WorkRecordTest.create(company, project, resource, date, 1, 30, true, true, true, "TagRefTests"), Status.OK);
-		tag = TagTest.create(tagWC, Status.OK);
-		LocalizedTextTest.post(tagWC, tag, new LocalizedTextModel(LanguageCode.getDefaultLanguageCode(), "TagRefTest"), Status.OK);
+		tag1 = createPostTag("TagRefTest1");
+		tag2 = createPostTag("TagRefTest2");
 	}
 	
 	@After
@@ -139,7 +140,8 @@ public class TagRefTest extends AbstractTestClient {
 		RateTest.delete(rateWC, rate.getId(), Status.NO_CONTENT);
 		rateWC.close();
 		
-		TagTest.delete(tagWC, tag.getId(), Status.NO_CONTENT);
+		TagTest.delete(tagWC, tag1.getId(), Status.NO_CONTENT);
+		TagTest.delete(tagWC, tag2.getId(), Status.NO_CONTENT);
 		tagWC.close();
 		
 		WorkRecordTest.delete(wc, workRecord.getId(), Status.NO_CONTENT);
@@ -201,14 +203,14 @@ public class TagRefTest extends AbstractTestClient {
 		assertNull("tagId should not be set by empty constructor", _model1.getTagId());
 	
 		post(_model1, Status.BAD_REQUEST);
-		_model1.setTagId(tag.getId());
+		_model1.setTagId(tag1.getId());
 		TagRefModel _model2 = post(_model1, Status.OK);
 
 		assertNull("create() should not change the id of the local object", _model1.getId());
-		assertEquals("create() should not change the tagId of the local object", tag.getId(), _model1.getTagId());
+		assertEquals("create() should not change the tagId of the local object", tag1.getId(), _model1.getTagId());
 		
 		assertNotNull("create() should set a valid id on the remote object returned", _model2.getId());
-		assertEquals("create() should not change the tagId", tag.getId(), _model2.getTagId());
+		assertEquals("create() should not change the tagId", tag1.getId(), _model2.getTagId());
 		
 		TagRefModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("id of returned object should be the same", _model2.getId(), _model3.getId());
@@ -219,16 +221,16 @@ public class TagRefTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreateReadDelete() {
-		TagRefModel _model1 = new TagRefModel(tag.getId());
+		TagRefModel _model1 = new TagRefModel(tag1.getId());
 		assertNull("id should not be set by constructor", _model1.getId());
-		assertEquals("tagId should be set by constructor", tag.getId(), _model1.getTagId());
+		assertEquals("tagId should be set by constructor", tag1.getId(), _model1.getTagId());
 		
 		TagRefModel _model2 = post(_model1, Status.OK);
 		assertNull("id should still be null after remote create", _model1.getId());
-		assertEquals("create() should not change the tagId", tag.getId(), _model1.getTagId());
+		assertEquals("create() should not change the tagId", tag1.getId(), _model1.getTagId());
 		
 		assertNotNull("id of returned object should be set", _model2.getId());
-		assertEquals("create() should not change the tagId", tag.getId(), _model2.getTagId());
+		assertEquals("create() should not change the tagId", tag1.getId(), _model2.getTagId());
 
 		TagRefModel _model3 = get(_model2.getId(), Status.OK);
 		assertEquals("read() should not change the id", _model2.getId(), _model3.getId());
@@ -239,31 +241,33 @@ public class TagRefTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreateWithClientSideId() {
-		TagRefModel _model = new TagRefModel(tag.getId());
+		TagRefModel _model = new TagRefModel(tag1.getId());
 		_model.setId("LOCAL_ID");
 		post(_model, Status.BAD_REQUEST);
 	}
 	
 	@Test
 	public void testCreateWithDuplicateId() {
-		TagRefModel _model1 = post(new TagRefModel(tag.getId()), Status.OK);
-		TagRefModel _model2 = new TagRefModel(tag.getId());
+		TagRefModel _model1 = post(new TagRefModel(tag1.getId()), Status.OK);
+		TagRefModel _model2 = new TagRefModel(tag2.getId());
 		_model2.setId(_model1.getId());		// wrongly create a 2nd LocalizedTextModel object with the same ID
 		post(_model2, Status.CONFLICT);
 		delete(_model1.getId(), Status.NO_CONTENT);
 	}
 	
 	@Test
+	public void testCreateDuplicateTag() {
+		TagRefModel _model1 = post(new TagRefModel(tag1.getId()), Status.OK);
+		post(new TagRefModel(tag1.getId()), Status.CONFLICT);
+		delete(_model1.getId(), Status.NO_CONTENT);
+	}
+	
+	@Test
 	public void testList() {
 		ArrayList<TagRefModel> _localList = new ArrayList<TagRefModel>();		
-		wc.replacePath("/").path(resource.getId()).path(ServiceUtil.TAGREF_PATH_EL);
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		
+		for (int i = 1; i < 6; i++) {
+			_localList.add(post(createTagRef("testList" + i), Status.OK));
+		}		
 		List<TagRefModel> _remoteList = list(Status.OK);
 
 		ArrayList<String> _remoteListIds = new ArrayList<String>();
@@ -280,6 +284,7 @@ public class TagRefTest extends AbstractTestClient {
 		}
 		
 		for (TagRefModel _model : _localList) {
+			TagTest.delete(tagWC, _model.getTagId(), Status.NO_CONTENT);
 			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}
@@ -314,13 +319,13 @@ public class TagRefTest extends AbstractTestClient {
 
 	@Test
 	public void testCreate() {	
-		TagRefModel _model1 = post(new TagRefModel(tag.getId()), Status.OK);
+		TagRefModel _model1 = post(new TagRefModel(tag1.getId()), Status.OK);
 		assertNotNull("ID should be set", _model1.getId());
-		assertEquals("tagId should be set correctly", tag.getId(), _model1.getTagId());
+		assertEquals("tagId should be set correctly", tag1.getId(), _model1.getTagId());
 		
-		TagRefModel _model2 = post(new TagRefModel(tag.getId()), Status.OK);
+		TagRefModel _model2 = post(new TagRefModel(tag2.getId()), Status.OK);
 		assertNotNull("ID should be set", _model2.getId());
-		assertEquals("tagId should be set correctly", tag.getId(), _model2.getTagId());
+		assertEquals("tagId should be set correctly", tag2.getId(), _model2.getTagId());
 
 		assertThat(_model2.getId(), not(equalTo(_model1.getId())));
 
@@ -330,7 +335,7 @@ public class TagRefTest extends AbstractTestClient {
 	
 	@Test
 	public void testCreateDouble() {
-		TagRefModel _model = post(new TagRefModel(tag.getId()), Status.OK);
+		TagRefModel _model = post(new TagRefModel(tag1.getId()), Status.OK);
 		assertNotNull("ID should be set:", _model.getId());
 		post(_model, Status.CONFLICT);
 		delete(_model.getId(), Status.NO_CONTENT);
@@ -340,12 +345,9 @@ public class TagRefTest extends AbstractTestClient {
 	public void testRead() {
 		ArrayList<TagRefModel> _localList = new ArrayList<TagRefModel>();
 		wc.replacePath("/").path(resource.getId()).path(ServiceUtil.TAGREF_PATH_EL);
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
-		_localList.add(post(new TagRefModel(tag.getId()), Status.OK));
+		for (int i = 1; i < 6; i++) {
+			_localList.add(post(createTagRef("testRead" + i), Status.OK));
+		}
 	
 		// test read on each local element
 		for (TagRefModel _model : _localList) {
@@ -358,13 +360,14 @@ public class TagRefTest extends AbstractTestClient {
 		}
 
 		for (TagRefModel _model : _localList) {
+			TagTest.delete(tagWC, _model.getTagId(), Status.NO_CONTENT);
 			delete(_model.getId(), Status.NO_CONTENT);
 		}
 	}
 	
 	@Test
 	public void testMultiRead() {
-		TagRefModel _model1 = post(new TagRefModel(tag.getId()), Status.OK);
+		TagRefModel _model1 = post(new TagRefModel(tag1.getId()), Status.OK);
 		TagRefModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged after read:", _model1.getId(), _model2.getId());		
 		TagRefModel _ltm3 = get(_model1.getId(), Status.OK);
@@ -381,7 +384,7 @@ public class TagRefTest extends AbstractTestClient {
 	@Test
 	public void testDelete(
 	) {
-		TagRefModel _model1 = post(new TagRefModel(tag.getId()), Status.OK);
+		TagRefModel _model1 = post(new TagRefModel(tag1.getId()), Status.OK);
 		TagRefModel _model2 = get(_model1.getId(), Status.OK);
 		assertEquals("ID should be unchanged when reading a project (remote):", _model1.getId(), _model2.getId());						
 		delete(_model1.getId(), Status.NO_CONTENT);
@@ -391,7 +394,7 @@ public class TagRefTest extends AbstractTestClient {
 	
 	@Test
 	public void testDoubleDelete() {
-		TagRefModel _model = post(new TagRefModel(tag.getId()), Status.OK);
+		TagRefModel _model = post(new TagRefModel(tag1.getId()), Status.OK);
 		get(_model.getId(), Status.OK);
 		delete(_model.getId(), Status.NO_CONTENT);
 		get(_model.getId(), Status.NOT_FOUND);
@@ -401,7 +404,7 @@ public class TagRefTest extends AbstractTestClient {
 	
 	@Test
 	public void testModifications() {
-		TagRefModel _model = post(new TagRefModel(tag.getId()), Status.OK);		
+		TagRefModel _model = post(new TagRefModel(tag1.getId()), Status.OK);		
 		assertNotNull("create() should set createdAt", _model.getCreatedAt());
 		assertNotNull("create() should set createdBy", _model.getCreatedBy());
 		delete(_model.getId(), Status.NO_CONTENT);
@@ -426,6 +429,18 @@ public class TagRefTest extends AbstractTestClient {
 		} else {
 			return null;
 		}
+	}
+	
+	public TagRefModel createTagRef(
+			String text) {
+		return new TagRefModel(createPostTag(text).getId());
+	}
+	
+	public TagModel createPostTag(String text) {
+		TagModel _tag = TagTest.create(tagWC, Status.OK);
+		LocalizedTextTest.post(tagWC, _tag, 
+				new LocalizedTextModel(LanguageCode.getDefaultLanguageCode(), text), Status.OK);
+		return _tag;
 	}
 	
 	public TagRefModel post(

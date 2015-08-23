@@ -58,6 +58,9 @@ public class ResourceListTest extends AbstractTestClient {
 	private static WebClient addressbookWC = null;
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
+	private static ContactModel contact1 = null;
+	private static ContactModel contact2 = null;
+	private static int limit;
 
 	@BeforeClass
 	public static void initializeTests() {
@@ -65,11 +68,23 @@ public class ResourceListTest extends AbstractTestClient {
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.post(addressbookWC, new AddressbookModel(CN), Status.OK);
 		contact = ContactTest.post(addressbookWC, adb.getId(), new ContactModel(CN + 1, CN + 2), Status.OK);
+		contact1 = ContactTest.post(addressbookWC, adb.getId(), new ContactModel("John", "Doe"), Status.OK);
+		contact2 = ContactTest.post(addressbookWC, adb.getId(), new ContactModel("Steve", "Doe"), Status.OK);
 		System.out.println("***** " + CN);
+		limit = 2 * GenericService.DEF_SIZE + 5; // if DEF_SIZE == 25 -> _limit2 = 55
+		System.out.println("\tlimit:\t" + limit);
 		testObjects = new ArrayList<ResourceModel>();
-		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
-			ResourceModel _model = ResourceTest.post(wc, new ResourceModel(CN, contact.getId()), Status.OK);
-			testObjects.add(_model);
+		ResourceModel _model = null;
+		for (int i = 0; i < limit; i++) { 
+			switch(i) {
+			case 0: _model = new ResourceModel("RESNAME0", contact1.getId());
+					break;
+			case 1: _model = new ResourceModel("RESNAME1", contact2.getId());
+					break;
+			default: _model = new ResourceModel(CN + i, contact.getId());
+					break;
+			}
+			testObjects.add(ResourceTest.post(wc, _model, Status.OK));
 		}
 		System.out.println("created " + testObjects.size() + " test objects");
 		printModelList("testObjects", testObjects);
@@ -164,6 +179,78 @@ public class ResourceListTest extends AbstractTestClient {
 		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 		
+	// test some queries	
+	@Test
+	public void testQueryResourcesByNameLikeResource()
+	{
+		executeQueryTest("testQueryResourcesByNameLikeResource", "name().isLike(RESNAME)", 2);
+	}
+	
+	@Test
+	public void testQueryResourcesByNameLikeCN()
+	{
+		executeQueryTest("testQueryResourcesByNameLikeCN", "name().isLike(" + CN + ")", limit -2);
+	}
+	
+	@Test
+	public void testQueryResourcesByEqualName()
+	{
+		executeQueryTest("testQueryResourcesByEqualName", "name().equalTo(RESNAME1)", 1);
+	}
+	
+	@Test
+	public void testQueryResourcesByFirstName()
+	{
+		executeQueryTest("testQueryResourcesByFirstName", "firstName().equalTo(John)", 1);
+	}
+	
+	@Test
+	public void testQueryResourcesByLastName()
+	{
+		executeQueryTest("testQueryResourcesByLastName", "lastName().equalTo(Doe)", 2);
+	}
+	
+	@Test
+	public void testQueryResourcesByLastNameNotEqual()
+	{
+		executeQueryTest("testQueryResourcesByLastNameNotEqual", "lastName().notEqualTo(Doe)", limit - 2);
+	}
+	
+	@Test
+	public void testQueryResourcesByContactId()
+	{
+		executeQueryTest("testQueryResourcesByContactId", "contactId().equalTo(" + contact.getId() + ")", limit - 2);
+	}
+	
+	@Test
+	public void testQueryResourcesByContactId2()
+	{
+		executeQueryTest("testQueryResourcesByContactId2", "contactId().equalTo(" + contact2.getId() + ")", 1);
+	}
+	
+	@Test
+	public void testQueryResourcesByContactIdNotEqual()
+	{
+		executeQueryTest("testQueryResourcesByContactIdNotEqual", "contactId().notEqualTo(" + contact2.getId() + ")", limit - 1);
+	}
+	
+	@Test
+	public void testQueryResourcesByCombination()
+	{
+		String _query = "contactId().equalTo(" + contact.getId() + ");name().equalTo(" + CN + "5)";
+		executeQueryTest("testQueryResourcesByCombination", _query, 1);
+	}
+	
+	
+	private void executeQueryTest(
+			String testcaseName,
+			String query,
+			int expectedResult) {
+		List<ResourceModel> _objs = ResourceTest.list(wc, query, 0, Integer.MAX_VALUE, Status.OK);
+		printModelList(testcaseName + " / " + query, _objs);
+		assertEquals("list(" + query + ") should return " + expectedResult + " objects", expectedResult, _objs.size());		
+	}
+	
 	/**
 	 * Print the result of the list() operation onto stdout.
 	 * @param title  the title of the log section
@@ -171,7 +258,7 @@ public class ResourceListTest extends AbstractTestClient {
 	 */
 	public static void printModelList(String title, List<ResourceModel> list) {
 		System.out.println("***** " + title);
-		System.out.println("\ttextId\tname");
+		System.out.println("\ttextId\t\t\t\tname");
 		for (ResourceModel _model : list) { 
 			System.out.println(
 					"\t" + _model.getId() + 

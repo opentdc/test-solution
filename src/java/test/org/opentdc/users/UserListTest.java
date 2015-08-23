@@ -34,6 +34,7 @@ import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opentdc.users.AuthType;
 import org.opentdc.users.UserModel;
 import org.opentdc.users.UsersService;
 import org.opentdc.addressbooks.AddressbookModel;
@@ -58,7 +59,9 @@ public class UserListTest extends AbstractTestClient {
 	
 	private static AddressbookModel adb = null;
 	private static ContactModel contact = null;
+	private static ContactModel contact2 = null;
 	private static ArrayList<UserModel> testObjects = null;
+	private static int limit;
 
 	/**
 	 * Initialize the test with several Users
@@ -70,11 +73,26 @@ public class UserListTest extends AbstractTestClient {
 		addressbookWC = createWebClient(ServiceUtil.ADDRESSBOOKS_API_URL, AddressbooksService.class);
 		adb = AddressbookTest.post(addressbookWC, new AddressbookModel(CN), Status.OK);
 		contact = ContactTest.post(addressbookWC, adb.getId(), new ContactModel(CN + "1", CN + "2"), Status.OK);
+		contact2 = ContactTest.post(addressbookWC, adb.getId(), new ContactModel(CN + "3", CN + "4"), Status.OK);
 
 		System.out.println("***** " + CN);
 		testObjects = new ArrayList<UserModel>();
-		for (int i = 0; i < (2 * GenericService.DEF_SIZE + 5); i++) { // if DEF_SIZE == 25 -> _limit2 = 55
-			testObjects.add(UserTest.post(wc, new UserModel(CN + "1", contact.getId()), Status.OK));
+		limit = 2 * GenericService.DEF_SIZE + 5; // if DEF_SIZE == 25 -> _limit2 = 55
+		System.out.println("\tlimit:\t" + limit);
+		UserModel _model = null;
+		for (int i = 0; i < limit; i++) {
+			switch(i) {
+			case 0: _model = new UserModel("admin", contact2.getId());
+					_model.setAuthType(AuthType.SUISSEID);
+					break;
+			case 1: _model = new UserModel("test", contact2.getId());
+					_model.setAuthType(AuthType.UIDPWD);
+					break;
+			default: _model = new UserModel(CN + i, contact.getId());
+					_model.setAuthType(AuthType.FACEBOOK);
+					break;
+			}
+			testObjects.add(UserTest.post(wc, _model, Status.OK));
 		}
 		System.out.println("created " + testObjects.size() + " test objects");
 		printModelList("testObjects", testObjects);
@@ -172,6 +190,58 @@ public class UserListTest extends AbstractTestClient {
 		assertEquals("list() should return correct number of elements", 5, _objs.size());		
 	}
 
+	// test some queries	
+	@Test
+	public void testQueryUsersByLoginId()
+	{
+		executeQueryTest("testQueryUsersByLoginId", "loginId().isLike(" + CN + ")", limit -2);
+	}
+	
+	@Test
+	public void testQueryUserAdmin()
+	{
+		executeQueryTest("testQueryUserAdmin", "loginId().equalTo(admin)", 1);
+	}
+
+	@Test
+	public void testQueryUserByContactId()
+	{
+		executeQueryTest("testQueryUserByContactId", "contactId().equalTo(" + contact2.getId() + ")", 2);
+	}
+	
+	@Test
+	public void testQueryUserByContactId2()
+	{
+		executeQueryTest("testQueryUserByContactId2", "contactId().equalTo(" + contact.getId() + ")", limit - 2);
+	}
+	
+	@Test
+	public void testQueryUserByContactIdNotEqual()
+	{
+		executeQueryTest("testQueryUserByContactIdNotEqual", "contactId().notEqualTo(" + contact2.getId() + ")", limit - 2);
+	}
+
+	@Test
+	public void testQueryUserByAuthType()
+	{
+		executeQueryTest("testQueryUserByAuthType", "authType().equalTo(facebook)", limit - 2);
+	}
+
+	@Test
+	public void testQueryUserByAuthType2()
+	{
+		executeQueryTest("testQueryUserByAuthType2", "authType().equalTo(suisseid)", 1);
+	}
+
+	private void executeQueryTest(
+			String testcaseName,
+			String query,
+			int expectedResult) {
+		List<UserModel> _objs = UserTest.list(wc, query, 0, Integer.MAX_VALUE, Status.OK);
+		printModelList(testcaseName + " / " + query, _objs);
+		assertEquals("list(" + query + ") should return " + expectedResult + " objects", expectedResult, _objs.size());		
+	}
+	
 	/**
 	 * Print the result of the list() operation onto stdout.
 	 * @param title  the title of the log section
