@@ -272,10 +272,9 @@ public class TagTest extends AbstractTestClient {
 	{		
 		System.out.println("*** testTagsTextList:");
 		System.out.println("a) creating "  + LIMIT + " elements with 1 LocalizedText each (localList):");
-		ArrayList<TagModel> _localList = new ArrayList<TagModel>();
+		ArrayList<SingleLangTag> _localList = new ArrayList<SingleLangTag>();
 		for (int i = 0; i < LIMIT; i++) {
-			_localList.add(post(new TagModel(), Status.OK));
-			LocalizedTextTest.post(wc, _localList.get(i), new LocalizedTextModel(LanguageCode.DE, "testTagsTextList" + i), Status.OK);
+			_localList.add(create(wc, "testTagsTextList" + i, LanguageCode.DE));
 		}
 		List<SingleLangTag> _remoteList = list(null, Status.OK);
 		logResult("b) list():", _remoteList);
@@ -284,18 +283,18 @@ public class TagTest extends AbstractTestClient {
 		for (SingleLangTag _model : _remoteList) {
 			_remoteListIds.add(_model.getTagId());
 		}		
-		for (TagModel _model : _localList) {
-			assertTrue("tag <" + _model.getId() + "> should be listed", _remoteListIds.contains(_model.getId()));
+		for (SingleLangTag _model : _localList) {
+			assertTrue("tag <" + _model.getTagId() + "> should be listed", _remoteListIds.contains(_model.getTagId()));
 		}
 		System.out.println("c) reading each test object (localList):");
-		for (TagModel _model : _localList) {
-			get(_model.getId(), Status.OK);
-			System.out.println("\t" + _model.getId());
+		for (SingleLangTag _model : _localList) {
+			get(_model.getTagId(), Status.OK);
+			System.out.println("\t" + _model.getTagId());
 		}
 		System.out.println("d) deleting each test object (localList):");
-		for (TagModel _model : _localList) {
-			System.out.println("\t" + _model.getId());
-			delete(_model.getId(), Status.NO_CONTENT);
+		for (SingleLangTag _model : _localList) {
+			System.out.println("\t" + _model.getTagId());
+			delete(_model.getTagId(), Status.NO_CONTENT);
 		}
 	}
 
@@ -556,7 +555,7 @@ public class TagTest extends AbstractTestClient {
 			LanguageCode langCode) {
 		TagModel _tag = create(webClient, Status.OK);
 		LocalizedTextModel _ltm = LocalizedTextTest.post(webClient, _tag, new LocalizedTextModel(langCode, text), Status.OK);
-		return new SingleLangTag(_tag.getId(), _ltm, "principal");
+		return new SingleLangTag(_tag.getId(), _ltm);
 	}
 		
 	/**
